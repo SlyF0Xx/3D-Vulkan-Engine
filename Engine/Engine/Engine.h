@@ -10,11 +10,27 @@
 #define ENGINE_API __declspec(dllimport)
 #endif
 
-// This class is exported from the dll
-class ENGINE_API CEngine {
-public:
-	CEngine(void);
+// forward declaration GameImpl to not export Vulkan in Game
+struct GameImpl;
 
-	void hello();
+
+// This class is exported from the dll
+class ENGINE_API Game {
+public:
+	Game();
+	~Game();
+
+#ifdef _WIN32
+	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
+#endif // WIN_32
+
+	void Exit();
+
+	//void AddGameComponent(std::unique_ptr<IGameComponent> component);
+
+	void Draw();
 	// TODO: add your methods here.
+
+private:
+	GameImpl* m_game_impl;
 };

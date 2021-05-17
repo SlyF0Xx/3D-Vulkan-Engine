@@ -2,8 +2,8 @@
 
 int main()
 {
-	CEngine vulkan;
-	vulkan.hello();
+	//Game vulkan;
+	//vulkan.Initialize(HINSTANCE hinstance, HWND hwnd, 800, 600);
 
 	return 0;
 }
