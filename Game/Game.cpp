@@ -3,8 +3,15 @@
 
 #include "framework.h"
 #include "Game.h"
+#include "PrimitiveComponent.h"
+#include "PrimitiveComponentWithMatrixColor.h"
 
 #include <Engine.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
+#include <chrono>
 
 #define MAX_LOADSTRING 100
 
@@ -18,6 +25,8 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int, Game& vulkan);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+Game* g_vulkan;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -35,15 +44,158 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-    Game vulkan;
+    Game vulkan; g_vulkan = &vulkan;
+
     if (!InitInstance (hInstance, nCmdShow, vulkan))
     {
         return FALSE;
     }
+    /*
+    vulkan.AddGameComponent(new PrimitiveComponent(vulkan,
+    { PrimitiveVertex{0.25f, 0.75f, 0.5f},
+      PrimitiveVertex{0.25f,  0.25f, 0.5f},
+      PrimitiveVertex{0.75f, 0.75f, 0.5f},
 
+      PrimitiveVertex{0.25f,  0.25f, 0.5f},
+      PrimitiveVertex{0.75f, 0.25f, 0.5f},
+      PrimitiveVertex{0.75f, 0.75f, 0.5f}
+    }));
+    vulkan.AddGameComponent(new PrimitiveComponent(vulkan,
+        { PrimitiveVertex{-0.25f, 0.75f, 0.5f},
+          PrimitiveVertex{-0.5f,  0.25f, 0.5f},
+          PrimitiveVertex{-0.75f, 0.75f, 0.5f}
+        }));
+    */
+    glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
+    glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
+    glm::vec3 upVector{ 0.0f, 1.0f, 0.0f };
+
+    glm::mat4 CameraMatrix = glm::lookAt(
+        cameraPosition, // Позиция камеры в мировом пространстве
+        cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
+        upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
+    );
+
+    glm::mat4 projectionMatrix = glm::perspective(
+        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
+        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
+        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
+        100.0f                                 // Дальняя плоскость отсечения.
+    );
+
+    /*
+            { PrimitiveColoredVertex{0.577719142849812, 0.5773826264223902, 0.5769487799540449,      {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.5761787543658918, -0.5781794648755861, -0.576589082782391,    {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5766744743638504, 0.5766611757774948, -0.5775000956576879,   {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5776769068067668, -0.5761097618019521, 0.5772424328884702,   {0.0f, 1.0f, 0.0f, 1.0f}},
+
+          PrimitiveColoredVertex{0.3460394703570788, 0.3455105462872511, -0.3453162381217819,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.344993045667834, 0.3461555218916737, 0.3457740117072589,     {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.3459597452963064, -0.345062976187787, 0.34588008406601006,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.3456006988276164, -0.3456555347461966, -0.34566771589534856, {0.0f, 1.0f, 0.0f, 1.0f}}
+        },
+    */
+
+    vulkan.AddGameComponent(new PrimitiveComponentWithMatrixColor(vulkan,
+        { PrimitiveColoredVertex{0.577719142849812, 0.5773826264223902, 0.5769487799540449,      {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.5761787543658918, -0.5781794648755861, -0.576589082782391,    {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5766744743638504, 0.5766611757774948, -0.5775000956576879,   {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5776769068067668, -0.5761097618019521, 0.5772424328884702,   {0.0f, 1.0f, 0.0f, 1.0f}},
+
+          PrimitiveColoredVertex{0.3460394703570788, 0.3455105462872511, -0.3453162381217819,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.344993045667834, 0.3461555218916737, 0.3457740117072589,     {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.3459597452963064, -0.345062976187787, 0.34588008406601006,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.3456006988276164, -0.3456555347461966, -0.34566771589534856, {0.0f, 1.0f, 0.0f, 1.0f}}
+        },
+        { 1, 7, 2,
+          2, 4, 1,
+          2, 7, 3,
+          0, 4, 2,
+          3, 7, 1,
+          1, 4, 0,
+          2, 5, 0,
+          3, 5, 2,
+          0, 6, 1,
+          1, 6, 3,
+          0, 5, 3,
+          3, 6, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 1, 1 },
+        CameraMatrix,
+        projectionMatrix));
+
+    auto component = new PrimitiveComponentWithMatrixColor(vulkan,
+        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+
+          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
+        },
+        { 0, 1, 2,
+          1, 3, 2,
+          0, 4, 5,
+          0, 5, 1,
+          2, 6, 7,
+          2, 7, 3,
+          4, 5, 6,
+          5, 7, 6,
+          1, 5, 7,
+          1, 7, 3,
+          0, 4, 6,
+          0, 6, 2},
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 1, 1 },
+        CameraMatrix,
+        projectionMatrix);
+    vulkan.AddGameComponent(component);
+
+    auto component2 = new PrimitiveComponentWithMatrixColor(vulkan,
+        { PrimitiveColoredVertex{0.577719142849812, 0.5773826264223902, 0.5769487799540449,      {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.5761787543658918, -0.5781794648755861, -0.576589082782391,    {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5766744743638504, 0.5766611757774948, -0.5775000956576879,   {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5776769068067668, -0.5761097618019521, 0.5772424328884702,   {0.0f, 1.0f, 0.0f, 1.0f}},
+
+          PrimitiveColoredVertex{0.3460394703570788, 0.3455105462872511, -0.3453162381217819,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.344993045667834, 0.3461555218916737, 0.3457740117072589,     {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{0.3459597452963064, -0.345062976187787, 0.34588008406601006,    {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.3456006988276164, -0.3456555347461966, -0.34566771589534856, {0.0f, 1.0f, 0.0f, 1.0f}}
+        },
+        { 1, 7, 2,
+          2, 4, 1,
+          2, 7, 3,
+          0, 4, 2,
+          3, 7, 1,
+          1, 4, 0,
+          2, 5, 0,
+          3, 5, 2,
+          0, 6, 1,
+          1, 6, 3,
+          0, 5, 3,
+          3, 6, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 1, 1 },
+        CameraMatrix,
+        projectionMatrix);
+    vulkan.AddGameComponent(component2);
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
+
+    glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
+    glm::mat4 translation_matrix2 = glm::translate(glm::mat4(1), glm::vec3(4, 0, 0));
+
+    glm::mat4 rotation_matrix(1);
+    glm::mat4 rotation_matrix2(1);
+    glm::vec3 RotationZ(0, 0, 1.0);
+
+    std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
     MSG msg;
     while (TRUE) {
@@ -56,6 +208,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(1)) {
+                rotation_matrix = glm::rotate(rotation_matrix, 0.01f, RotationZ);
+                component->UpdateWorldMatrix(rotation_matrix * translation_matrix);
+
+                rotation_matrix2 = glm::rotate(rotation_matrix2, 0.001f, RotationZ);
+                component2->UpdateWorldMatrix(rotation_matrix2 * translation_matrix2);
+
+                time_point = std::chrono::steady_clock::now();
+            }
+
             vulkan.Draw();
         }
     }
@@ -178,6 +340,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_SIZE:
+        // Resize the application to the new window size, except when
+        // it was minimized. Vulkan doesn't support images or swapchains
+        // with width=0 and height=0.
+        if (wParam != SIZE_MINIMIZED) {
+            auto width = lParam & 0xffff;
+            auto height = (lParam & 0xffff0000) >> 16;
+
+            g_vulkan->Update(width, height);
+        }
+        break;
+
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
