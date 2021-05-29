@@ -166,7 +166,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
 
     auto command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, 2));
 
-    std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.0f, 0.0f, 1.0f, 1.0f })),
+    std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
                        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
@@ -233,7 +233,7 @@ void Game::Update(int width, int height)
     m_swapchain_data.resize(images.size());
 
     std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
-                       vk::ClearValue(vk::ClearDepthStencilValue(0.0f,0))
+                       vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
     for (int i = 0; i < images.size(); ++i) {

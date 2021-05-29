@@ -174,7 +174,7 @@ void PrimitiveComponentWithMatrixColor::Initialize(std::size_t num_of_swapchain_
     // TODO dynamic viewport and scissors
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
-    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eGreaterOrEqual, VK_TRUE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_TRUE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
 
     vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
 
