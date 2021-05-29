@@ -68,6 +68,7 @@ public:
         const glm::mat4 & ProjectionMatrix);
 
     void UpdateWorldMatrix(const glm::mat4& world_matrix);
+    void UpdateViewMatrix(const glm::mat4& view_matrix);
     void SetWVPMatrix(const glm::mat4 & world_view_projection_matrix);
 
     vk::Semaphore Draw(int swapchain_image_index, vk::Semaphore wait_sema) override;

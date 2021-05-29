@@ -27,6 +27,13 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 Game* g_vulkan;
+glm::mat4 g_camera_matrix;
+glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
+glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
+glm::vec3 upVector{ 0.0f, 1.0f, 0.0f };
+PrimitiveComponentWithMatrixColor* component0;
+PrimitiveComponentWithMatrixColor* component1;
+PrimitiveComponentWithMatrixColor* component2;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -66,11 +73,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
           PrimitiveVertex{-0.75f, 0.75f, 0.5f}
         }));
     */
-    glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
-    glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
-    glm::vec3 upVector{ 0.0f, 1.0f, 0.0f };
 
-    glm::mat4 CameraMatrix = glm::lookAt(
+    g_camera_matrix = glm::lookAt(
         cameraPosition, // Позиция камеры в мировом пространстве
         cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
         upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
@@ -96,7 +100,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         },
     */
 
-    vulkan.AddGameComponent(new PrimitiveComponentWithMatrixColor(vulkan,
+    component0 = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{0.577719142849812, 0.5773826264223902, 0.5769487799540449,      {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{0.5761787543658918, -0.5781794648755861, -0.576589082782391,    {0.0f, 1.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.5766744743638504, 0.5766611757774948, -0.5775000956576879,   {1.0f, 0.0f, 0.0f, 1.0f}},
@@ -122,10 +126,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         { 0, 0, 0 },
         { 0, 0, 0 },
         { 1, 1, 1 },
-        CameraMatrix,
-        projectionMatrix));
+        g_camera_matrix,
+        projectionMatrix);
+    vulkan.AddGameComponent(component0);
 
-    auto component = new PrimitiveComponentWithMatrixColor(vulkan,
+    component1 = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
@@ -151,11 +156,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         { 0, 0, 0 },
         { 0, 0, 0 },
         { 1, 1, 1 },
-        CameraMatrix,
+        g_camera_matrix,
         projectionMatrix);
-    vulkan.AddGameComponent(component);
+    vulkan.AddGameComponent(component1);
 
-    auto component2 = new PrimitiveComponentWithMatrixColor(vulkan,
+    component2 = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{0.577719142849812, 0.5773826264223902, 0.5769487799540449,      {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{0.5761787543658918, -0.5781794648755861, -0.576589082782391,    {0.0f, 1.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.5766744743638504, 0.5766611757774948, -0.5775000956576879,   {1.0f, 0.0f, 0.0f, 1.0f}},
@@ -181,7 +186,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         { 0, 0, 0 },
         { 0, 0, 0 },
         { 1, 1, 1 },
-        CameraMatrix,
+        g_camera_matrix,
         projectionMatrix);
     vulkan.AddGameComponent(component2);
 
@@ -210,7 +215,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(1)) {
                 rotation_matrix = glm::rotate(rotation_matrix, 0.01f, RotationZ);
-                component->UpdateWorldMatrix(rotation_matrix * translation_matrix);
+                component1->UpdateWorldMatrix(rotation_matrix * translation_matrix);
 
                 rotation_matrix2 = glm::rotate(rotation_matrix2, 0.001f, RotationZ);
                 component2->UpdateWorldMatrix(rotation_matrix2 * translation_matrix2);
@@ -341,6 +346,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
     case WM_SIZE:
+    {
         // Resize the application to the new window size, except when
         // it was minimized. Vulkan doesn't support images or swapchains
         // with width=0 and height=0.
@@ -351,7 +357,67 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             g_vulkan->Update(width, height);
         }
         break;
-
+    }
+    case WM_KEYDOWN:
+    {
+        switch (wParam)
+        {
+        case 'w':
+        case 'W':
+        {
+            glm::vec3 direction = glm::normalize(cameraTarget - cameraPosition) * 0.1f;
+            cameraPosition += direction;
+            cameraTarget += direction;
+            break;
+        }
+        case 's':
+        case 'S':
+        {
+            glm::vec3 direction = glm::normalize(cameraTarget - cameraPosition) * 0.1f;
+            cameraPosition -= direction;
+            cameraTarget -= direction;
+            break;
+        }
+        case 'a':
+        case 'A':
+        {
+            glm::vec3 forward_vec = glm::normalize(cameraTarget - cameraPosition);
+            glm::vec3 direction = glm::cross(forward_vec, upVector) * 0.1f;
+            cameraPosition -= direction;
+            cameraTarget -= direction;
+            break;
+        }
+        case 'd':
+        case 'D':
+        {
+            glm::vec3 forward_vec = glm::normalize(cameraTarget - cameraPosition);
+            glm::vec3 direction = glm::cross(forward_vec, upVector) * 0.1f;
+            cameraPosition += direction;
+            cameraTarget += direction;
+            break;
+        }
+        case VK_SPACE:
+        {
+            cameraPosition += glm::vec3(upVector * 0.1f);
+            break;
+        }
+        case VK_SHIFT:
+        {
+            cameraPosition -= glm::vec3(upVector * 0.1f);
+            break;
+        }
+        default:
+            break;
+        }
+        g_camera_matrix = glm::lookAt(
+            cameraPosition, // Позиция камеры в мировом пространстве
+            cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
+            upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
+        );
+        component0->UpdateViewMatrix(g_camera_matrix);
+        component1->UpdateViewMatrix(g_camera_matrix);
+        component2->UpdateViewMatrix(g_camera_matrix);
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
