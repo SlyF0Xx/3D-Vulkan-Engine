@@ -12,6 +12,8 @@
 #include <glm/gtx/transform.hpp>
 
 #include <chrono>
+#include <iostream>
+#include <map>
 
 #define MAX_LOADSTRING 100
 
@@ -31,13 +33,45 @@ glm::mat4 g_camera_matrix;
 glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
 glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
 glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
-PrimitiveComponentWithMatrixColor* component0;
-PrimitiveComponentWithMatrixColor* component1;
 
-PrimitiveComponentWithMatrixColor* component2;
-PrimitiveComponentWithMatrixColor* component3;
+std::vector<PrimitiveComponentWithMatrixColor*> components;
+std::vector<PrimitiveComponentWithMatrixColor*> potential_linked_components;
+std::vector<PrimitiveComponentWithMatrixColor*> linked_components;
 
-glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
+void add_cube(Game & vulkan, const glm::mat4 & projectionMatrix, glm::vec3 translation)
+{
+    auto component = new PrimitiveComponentWithMatrixColor(vulkan,
+        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+
+          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
+        },
+        { 0, 1, 2,
+          1, 3, 2,
+          0, 4, 5,
+          0, 5, 1,
+          2, 6, 7,
+          2, 7, 3,
+          4, 5, 6,
+          5, 7, 6,
+          1, 5, 7,
+          1, 7, 3,
+          0, 4, 6,
+          0, 6, 2 },
+        BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
+        translation,
+        { 0, 0, 0 },
+        { 1, 1, 1 },
+        g_camera_matrix,
+        projectionMatrix);
+    components.push_back(component);
+    vulkan.AddGameComponent(component);
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -91,7 +125,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         100.0f                                 // Дальняя плоскость отсечения.
     );
 
-    component0 = new PrimitiveComponentWithMatrixColor(vulkan,
+    auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
@@ -100,106 +134,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         { 0, 1, 3,
           0, 3, 2
         },
+        BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f },
         { 0, -3.0, 0 },
         { 0, 0, 0 },
         { 1, 1, 1 },
         g_camera_matrix,
         projectionMatrix);
-    vulkan.AddGameComponent(component0);
+    components.push_back(plane);
+    vulkan.AddGameComponent(plane);
 
-    component1 = new PrimitiveComponentWithMatrixColor(vulkan,
-        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+    add_cube(vulkan, projectionMatrix, { 0, 0, 0 });
+    linked_components.push_back(components.back());
 
-          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
-        },
-        { 0, 1, 2,
-          1, 3, 2,
-          0, 4, 5,
-          0, 5, 1,
-          2, 6, 7,
-          2, 7, 3,
-          4, 5, 6,
-          5, 7, 6,
-          1, 5, 7,
-          1, 7, 3,
-          0, 4, 6,
-          0, 6, 2},
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 1, 1 },
-        g_camera_matrix,
-        projectionMatrix);
-    vulkan.AddGameComponent(component1);
+    add_cube(vulkan, projectionMatrix, {  3.0, 0, 0 });
+    potential_linked_components.push_back(components.back());
 
-
-
-    component2 = new PrimitiveComponentWithMatrixColor(vulkan,
-        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-
-          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
-        },
-        { 0, 1, 2,
-          1, 3, 2,
-          0, 4, 5,
-          0, 5, 1,
-          2, 6, 7,
-          2, 7, 3,
-          4, 5, 6,
-          5, 7, 6,
-          1, 5, 7,
-          1, 7, 3,
-          0, 4, 6,
-          0, 6, 2 },
-        { 3.0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 1, 1 },
-        g_camera_matrix,
-        projectionMatrix);
-    vulkan.AddGameComponent(component2);
-
-    component3 = new PrimitiveComponentWithMatrixColor(vulkan,
-        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-
-          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
-        },
-        { 0, 1, 2,
-          1, 3, 2,
-          0, 4, 5,
-          0, 5, 1,
-          2, 6, 7,
-          2, 7, 3,
-          4, 5, 6,
-          5, 7, 6,
-          1, 5, 7,
-          1, 7, 3,
-          0, 4, 6,
-          0, 6, 2 },
-        { -3.0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 1, 1 },
-        g_camera_matrix,
-        projectionMatrix);
-    vulkan.AddGameComponent(component3);
-
-
+    add_cube(vulkan, projectionMatrix, { -3.0, 0, 0 });
+    potential_linked_components.push_back(components.back());
 
 
 
@@ -207,12 +158,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
 
-    glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
+    //glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
 
-    glm::mat4 rotation_matrix(1);
-    glm::vec3 RotationZ(0, 0, 1.0);
+    //glm::mat4 rotation_matrix(1);
+    //glm::vec3 RotationZ(0, 0, 1.0);
 
-    std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
+    //std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
     MSG msg;
     while (TRUE) {
@@ -363,8 +314,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cameraPosition += direction;
             cameraTarget += direction;
 
-            translation_matrix = glm::translate(translation_matrix, direction);
-            component1->UpdateWorldMatrix(translation_matrix);
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), direction));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+
             break;
         }
         case 's':
@@ -374,8 +337,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cameraPosition -= direction;
             cameraTarget -= direction;
 
-            translation_matrix = glm::translate(translation_matrix, -direction);
-            component1->UpdateWorldMatrix(translation_matrix);
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -direction));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+
             break;
         }
         case 'a':
@@ -386,8 +361,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cameraPosition -= direction;
             cameraTarget -= direction;
 
-            translation_matrix = glm::translate(translation_matrix, -direction);
-            component1->UpdateWorldMatrix(translation_matrix);
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -direction));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+
             break;
         }
         case 'd':
@@ -398,20 +385,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cameraPosition += direction;
             cameraTarget += direction;
 
-            translation_matrix = glm::translate(translation_matrix, direction);
-            component1->UpdateWorldMatrix(translation_matrix);
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), direction));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+
             break;
         }
         case VK_SPACE:
         {
             cameraPosition += glm::vec3(upVector * 0.1f);
             cameraTarget += glm::vec3(upVector * 0.1f);
+
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), upVector * 0.1f));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
             break;
         }
         case VK_SHIFT:
         {
             cameraPosition -= glm::vec3(upVector * 0.1f);
             cameraTarget -= glm::vec3(upVector * 0.1f);
+
+            for (auto& linked_component : linked_components) {
+                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -upVector * 0.1f));
+            }
+
+            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
+                if (linked_components.front()->Intersect(**it)) {
+                    linked_components.push_back(*it);
+                    it = potential_linked_components.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
             break;
         }
         default:
@@ -422,10 +449,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
             upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
         );
-        component0->UpdateViewMatrix(g_camera_matrix);
-        component1->UpdateViewMatrix(g_camera_matrix);
-        component2->UpdateViewMatrix(g_camera_matrix);
-        component3->UpdateViewMatrix(g_camera_matrix);
+
+        for (auto& component : components) {
+            component->UpdateViewMatrix(g_camera_matrix);
+        }
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

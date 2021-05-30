@@ -14,12 +14,13 @@ PrimitiveComponentWithMatrixColor::PrimitiveComponentWithMatrixColor(
     Game& game,
     const std::vector<PrimitiveColoredVertex>& verticies,
     const std::vector<uint32_t>& indexes,
+    const BoundingSphere& bounding_sphere,
     const glm::vec3 & position,
     const glm::vec3 & rotation,
     const glm::vec3 & scale,
     const glm::mat4& CameraMatrix,
     const glm::mat4& ProjectionMatrix)
-    : m_game(game), m_verticies(verticies), m_indexes(indexes)
+    : m_game(game), m_verticies(verticies), m_indexes(indexes), m_bounding_sphere(bounding_sphere)
 {
     glm::mat4 translation_matrix = glm::translate(glm::mat4(1), position);
     
@@ -40,6 +41,11 @@ PrimitiveComponentWithMatrixColor::PrimitiveComponentWithMatrixColor(
     m_view_matrix = CameraMatrix;
     m_projection_matrix = ProjectionMatrix;
     m_world_view_projection_matrix = m_projection_matrix * m_view_matrix * m_world_matrix;
+}
+
+glm::mat4 PrimitiveComponentWithMatrixColor::get_world_matrix()
+{
+    return m_world_matrix;
 }
 
 void PrimitiveComponentWithMatrixColor::UpdateWorldMatrix(const glm::mat4& world_matrix)
@@ -277,4 +283,12 @@ vk::Semaphore PrimitiveComponentWithMatrixColor::Draw(int swapchain_image_index,
 void PrimitiveComponentWithMatrixColor::DestroyResources()
 {
     m_game.get_device().freeCommandBuffers(m_game.get_command_pool(), m_command_buffers);
+}
+
+bool PrimitiveComponentWithMatrixColor::Intersect(const PrimitiveComponentWithMatrixColor& other)
+{
+    glm::vec4 own_center = m_world_matrix * glm::vec4(m_bounding_sphere.center, 1.0f);
+    glm::vec4 other_center = other.m_world_matrix * glm::vec4(other.m_bounding_sphere.center, 1.0f);
+    return does_intersect(BoundingSphere{ own_center, m_bounding_sphere.radius },
+                          BoundingSphere{ other_center, other.m_bounding_sphere.radius });
 }

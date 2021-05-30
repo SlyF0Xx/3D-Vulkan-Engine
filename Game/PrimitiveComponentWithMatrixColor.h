@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include <glm/glm.hpp>
+#include <BoundingSphere.h>
 
 struct PrimitiveColoredVertex
 {
@@ -56,17 +57,21 @@ private:
     vk::DescriptorPool m_descriptor_pool;
     vk::DescriptorSet m_descriptor_set;
 
+    BoundingSphere m_bounding_sphere;
+
 public:
     PrimitiveComponentWithMatrixColor(
         Game& game,
         const std::vector<PrimitiveColoredVertex>& verticies,
         const std::vector<uint32_t>& indexes,
+        const BoundingSphere & bounding_sphere, /* TODO: can be generated */
         const glm::vec3& position,
         const glm::vec3& rotation,
         const glm::vec3& scale,
         const glm::mat4 & CameraMatrix,
         const glm::mat4 & ProjectionMatrix);
 
+    glm::mat4 get_world_matrix();
     void UpdateWorldMatrix(const glm::mat4& world_matrix);
     void UpdateViewMatrix(const glm::mat4& view_matrix);
     void SetWVPMatrix(const glm::mat4 & world_view_projection_matrix);
@@ -75,6 +80,8 @@ public:
     void Initialize(std::size_t num_of_swapchain_images) override;
     void Update(std::size_t num_of_swapchain_images, int width, int height) override;
     void DestroyResources() override;
+
+    bool Intersect(const PrimitiveComponentWithMatrixColor & other);
 
 private:
     void init_cmd_buffer(const vk::CommandBuffer& cmd_buffer, int index);
