@@ -161,15 +161,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingSphere.h" />
+    <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="export.h" />
+    <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IGameComponent.h" />
+    <ClInclude Include="IMaterial.h" />
+    <ClInclude Include="IMesh.h" />
+    <ClInclude Include="IRender.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoundingSphere.cpp" />
+    <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="IMaterial.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

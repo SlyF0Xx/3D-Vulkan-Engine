@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "PrimitiveComponent.h"
 #include "PrimitiveComponentWithMatrixColor.h"
+#include "PrimitiveMesh.h"
 
 #include <Engine.h>
 
@@ -33,14 +34,20 @@ glm::mat4 g_camera_matrix;
 glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
 glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
 glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
-
+/*
 std::vector<PrimitiveComponentWithMatrixColor*> components;
 std::vector<PrimitiveComponentWithMatrixColor*> potential_linked_components;
 std::vector<PrimitiveComponentWithMatrixColor*> linked_components;
+*/
+
+std::vector<PrimitiveMesh*> components;
+std::vector<PrimitiveMesh*> potential_linked_components;
+std::vector<PrimitiveMesh*> linked_components;
 
 void add_cube(Game & vulkan, const glm::mat4 & projectionMatrix, glm::vec3 translation)
 {
-    auto component = new PrimitiveComponentWithMatrixColor(vulkan,
+    auto component = new PrimitiveMesh(vulkan,
+    //auto component = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
@@ -70,8 +77,17 @@ void add_cube(Game & vulkan, const glm::mat4 & projectionMatrix, glm::vec3 trans
         g_camera_matrix,
         projectionMatrix);
     components.push_back(component);
-    vulkan.AddGameComponent(component);
+
+    vulkan.register_mesh(0, component);
+    //vulkan.AddGameComponent(component);
 }
+
+class Material : public IMaterial
+{
+public:
+    void UpdateMaterial() override
+    {}
+};
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -112,6 +128,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }));
     */
 
+
+    vulkan.register_material(MaterialType::Opaque, new Material());
+
     g_camera_matrix = glm::lookAt(
         cameraPosition, // ѕозици€ камеры в мировом пространстве
         cameraTarget,   // ”казывает куда вы смотрите в мировом пространстве
@@ -125,7 +144,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         100.0f                                 // ƒальн€€ плоскость отсечени€.
     );
 
-    auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
+    auto plane = new PrimitiveMesh(vulkan,
+    //auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
           PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
@@ -141,7 +161,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         g_camera_matrix,
         projectionMatrix);
     components.push_back(plane);
-    vulkan.AddGameComponent(plane);
+
+    vulkan.register_mesh(0, plane);
+    //vulkan.AddGameComponent(plane);
 
     add_cube(vulkan, projectionMatrix, { 0, 0, 0 });
     linked_components.push_back(components.back());
@@ -152,6 +174,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     add_cube(vulkan, projectionMatrix, { -3.0, 0, 0 });
     potential_linked_components.push_back(components.back());
 
+
+
+    vulkan.SecondInitialize();
 
 
 
@@ -239,7 +264,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-
    vulkan.Initialize(hInstance, hWnd, 1904, 962);
 
    ShowWindow(hWnd, nCmdShow);

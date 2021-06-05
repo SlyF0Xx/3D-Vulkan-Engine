@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+#if 0
+
 PrimitiveComponentWithMatrixColor::PrimitiveComponentWithMatrixColor(
     Game& game,
     const std::vector<PrimitiveColoredVertex>& verticies,
@@ -52,38 +54,23 @@ void PrimitiveComponentWithMatrixColor::UpdateWorldMatrix(const glm::mat4& world
 {
     m_world_matrix = world_matrix;
     m_world_view_projection_matrix = m_projection_matrix * m_view_matrix * m_world_matrix;
+
     std::vector matrixes{ m_world_view_projection_matrix };
-    
+
     auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_matrix_buffer);
-    
+
     void* mapped_data = nullptr;
     m_game.get_device().mapMemory(m_world_matrix_memory, {}, memory_buffer_req.size, {}, &mapped_data);
     std::memcpy(mapped_data, matrixes.data(), sizeof(glm::mat4));
     m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
     m_game.get_device().unmapMemory(m_world_matrix_memory);
-    
-    
-    /*
-    auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-    m_world_matrix_buffer = out2.m_buffer;
-    m_world_matrix_memory = out2.m_memory;
-    */
-    m_game.get_device().waitIdle();
-
-    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_matrix_buffer, {}, VK_WHOLE_SIZE) };
-    std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
-    m_game.get_device().updateDescriptorSets(write_descriptors, {});
-
-    for (int mat_i = 0; mat_i < 2; ++mat_i) {
-        m_command_buffers[mat_i].reset();
-        init_cmd_buffer(m_command_buffers[mat_i], mat_i);
-    }
 }
 
 void PrimitiveComponentWithMatrixColor::UpdateViewMatrix(const glm::mat4& view_matrix)
 {
     m_view_matrix = view_matrix;
     m_world_view_projection_matrix = m_projection_matrix * m_view_matrix * m_world_matrix;
+
     std::vector matrixes{ m_world_view_projection_matrix };
 
     auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_matrix_buffer);
@@ -93,37 +80,21 @@ void PrimitiveComponentWithMatrixColor::UpdateViewMatrix(const glm::mat4& view_m
     std::memcpy(mapped_data, matrixes.data(), sizeof(glm::mat4));
     m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
     m_game.get_device().unmapMemory(m_world_matrix_memory);
-
-
-    /*
-    auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-    m_world_matrix_buffer = out2.m_buffer;
-    m_world_matrix_memory = out2.m_memory;
-    */
-    m_game.get_device().waitIdle();
-
-    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_matrix_buffer, {}, VK_WHOLE_SIZE) };
-    std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
-    m_game.get_device().updateDescriptorSets(write_descriptors, {});
-
-    for (int mat_i = 0; mat_i < 2; ++mat_i) {
-        m_command_buffers[mat_i].reset();
-        init_cmd_buffer(m_command_buffers[mat_i], mat_i);
-    }
 }
 
 void PrimitiveComponentWithMatrixColor::SetWVPMatrix(const glm::mat4& world_view_projection_matrix)
 {
     m_world_view_projection_matrix = world_view_projection_matrix;
-    std::vector matrixes{ m_world_view_projection_matrix };
-    
-    auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-    m_world_matrix_buffer = out2.m_buffer;
-    m_world_matrix_memory = out2.m_memory;
 
-    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_matrix_buffer, {}, VK_WHOLE_SIZE) };
-    std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, descriptor_buffer_infos, {}) };
-    m_game.get_device().updateDescriptorSets(write_descriptors, {});
+    std::vector matrixes{ m_world_view_projection_matrix };
+
+    auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_matrix_buffer);
+
+    void* mapped_data = nullptr;
+    m_game.get_device().mapMemory(m_world_matrix_memory, {}, memory_buffer_req.size, {}, &mapped_data);
+    std::memcpy(mapped_data, matrixes.data(), sizeof(glm::mat4));
+    m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
+    m_game.get_device().unmapMemory(m_world_matrix_memory);
 }
 
 void PrimitiveComponentWithMatrixColor::Initialize(std::size_t num_of_swapchain_images)
@@ -177,10 +148,9 @@ void PrimitiveComponentWithMatrixColor::Initialize(std::size_t num_of_swapchain_
     std::array viewports{ vk::Viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f) };
     std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
-    // TODO dynamic viewport and scissors
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
-    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_TRUE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
 
     vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
 
@@ -239,6 +209,7 @@ void PrimitiveComponentWithMatrixColor::init_cmd_buffer(const vk::CommandBuffer&
 {
     cmd_buffer.begin(vk::CommandBufferBeginInfo());
 
+    //cmd_buffer.updateBuffer(m_world_matrix_buffer, {}, sizeof(m_world_view_projection_matrix), &m_world_view_projection_matrix);
     cmd_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_game.get_game_component_render_pass(), m_game.get_swapchain_data()[index].m_game_component_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), {}), vk::SubpassContents::eInline);
 
     cmd_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
@@ -292,3 +263,5 @@ bool PrimitiveComponentWithMatrixColor::Intersect(const PrimitiveComponentWithMa
     return does_intersect(BoundingSphere{ own_center, m_bounding_sphere.radius },
                           BoundingSphere{ other_center, other.m_bounding_sphere.radius });
 }
+
+#endif

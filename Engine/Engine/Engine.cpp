@@ -77,10 +77,46 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
     auto images = m_device.getSwapchainImagesKHR(m_swapchain);
     m_swapchain_data.resize(images.size());
 
+    for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_swapchain_data[i].m_color_image = images[i];
+    }
+
+    {
+        std::array bindings{
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr)
+        };
+
+        m_descriptor_set_layouts = {
+            m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings))
+        };
+        m_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, {}));
+    }
+
+    {
+        std::array bindings{
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr) /*albedo*/
+        };
+
+        m_composite_descriptor_set_layouts = {
+            m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings)),
+            m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings))
+        };
+
+        m_composite_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_composite_descriptor_set_layouts, {}));
+    }
+}
 
 
+void Game::SecondInitialize()
+{
+    std::array<uint32_t, 1> queues{ 0 };
+    /*
     std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_color_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR},
                                         vk::AttachmentDescription{{}, m_depth_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal} };
+    */
+    std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_color_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal},
+                                        vk::AttachmentDescription{{}, m_depth_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal} };
+
 
     vk::AttachmentReference color_attachment(0, vk::ImageLayout::eColorAttachmentOptimal);
     vk::AttachmentReference depth_attachment(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);
@@ -109,7 +145,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
                                                    vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
     };
 
-    m_render_pass = m_device.createRenderPass(vk::RenderPassCreateInfo({}, attachment_descriptions, subpass_description, dependencies));
+    m_deffered_render_pass = m_device.createRenderPass(vk::RenderPassCreateInfo({}, attachment_descriptions, subpass_description, dependencies));
 
 
 
@@ -142,19 +178,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
     std::array game_component_attachment_descriptions{ vk::AttachmentDescription{{}, m_color_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR},
                                                        vk::AttachmentDescription{{}, m_depth_format, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal} };
 
-    m_game_component_render_pass = m_device.createRenderPass(vk::RenderPassCreateInfo({}, game_component_attachment_descriptions, subpass_description, dependencies));
-
-
-
-
-
-
-
-
-
-
-
-
+    m_composite_render_pass = m_device.createRenderPass(vk::RenderPassCreateInfo({}, game_component_attachment_descriptions, subpass_description, dependencies));
 
 
 
@@ -165,39 +189,257 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
 
 
     auto command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, 2));
+    /*
+    for (int i = 0; i < images.size(); ++i) {
+        m_swapchain_data[i].m_command_buffer = command_buffers[i];
+    }
+    InitializeDefferedPipeline();
+    */
+
+
+
+
+
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2) };
+    auto descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 2, pool_size));
+
+    auto descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, m_composite_descriptor_set_layouts));
 
     std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
                        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
-    for (int i = 0; i < images.size(); ++i) {
+    std::vector<vk::WriteDescriptorSet> write_descriptors;
+    for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_swapchain_data[i].m_descriptor_set = descriptor_set[i];
+
         m_swapchain_data[i].m_fence = m_device.createFence(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
         m_swapchain_data[i].m_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
 
+        m_swapchain_data[i].m_deffered_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_deffered_depth_image, m_swapchain_data[i].m_deffered_depth_memory);
+
         m_swapchain_data[i].m_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        auto memory_req = m_device.getImageMemoryRequirements(m_swapchain_data[i].m_depth_image);
+        create_memory_for_image(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
 
-        uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, vk::MemoryPropertyFlagBits::eDeviceLocal);
+        m_swapchain_data[i].m_albedo_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_color_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_albedo_image, m_swapchain_data[i].m_albedo_memory);
 
-        m_swapchain_data[i].m_depth_memory = m_device.allocateMemory(vk::MemoryAllocateInfo(memory_req.size, image_index));
-        m_device.bindImageMemory(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory, {});
-
-        m_swapchain_data[i].m_color_image = images[i];
+        //m_swapchain_data[i].m_color_image = images[i];
+        m_swapchain_data[i].m_albedo_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_albedo_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_color_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+        m_swapchain_data[i].m_deffered_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_deffered_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+
+        m_swapchain_data[i].m_albedo_sampler = m_device.createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+        std::array descriptor_image_infos{ vk::DescriptorImageInfo(m_swapchain_data[i].m_albedo_sampler, m_swapchain_data[i].m_albedo_image_view, vk::ImageLayout::eShaderReadOnlyOptimal) };
+        write_descriptors.push_back(vk::WriteDescriptorSet(descriptor_set[i], 0, 0, vk::DescriptorType::eCombinedImageSampler, descriptor_image_infos, {}, {}));
+
+        std::array deffered_views{ m_swapchain_data[i].m_albedo_image_view, m_swapchain_data[i].m_deffered_depth_image_view };
+        m_swapchain_data[i].m_deffered_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_deffered_render_pass, deffered_views, m_width, m_height, 1));
 
         std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
-        m_swapchain_data[i].m_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_width, m_height, 1));
-        m_swapchain_data[i].m_game_component_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_game_component_render_pass, image_views, m_width, m_height, 1));
+        m_swapchain_data[i].m_composite_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_composite_render_pass, image_views, m_width, m_height, 1));
 
         m_swapchain_data[i].m_command_buffer = command_buffers[i];
+        /*
         m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.endRenderPass();
         m_swapchain_data[i].m_command_buffer.end();
+        */
     }
+    m_device.updateDescriptorSets(write_descriptors, {});
+    InitializeDefferedPipeline();
+
+
 
     m_initialized = true;
+}
+
+void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & memory)
+{
+    auto memory_req = m_device.getImageMemoryRequirements(image);
+
+    uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+    memory = m_device.allocateMemory(vk::MemoryAllocateInfo(memory_req.size, image_index));
+    m_device.bindImageMemory(image, memory, {});
+}
+
+void Game::InitializeDefferedPipeline()
+{
+    {
+        //E:\\programming\\Graphics\\Game\\Engine\\Engine\\
+
+        m_vertex_shader = loadSPIRVShader("Deffered.vert.spv");
+        m_fragment_shader = loadSPIRVShader("Deffered.frag.spv");
+
+        std::array stages{ vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, m_vertex_shader, "main"),
+                           vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eFragment, m_fragment_shader, "main")
+        };
+
+        std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
+        std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
+                                            vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, 3 * sizeof(float)) };
+
+        vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
+        vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+
+        std::array viewports{ vk::Viewport(0, 0, m_width, m_height, 0.0f, 1.0f) };
+        std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_width, m_height)) };
+        vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
+
+        vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
+        vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+
+        vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
+
+        std::array blend{ vk::PipelineColorBlendAttachmentState(VK_FALSE) };
+        blend[0].colorWriteMask = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
+        vk::PipelineColorBlendStateCreateInfo blend_state({}, VK_FALSE, vk::LogicOp::eClear, blend);
+
+        m_cache = get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
+
+        std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+        vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
+
+        auto pipeline_result = get_device().createGraphicsPipeline(m_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_layout, m_deffered_render_pass));
+        m_deffered_pipeline = pipeline_result.value;
+    }
+
+
+
+
+
+
+
+
+
+    {
+        m_composite_vertex_shader = loadSPIRVShader("Composite.vert.spv");
+        m_composite_fragment_shader = loadSPIRVShader("Composite.frag.spv");
+
+        std::array stages = { vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, m_composite_vertex_shader, "main"),
+                   vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eFragment, m_composite_fragment_shader, "main")
+        };
+
+        vk::PipelineVertexInputStateCreateInfo vertex_input_info;
+        vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+
+        std::array viewports{ vk::Viewport(0, 0, m_width, m_height, 0.0f, 1.0f) };
+        std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_width, m_height)) };
+        vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
+
+        vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
+        vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+
+        vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
+
+        std::array blend{ vk::PipelineColorBlendAttachmentState(VK_FALSE) };
+        blend[0].colorWriteMask = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
+        vk::PipelineColorBlendStateCreateInfo blend_state({}, VK_FALSE, vk::LogicOp::eClear, blend);
+
+        m_composite_cache = get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
+
+        std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+        vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
+
+        auto pipeline_result = get_device().createGraphicsPipeline(m_composite_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_composite_layout, m_composite_render_pass));
+        m_composite_pipeline = pipeline_result.value;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
+                   vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
+    };
+
+
+
+
+
+
+
+
+
+
+
+    for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+        m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_deffered_render_pass, m_swapchain_data[i].m_deffered_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
+        m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_deffered_pipeline);
+
+        vk::Viewport viewport(0, 0, m_width, m_height, 0.0f, 1.0f);
+        m_swapchain_data[i].m_command_buffer.setViewport(0, viewport);
+        vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_width, m_height));
+        m_swapchain_data[i].m_command_buffer.setScissor(0, scissor);
+
+        for (auto& [mat_type, materials] : materials_by_type) {
+            for (auto& material : materials) {
+                m_materials[material]->UpdateMaterial();
+                for (auto& mesh : mesh_by_material[material]) {
+                    mesh->Draw(m_swapchain_data[i].m_command_buffer);
+                }
+            }
+        }
+
+        m_swapchain_data[i].m_command_buffer.endRenderPass();
+
+        m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_composite_render_pass, m_swapchain_data[i].m_composite_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
+        m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_composite_pipeline);
+
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_composite_layout, 0, m_swapchain_data[i].m_descriptor_set, {});
+        m_swapchain_data[i].m_command_buffer.draw(3, 1, 0, 0);
+        m_swapchain_data[i].m_command_buffer.endRenderPass();
+        m_swapchain_data[i].m_command_buffer.end();
+    }
+
+}
+
+void Game::register_material(MaterialType material_type, /*std::unique_ptr<*/ IMaterial * /*>*/ material)
+{
+    m_materials.emplace(material->get_id(), material);
+    //m_materials.emplace(std::pair(material->get_id(), std::move(material)));
+    materials_by_type[material_type].insert(material->get_id());
+}
+
+void Game::register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh)
+{
+    mesh_by_material[material_id].emplace(mesh);
+    //mesh_by_material[material_id].emplace(std::move(mesh));
 }
 
 void Game::Update(int width, int height)
@@ -210,8 +452,8 @@ void Game::Update(int width, int height)
     m_device.waitIdle();
 
     for (auto& swapchain_data : m_swapchain_data) {
-        m_device.destroyFramebuffer(swapchain_data.m_framebuffer);
-        m_device.destroyFramebuffer(swapchain_data.m_game_component_framebuffer);
+        m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);
+        m_device.destroyFramebuffer(swapchain_data.m_composite_framebuffer);
 
 
         m_device.destroyImageView(swapchain_data.m_color_image_view);
@@ -236,28 +478,101 @@ void Game::Update(int width, int height)
                        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
+
+    std::vector<vk::WriteDescriptorSet> write_descriptors;
     for (int i = 0; i < images.size(); ++i) {
+        m_swapchain_data[i].m_deffered_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_deffered_depth_image, m_swapchain_data[i].m_deffered_depth_memory);
+
         m_swapchain_data[i].m_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        auto memory_req = m_device.getImageMemoryRequirements(m_swapchain_data[i].m_depth_image);
+        create_memory_for_image(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
 
-        uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-        m_swapchain_data[i].m_depth_memory = m_device.allocateMemory(vk::MemoryAllocateInfo(memory_req.size, image_index));
-        m_device.bindImageMemory(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory, {});
+        m_swapchain_data[i].m_albedo_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_color_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_albedo_image, m_swapchain_data[i].m_albedo_memory);
 
         m_swapchain_data[i].m_color_image = images[i];
+        m_swapchain_data[i].m_albedo_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_albedo_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_color_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+        m_swapchain_data[i].m_deffered_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_deffered_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+
+        m_swapchain_data[i].m_albedo_sampler = m_device.createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+        std::array descriptor_image_infos{ vk::DescriptorImageInfo(m_swapchain_data[i].m_albedo_sampler, m_swapchain_data[i].m_albedo_image_view, vk::ImageLayout::eShaderReadOnlyOptimal) };
+        write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, descriptor_image_infos, {}, {}));
+
+        std::array deffered_views{ m_swapchain_data[i].m_albedo_image_view, m_swapchain_data[i].m_deffered_depth_image_view };
+        m_swapchain_data[i].m_deffered_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_deffered_render_pass, deffered_views, m_width, m_height, 1));
 
         std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
-        m_swapchain_data[i].m_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_width, m_height, 1));
-        m_swapchain_data[i].m_game_component_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_game_component_render_pass, image_views, m_width, m_height, 1));
+        m_swapchain_data[i].m_composite_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_composite_render_pass, image_views, m_width, m_height, 1));
+    }
 
-        m_swapchain_data[i].m_command_buffer.reset();
+
+
+
+
+
+#if 0
+        m_swapchain_data[i].m_deffered_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_deffered_depth_image, m_swapchain_data[i].m_deffered_depth_memory);
+
+        m_swapchain_data[i].m_depth_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_depth_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
+
+        m_swapchain_data[i].m_albedo_image = m_device.createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_color_format, vk::Extent3D(m_width, m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
+        create_memory_for_image(m_swapchain_data[i].m_albedo_image, m_swapchain_data[i].m_albedo_memory);
+
+        m_swapchain_data[i].m_color_image = images[i];
+        m_swapchain_data[i].m_albedo_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_albedo_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
+        m_swapchain_data[i].m_color_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
+        m_swapchain_data[i].m_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+        m_swapchain_data[i].m_deffered_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_deffered_depth_image, vk::ImageViewType::e2D, m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+
+        std::array deffered_views{ m_swapchain_data[i].m_albedo_image_view, m_swapchain_data[i].m_deffered_depth_image_view };
+        m_swapchain_data[i].m_deffered_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_deffered_render_pass, deffered_views, m_width, m_height, 1));
+
+        std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
+        m_swapchain_data[i].m_composite_framebuffer = m_device.createFramebuffer(vk::FramebufferCreateInfo({}, m_composite_render_pass, image_views, m_width, m_height, 1));
+#endif
+
+
+
+
+
+
+    m_device.updateDescriptorSets(write_descriptors, {});
+
+    for (int i = 0; i < images.size(); ++i) {
         m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
-        m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
+        m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_deffered_render_pass, m_swapchain_data[i].m_deffered_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
+        m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_deffered_pipeline);
+
+        vk::Viewport viewport(0, 0, m_width, m_height, 0.0f, 1.0f);
+        m_swapchain_data[i].m_command_buffer.setViewport(0, viewport);
+        vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_width, m_height));
+        m_swapchain_data[i].m_command_buffer.setScissor(0, scissor);
+
+        for (auto& [mat_type, materials] : materials_by_type) {
+            for (auto& material : materials) {
+                m_materials[material]->UpdateMaterial();
+                for (auto& mesh : mesh_by_material[material]) {
+                    mesh->Draw(m_swapchain_data[i].m_command_buffer);
+                }
+            }
+        }
+
+        m_swapchain_data[i].m_command_buffer.endRenderPass();
+
+        m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_composite_render_pass, m_swapchain_data[i].m_composite_framebuffer, vk::Rect2D({}, vk::Extent2D(m_width, m_height)), colors), vk::SubpassContents::eInline);
+        m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_composite_pipeline);
+
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_composite_layout, 0, m_swapchain_data[i].m_descriptor_set, {});
+        m_swapchain_data[i].m_command_buffer.draw(3, 1, 0, 0);
         m_swapchain_data[i].m_command_buffer.endRenderPass();
         m_swapchain_data[i].m_command_buffer.end();
+
+
+
     }
 
     for (auto& game_components : m_game_components) {
@@ -329,8 +644,8 @@ void Game::Exit()
     }
 
     for (auto& swapchain_data : m_swapchain_data) {
-        m_device.destroyFramebuffer(swapchain_data.m_framebuffer);
-        m_device.destroyFramebuffer(swapchain_data.m_game_component_framebuffer);
+        m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);
+        m_device.destroyFramebuffer(swapchain_data.m_composite_framebuffer);
 
         m_device.destroyImageView(swapchain_data.m_color_image_view);
         m_device.destroyImageView(swapchain_data.m_depth_image_view);
@@ -341,7 +656,9 @@ void Game::Exit()
         // m_device.destroyImage(swapchain_data.m_color_image);
     }
 
-    m_device.destroyRenderPass(m_render_pass);
+    m_device.destroyRenderPass(m_deffered_render_pass);
+    m_device.destroyRenderPass(m_composite_render_pass);
+
     m_device.destroySwapchainKHR(m_swapchain);
 
     m_instance.destroySurfaceKHR(m_surface);
@@ -362,14 +679,17 @@ void Game::Draw()
     std::array queue_submits{ vk::SubmitInfo(m_sema, stage_flags, command_buffers, m_swapchain_data[next_image.value].m_sema) };
     m_queue.submit(queue_submits, m_swapchain_data[next_image.value].m_fence);
 
+#if 0
     std::vector<vk::Semaphore> semaphores;
     for (auto& game_component : m_game_components) {
         semaphores.push_back(game_component->Draw(next_image.value, m_swapchain_data[next_image.value].m_sema /*{ m_sema, m_swapchain_data[next_image.value].m_sema }*/));
     }
+#endif
+    std::array wait_sems = { m_swapchain_data[next_image.value].m_sema };
 
     std::array results{vk::Result()};
     try {
-        m_queue.presentKHR(vk::PresentInfoKHR(semaphores, m_swapchain, next_image.value, results));
+        m_queue.presentKHR(vk::PresentInfoKHR(wait_sems, m_swapchain, next_image.value, results));
     }
     catch (.../*const vk::IncompatibleDisplayKHRError & exception*/) {
         auto screenWidth = GetSystemMetrics(SM_CXSCREEN);

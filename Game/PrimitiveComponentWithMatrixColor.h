@@ -9,11 +9,13 @@
 #include <glm/glm.hpp>
 #include <BoundingSphere.h>
 
+#if 0
 struct PrimitiveColoredVertex
 {
     float x, y, z;
     float color[4];
 };
+#endif
 
 class PrimitiveComponentWithMatrixColor : public IGameComponent
 {

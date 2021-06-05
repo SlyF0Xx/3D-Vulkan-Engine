@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#if 0
 PrimitiveComponent::PrimitiveComponent(Game& game, const std::vector<PrimitiveVertex> & verticies)
     : m_game(game), m_verticies(verticies)
 {}
@@ -149,3 +150,5 @@ void PrimitiveComponent::DestroyResources()
 {
     m_game.get_device().freeCommandBuffers(m_game.get_command_pool(), m_command_buffers);
 }
+
+#endif

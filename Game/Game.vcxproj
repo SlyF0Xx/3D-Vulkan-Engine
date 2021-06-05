@@ -149,6 +149,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="PrimitiveComponentWithMatrixColor.h" />
+    <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="PrimitiveComponent.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="PrimitiveComponent.cpp" />
     <ClCompile Include="PrimitiveComponentWithMatrixColor.cpp" />
+    <ClCompile Include="PrimitiveMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Game.rc" />
