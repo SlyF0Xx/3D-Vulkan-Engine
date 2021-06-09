@@ -1,21 +1,24 @@
-#include "PrimitiveMesh.h"
+#include "ImportableMesh.h"
 #include "util.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-PrimitiveMesh::PrimitiveMesh(
+ImportableMesh::ImportableMesh(
     Game& game,
-    const std::vector<PrimitiveColoredVertex>& verticies,
-    const std::vector<uint32_t>& indexes,
+    const std::filesystem::path& path,
     const BoundingSphere& bounding_sphere,
     const glm::vec3& position,
     const glm::vec3& rotation,
     const glm::vec3& scale,
     const glm::mat4& CameraMatrix,
     const glm::mat4& ProjectionMatrix)
-    : m_game(game), m_verticies(verticies), m_indexes(indexes), m_bounding_sphere(bounding_sphere)
+    : m_game(game), m_bounding_sphere(bounding_sphere)
 {
+    /*
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
+    */
     InitializeWorldMatrix(position, rotation, scale);
 
     m_view_matrix = CameraMatrix;
@@ -56,7 +59,7 @@ PrimitiveMesh::PrimitiveMesh(
 
 }
 
-void PrimitiveMesh::InitializeWorldMatrix(
+void ImportableMesh::InitializeWorldMatrix(
     const glm::vec3& position,
     const glm::vec3& rotation,
     const glm::vec3& scale)
@@ -79,7 +82,7 @@ void PrimitiveMesh::InitializeWorldMatrix(
     m_world_matrix = translation_matrix * rotation_matrix * scale_matrix;
 }
 
-void PrimitiveMesh::Draw(const vk::CommandBuffer& cmd_buffer)
+void ImportableMesh::Draw(const vk::CommandBuffer& cmd_buffer)
 {
     //cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, m_descriptor_set, {});
     cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 0, m_descriptor_set, { {} });
@@ -89,12 +92,12 @@ void PrimitiveMesh::Draw(const vk::CommandBuffer& cmd_buffer)
     cmd_buffer.drawIndexed(m_indexes.size(), m_indexes.size() / 3, 0, 0, 0);
 }
 
-glm::mat4 PrimitiveMesh::get_world_matrix()
+glm::mat4 ImportableMesh::get_world_matrix()
 {
     return m_world_matrix;
 }
 
-void PrimitiveMesh::UpdateWorldMatrix(const glm::mat4& world_matrix)
+void ImportableMesh::UpdateWorldMatrix(const glm::mat4& world_matrix)
 {
     m_world_matrix = world_matrix;
     m_world_view_projection_matrix = m_projection_matrix * m_view_matrix * m_world_matrix;
@@ -110,7 +113,7 @@ void PrimitiveMesh::UpdateWorldMatrix(const glm::mat4& world_matrix)
     m_game.get_device().unmapMemory(m_world_matrix_memory);
 }
 
-void PrimitiveMesh::UpdateViewMatrix(const glm::mat4& view_matrix)
+void ImportableMesh::UpdateViewMatrix(const glm::mat4& view_matrix)
 {
     m_view_matrix = view_matrix;
     m_world_view_projection_matrix = m_projection_matrix * m_view_matrix * m_world_matrix;
@@ -126,7 +129,7 @@ void PrimitiveMesh::UpdateViewMatrix(const glm::mat4& view_matrix)
     m_game.get_device().unmapMemory(m_world_matrix_memory);
 }
 
-void PrimitiveMesh::SetWVPMatrix(const glm::mat4& world_view_projection_matrix)
+void ImportableMesh::SetWVPMatrix(const glm::mat4& world_view_projection_matrix)
 {
     m_world_view_projection_matrix = world_view_projection_matrix;
 
@@ -141,7 +144,7 @@ void PrimitiveMesh::SetWVPMatrix(const glm::mat4& world_view_projection_matrix)
     m_game.get_device().unmapMemory(m_world_matrix_memory);
 }
 
-bool PrimitiveMesh::Intersect(const PrimitiveMesh& other)
+bool ImportableMesh::Intersect(const ImportableMesh& other)
 {
     glm::vec4 own_center = m_world_matrix * glm::vec4(m_bounding_sphere.center, 1.0f);
     glm::vec4 other_center = other.m_world_matrix * glm::vec4(other.m_bounding_sphere.center, 1.0f);

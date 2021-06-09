@@ -148,6 +148,9 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameComponentMesh.h" />
+    <ClInclude Include="ImportableInheritanceMesh.h" />
+    <ClInclude Include="ImportableMesh.h" />
     <ClInclude Include="PrimitiveComponentWithMatrixColor.h" />
     <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="Resource.h" />
@@ -157,6 +160,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameComponentMesh.cpp" />
+    <ClCompile Include="ImportableInheritanceMesh.cpp" />
+    <ClCompile Include="ImportableMesh.cpp" />
     <ClCompile Include="PrimitiveComponent.cpp" />
     <ClCompile Include="PrimitiveComponentWithMatrixColor.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
@@ -169,6 +175,5 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

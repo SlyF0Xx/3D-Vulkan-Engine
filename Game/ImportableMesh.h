@@ -1,14 +1,26 @@
 #pragma once
 
 #include "Engine.h"
+#include <BoundingSphere.h>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
-#include <glm/glm.hpp>
-#include <BoundingSphere.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-class PrimitiveMesh : public IMesh
+#include <glm/glm.hpp>
+
+#include <filesystem>
+
+class ImportableMaterial : public IMaterial
+{
+
+};
+
+class ImportableMesh :
+    public IMesh
 {
 private:
     // std::vector<vk::DescriptorSet> m_descriptor_sets;
@@ -34,13 +46,11 @@ private:
     vk::DescriptorSet m_descriptor_set;
 
     BoundingSphere m_bounding_sphere;
-
 public:
-    PrimitiveMesh(
+    ImportableMesh(
         Game& game,
-        const std::vector<PrimitiveColoredVertex>& verticies,
-        const std::vector<uint32_t>& indexes,
-        const BoundingSphere& bounding_sphere, /* TODO: can be generated */
+        const std::filesystem::path& path,
+        const BoundingSphere& bounding_sphere,
         const glm::vec3& position,
         const glm::vec3& rotation,
         const glm::vec3& scale,
@@ -58,10 +68,7 @@ public:
     void UpdateWorldMatrix(const glm::mat4& world_matrix);
     void UpdateViewMatrix(const glm::mat4& view_matrix);
     void SetWVPMatrix(const glm::mat4& world_view_projection_matrix);
-    bool Intersect(const PrimitiveMesh& other);
+    bool Intersect(const ImportableMesh& other);
 
     //void DestroyResources() override;
-
-
 };
-

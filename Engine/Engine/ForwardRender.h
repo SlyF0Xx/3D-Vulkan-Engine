@@ -4,11 +4,18 @@
 
 #include "IRender.h"
 
+#include <memory>
+#include <unordered_set>
+#include <unordered_map>
+
+class Game;
+
 class ENGINE_API ForwardRender :
     public IRender
 {
     struct PerSwapchainImageData
     {
+        // Variable per image value
         vk::Image m_color_image;
 
         vk::Image m_depth_image;
@@ -21,28 +28,55 @@ class ENGINE_API ForwardRender :
 
         vk::CommandBuffer m_command_buffer;
 
+
+        // Constant per image value
         vk::Fence m_fence;
         vk::Semaphore m_sema;
     };
 
-    // material
-    vk::Format m_color_format = vk::Format::eB8G8R8A8Unorm;
-    vk::Format m_depth_format = vk::Format::eD32SfloatS8Uint;
-    vk::PhysicalDeviceMemoryProperties m_memory_props;
-
-
     vk::Semaphore m_sema;
+    std::vector<vk::CommandBuffer> m_command_buffers;
 
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
-
     vk::RenderPass m_render_pass;
-    vk::PipelineLayout m_layout;
     vk::ShaderModule m_vertex_shader;
     vk::ShaderModule m_fragment_shader;
     vk::PipelineCache m_cache;
     vk::Pipeline m_pipeline;
 
-    std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
+    //vk::PipelineLayout m_layout;
+    //std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
+
+    Game& m_game;
+
+    void InitializeRenderPass();
+    void DestroyRenderPass();
+
+    void InitializeConstantPerImage();
+    // screen dependent
+    // flexiable
+    void DestroyConstantPerImageResources();
+    void InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images);
+    void DestroyVariablePerImageResources();
+
+    void InitializePipeline();
+    void DestroyPipeline();
+
+    void InitCommandBuffer();
+    void DestroyCommandBuffer();
+
+    void DestroyResources();
+
+public:
+    ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images);
+    ~ForwardRender();
+
+    void Update(const std::vector<vk::Image>& swapchain_images) override;
+
+    // Only after init objects
+    void Initialize() override;
+
+    void Draw() override;
 };
 

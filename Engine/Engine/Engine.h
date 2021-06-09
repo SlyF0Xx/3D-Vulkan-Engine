@@ -5,6 +5,7 @@
 #include "IGameComponent.h"
 #include "IMaterial.h"
 #include "IMesh.h"
+#include "IRender.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
@@ -25,36 +26,6 @@ public:
 	Game();
 	~Game();
 
-    struct PerSwapchainImageData
-    {
-        vk::Image m_color_image;
-        
-        vk::Image m_deffered_depth_image;
-        vk::DeviceMemory m_deffered_depth_memory;
-
-        vk::Image m_depth_image;
-        vk::DeviceMemory m_depth_memory;
-        
-        vk::Image m_albedo_image;
-        vk::DeviceMemory m_albedo_memory;
-
-        vk::ImageView m_color_image_view;
-        vk::ImageView m_deffered_depth_image_view;
-        vk::ImageView m_depth_image_view;
-        vk::ImageView m_albedo_image_view;
-
-        vk::Sampler m_albedo_sampler;
-
-        vk::Framebuffer m_deffered_framebuffer;
-        vk::Framebuffer m_composite_framebuffer;
-
-        vk::CommandBuffer m_command_buffer;
-
-        vk::Fence m_fence;
-        vk::Semaphore m_sema;
-
-        vk::DescriptorSet m_descriptor_set;
-    };
 //#ifdef _WIN32
 	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
 
@@ -66,8 +37,6 @@ public:
 
 	void Exit();
 	void Draw();
-
-
 
     int m_width;
     int m_height;
@@ -86,14 +55,6 @@ private:
 
     vk::SurfaceKHR m_surface;
     vk::SwapchainKHR m_swapchain;
-    //std::vector<std::unique_ptr<IGameComponent>> m_game_components;
-    std::vector<IGameComponent*> m_game_components;
-
-    vk::Semaphore m_sema;
-
-    std::vector<PerSwapchainImageData> m_swapchain_data;
-
-
 
 
 
@@ -103,25 +64,13 @@ private:
     std::unordered_map<MaterialType, std::unordered_set<int>> materials_by_type;
     std::unordered_map<int, std::unordered_set</*std::unique_ptr<*/IMesh */*>*/>> mesh_by_material;
 
+    IRender* render;
 
-    vk::RenderPass m_deffered_render_pass;
+    std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
     vk::PipelineLayout m_layout;
-    vk::ShaderModule m_vertex_shader;
-    vk::ShaderModule m_fragment_shader;
-    vk::PipelineCache m_cache;
-    vk::Pipeline m_deffered_pipeline;
 
-    std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
+    void InitializePipelineLayout();
 
-
-    vk::RenderPass m_composite_render_pass;
-    vk::PipelineLayout m_composite_layout;
-    vk::ShaderModule m_composite_vertex_shader;
-    vk::ShaderModule m_composite_fragment_shader;
-    vk::PipelineCache m_composite_cache;
-    vk::Pipeline m_composite_pipeline;
-
-    std::array<vk::DescriptorSetLayout, 2> m_composite_descriptor_set_layouts;
 public:
     const vk::Instance& get_instance()
     {
@@ -168,16 +117,6 @@ public:
     }
     */
 
-    const vk::PipelineLayout& get_layout()
-    {
-        return m_layout;
-    }
-
-    const std::array<vk::DescriptorSetLayout, 1> & get_descriptor_set_layouts()
-    {
-        return m_descriptor_set_layouts;
-    }
-
     const std::unordered_map<int, IMaterial*>& get_materials()
     {
         return m_materials;
@@ -193,25 +132,19 @@ public:
         return mesh_by_material;
     }
 
-    const std::vector<IGameComponent*>& get_game_components()
+    const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts()
     {
-        return m_game_components;
+        return m_descriptor_set_layouts;
     }
-    const std::vector<PerSwapchainImageData>& get_swapchain_data()
+
+    const vk::PipelineLayout& get_layout()
     {
-        return m_swapchain_data;
-    }
-    const vk::Semaphore& get_sema()
-    {
-        return m_sema;
+        return m_layout;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
     uint32_t find_appropriate_memory_type(vk::MemoryRequirements& mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags);
-    // void AddGameComponent(std::unique_ptr<IGameComponent> component);
-    void AddGameComponent(IGameComponent * component);
 
-    void InitializeDefferedPipeline();
     void register_material(MaterialType material_type, /*std::unique_ptr<*/IMaterial */*>*/ material);
     void register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh);
 

@@ -3,8 +3,6 @@
 #include "export.h"
 
 #include "IRender.h"
-#include "IMaterial.h"
-#include "IMesh.h"
 
 #include <memory>
 #include <unordered_set>
@@ -40,7 +38,6 @@ class ENGINE_API DeferredRender :
 
         vk::CommandBuffer m_command_buffer;
 
-        // ????
         vk::Fence m_fence;
         vk::Semaphore m_sema;
 
@@ -52,33 +49,29 @@ class ENGINE_API DeferredRender :
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
     vk::RenderPass m_deffered_render_pass;
-    vk::PipelineLayout m_deffered_layout;
     vk::ShaderModule m_deffered_vertex_shader;
     vk::ShaderModule m_deffered_fragment_shader;
     vk::PipelineCache m_deffered_cache;
     vk::Pipeline m_deffered_pipeline;
 
-    std::array<vk::DescriptorSetLayout, 1> m_deffered_descriptor_set_layouts;
-
 
     vk::RenderPass m_composite_render_pass;
-    vk::PipelineLayout m_composite_layout;
     vk::ShaderModule m_composite_vertex_shader;
     vk::ShaderModule m_composite_fragment_shader;
     vk::PipelineCache m_composite_cache;
     vk::Pipeline m_composite_pipeline;
 
+    vk::PipelineLayout m_composite_layout;
     std::array<vk::DescriptorSetLayout, 2> m_composite_descriptor_set_layouts;
 
     Game& m_game;
 
-    void InitializeDeferredPipelineLayout();
     void InitializeCompositePipelineLayout();
     void InitializeDeferredRenderPass();
     void InitializeCompositeRenderPass();
 
-    void InitializeConstantPerImage(const std::vector<vk::Image>& swapchain_images);
-    void InitializeVariablePerImage();
+    void InitializeConstantPerImage();
+    void InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images);
 
     void InitializeDeferredPipeline();
     void InitializeCompositePipeline();
@@ -88,7 +81,7 @@ class ENGINE_API DeferredRender :
 public:
     DeferredRender(Game & game, const std::vector<vk::Image> & swapchain_images);
 
-    void Update() override;
+    void Update(const std::vector<vk::Image>& swapchain_images) override;
 
     // Only after init objects
     void Initialize() override;

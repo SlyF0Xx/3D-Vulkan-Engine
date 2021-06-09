@@ -6,8 +6,13 @@
 #include "PrimitiveComponent.h"
 #include "PrimitiveComponentWithMatrixColor.h"
 #include "PrimitiveMesh.h"
+#include "ImportableInheritanceMesh.h"
 
 #include <Engine.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -143,6 +148,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
         100.0f                                 // Дальняя плоскость отсечения.
     );
+
+    // glm::pi<float>() / 2
+    ImportableInheritanceMesh cat(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
+        glm::vec3(0, 3, 0),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0.01, 0.01, 0.01),
+        g_camera_matrix,
+        projectionMatrix);
+
+    ImportableInheritanceMesh griffon(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\Griffon.fbx",
+        glm::vec3(3, 0, -6),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0.01, 0.01, 0.01),
+        g_camera_matrix,
+        projectionMatrix);
+    //const aiScene* scene = importer.ReadFile(, aiProcessPreset_TargetRealtime_MaxQuality);
+
 
     auto plane = new PrimitiveMesh(vulkan,
     //auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
