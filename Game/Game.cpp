@@ -30,12 +30,13 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int, Game& vulkan);
+BOOL                InitInstance(HINSTANCE, int, Game& vulkan, const glm::mat4& camera_matrix, const glm::mat4& projectionMatrix);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 Game* g_vulkan;
 glm::mat4 g_camera_matrix;
+glm::mat4 g_projectionMatrix;
 glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
 glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
 glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
@@ -49,7 +50,7 @@ std::vector<PrimitiveMesh*> components;
 std::vector<PrimitiveMesh*> potential_linked_components;
 std::vector<PrimitiveMesh*> linked_components;
 
-void add_cube(Game & vulkan, const glm::mat4 & projectionMatrix, glm::vec3 translation)
+void add_cube(Game & vulkan, glm::vec3 translation)
 {
     auto component = new PrimitiveMesh(vulkan,
     //auto component = new PrimitiveComponentWithMatrixColor(vulkan,
@@ -78,9 +79,7 @@ void add_cube(Game & vulkan, const glm::mat4 & projectionMatrix, glm::vec3 trans
         BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
         translation,
         { 0, 0, 0 },
-        { 1, 1, 1 },
-        g_camera_matrix,
-        projectionMatrix);
+        { 1, 1, 1 });
     components.push_back(component);
 
     vulkan.register_mesh(0, component);
@@ -110,9 +109,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
+
+    g_camera_matrix = glm::lookAt(
+        cameraPosition, // Позиция камеры в мировом пространстве
+        cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
+        upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
+    );
+
+    g_projectionMatrix = glm::perspective(
+        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
+        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
+        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
+        100.0f                                 // Дальняя плоскость отсечения.
+    );
+
     Game vulkan; g_vulkan = &vulkan;
 
-    if (!InitInstance (hInstance, nCmdShow, vulkan))
+    if (!InitInstance (hInstance, nCmdShow, vulkan, g_camera_matrix, g_projectionMatrix))
     {
         return FALSE;
     }
@@ -136,38 +149,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     vulkan.register_material(MaterialType::Opaque, new Material());
 
-    g_camera_matrix = glm::lookAt(
-        cameraPosition, // Позиция камеры в мировом пространстве
-        cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
-        upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
+    vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
 
-    glm::mat4 projectionMatrix = glm::perspective(
-        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
-        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
-        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
-        100.0f                                 // Дальняя плоскость отсечения.
-    );
-
-    // glm::pi<float>() / 2
     ImportableInheritanceMesh cat(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
-        glm::vec3(0, 3, 0),
-        glm::vec3(0, 0, 0),
-        glm::vec3(0.01, 0.01, 0.01),
-        g_camera_matrix,
-        projectionMatrix);
-
+        glm::vec3(0, 3, 50),
+        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), glm::pi<float>() / 2),
+        glm::vec3(0.1, 0.1, 0.1));
+    
+    /*
     ImportableInheritanceMesh griffon(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\Griffon.fbx",
         glm::vec3(3, 0, -6),
         glm::vec3(0, 0, 0),
-        glm::vec3(0.01, 0.01, 0.01),
-        g_camera_matrix,
-        projectionMatrix);
-    //const aiScene* scene = importer.ReadFile(, aiProcessPreset_TargetRealtime_MaxQuality);
+        glm::vec3(0.01, 0.01, 0.01));
+    */
+
+    ImportableInheritanceMesh mandalorez(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 4, 5),
+        glm::vec3(-glm::pi<float>() / 2, 0, 0),
+        glm::vec3(1, 1, 1));
+
 
 
     auto plane = new PrimitiveMesh(vulkan,
@@ -183,21 +189,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f },
         { 0, -3.0, 0 },
         { 0, 0, 0 },
-        { 1, 1, 1 },
-        g_camera_matrix,
-        projectionMatrix);
+        { 10, 10, 1 });
     components.push_back(plane);
 
     vulkan.register_mesh(0, plane);
-    //vulkan.AddGameComponent(plane);
 
-    add_cube(vulkan, projectionMatrix, { 0, 0, 0 });
+    add_cube(vulkan, { 0, 0, 0 });
     linked_components.push_back(components.back());
 
-    add_cube(vulkan, projectionMatrix, {  3.0, 0, 0 });
+    add_cube(vulkan, {  3.0, 0, 0 });
     potential_linked_components.push_back(components.back());
 
-    add_cube(vulkan, projectionMatrix, { -3.0, 0, 0 });
+    add_cube(vulkan, { -3.0, 0, 0 });
     potential_linked_components.push_back(components.back());
 
 
@@ -279,7 +282,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan, const glm::mat4 & camera_matrix, const glm::mat4& projectionMatrix)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
@@ -290,7 +293,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd, 1904, 962);
+   vulkan.Initialize(hInstance, hWnd, 1904, 962, camera_matrix, projectionMatrix);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -500,9 +503,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
         );
 
-        for (auto& component : components) {
-            component->UpdateViewMatrix(g_camera_matrix);
-        }
+        g_vulkan->update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

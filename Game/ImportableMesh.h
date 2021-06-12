@@ -19,6 +19,8 @@ class ImportableMaterial : public IMaterial
 
 };
 
+class GameComponentMesh;
+
 class ImportableMesh :
     public IMesh
 {
@@ -31,43 +33,22 @@ private:
     vk::Buffer m_index_buffer;
     vk::DeviceMemory m_index_memory;
 
-    glm::mat4 m_world_matrix;
-    glm::mat4 m_view_matrix;
-    glm::mat4 m_projection_matrix;
-
-    glm::mat4 m_world_view_projection_matrix;
-    vk::Buffer m_world_matrix_buffer;
-    vk::DeviceMemory m_world_matrix_memory;
 
     Game& m_game;
-
-
-    vk::DescriptorPool m_descriptor_pool;
-    vk::DescriptorSet m_descriptor_set;
+    GameComponentMesh& m_game_component;
 
     BoundingSphere m_bounding_sphere;
 public:
     ImportableMesh(
         Game& game,
-        const std::filesystem::path& path,
-        const BoundingSphere& bounding_sphere,
-        const glm::vec3& position,
-        const glm::vec3& rotation,
-        const glm::vec3& scale,
-        const glm::mat4& CameraMatrix,
-        const glm::mat4& ProjectionMatrix);
-
-    void InitializeWorldMatrix(
-        const glm::vec3& position,
-        const glm::vec3& rotation,
-        const glm::vec3& scale);
+        GameComponentMesh & game_component,
+        const std::vector<PrimitiveColoredVertex>& verticies,
+        const std::vector<uint32_t>& indexes,
+        const BoundingSphere& bounding_sphere);
 
     void Draw(const vk::CommandBuffer& cmd_buffer) override;
 
-    glm::mat4 get_world_matrix();
-    void UpdateWorldMatrix(const glm::mat4& world_matrix);
-    void UpdateViewMatrix(const glm::mat4& view_matrix);
-    void SetWVPMatrix(const glm::mat4& world_view_projection_matrix);
+    glm::mat4 get_world_matrix() const;
     bool Intersect(const ImportableMesh& other);
 
     //void DestroyResources() override;

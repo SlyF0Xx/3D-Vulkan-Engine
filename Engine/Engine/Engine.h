@@ -10,6 +10,8 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
+#include <glm/glm.hpp>
+
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -27,7 +29,7 @@ public:
 	~Game();
 
 //#ifdef _WIN32
-	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
+	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
 
     void SecondInitialize();
 //#endif // WIN_32
@@ -57,6 +59,17 @@ private:
     vk::SwapchainKHR m_swapchain;
 
 
+
+
+    glm::mat4 m_view_projection_matrix;
+    //glm::mat4 m_world_matrix;
+
+    vk::Buffer m_world_view_projection_matrix_buffer;
+    vk::DeviceMemory m_world_view_projection_matrix_memory;
+    std::byte* m_world_view_projection_mapped_memory;
+
+    vk::DescriptorPool m_descriptor_pool;
+    vk::DescriptorSet m_descriptor_set;
 
 
 
@@ -137,6 +150,11 @@ public:
         return m_descriptor_set_layouts;
     }
 
+    const vk::DescriptorSet& get_descriptor_set()
+    {
+        return m_descriptor_set;
+    }
+
     const vk::PipelineLayout& get_layout()
     {
         return m_layout;
@@ -149,4 +167,8 @@ public:
     void register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh);
 
     void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory);
+
+
+    void update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
+    void update_world_matrix(const glm::mat4& world_matrix);
 };

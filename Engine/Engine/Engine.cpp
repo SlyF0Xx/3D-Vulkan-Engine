@@ -6,6 +6,8 @@
 #include "DeferredRender.h"
 #include "ForwardRender.h"
 
+#include "util.h"
+
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -21,7 +23,7 @@ Game::~Game()
 {
 }
 
-void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
+void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix)
 {
     m_width = width;
     m_height = height;
@@ -79,6 +81,28 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
     auto images = m_device.getSwapchainImagesKHR(m_swapchain);
     render = new DeferredRender(*this, images);
     //render = new ForwardRender(*this, images);
+
+
+
+
+
+
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
+    m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
+
+    m_descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[0]))[0];
+
+    m_view_projection_matrix = ProjectionMatrix * CameraMatrix;
+
+    std::vector matrixes{ m_view_projection_matrix };
+    auto out2 = create_buffer(*this, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
+    m_world_view_projection_matrix_buffer = out2.m_buffer;
+    m_world_view_projection_matrix_memory = out2.m_memory;
+    m_world_view_projection_mapped_memory = out2.m_mapped_memory;
+
+    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_view_projection_matrix_buffer, {}, VK_WHOLE_SIZE) };
+    std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
+    m_device.updateDescriptorSets(write_descriptors, {});
 }
 
 void Game::SecondInitialize()
@@ -90,12 +114,17 @@ void Game::SecondInitialize()
 
 void Game::InitializePipelineLayout()
 {
-    std::array bindings{
+    std::array view_proj_binding{
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr)
+    };
+
+    std::array world_binding{
         vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr)
     };
 
     m_descriptor_set_layouts = {
-        m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings))
+        m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, view_proj_binding)),
+        m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, world_binding)),
     };
     m_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, {}));
 }
@@ -202,8 +231,34 @@ uint32_t Game::find_appropriate_memory_type(vk::MemoryRequirements & mem_req, co
     return -1;
 }
 
+void Game::update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix)
+{
+    m_view_projection_matrix = ProjectionMatrix * CameraMatrix;
+
+    std::vector matrixes{ m_view_projection_matrix };
+
+    auto memory_buffer_req = m_device.getBufferMemoryRequirements(m_world_view_projection_matrix_buffer);
+
+    std::memcpy(m_world_view_projection_mapped_memory, matrixes.data(), sizeof(glm::mat4));
+    m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
+}
+
+void Game::update_world_matrix(const glm::mat4& world_matrix)
+{
+    /*
+    std::vector matrixes{ world_matrix };
+
+    auto memory_buffer_req = m_device.getBufferMemoryRequirements(m_world_view_projection_matrix_buffer);
+
+    std::memcpy(static_cast<std::byte*>(m_world_view_projection_mapped_memory) + sizeof(glm::mat4), matrixes.data(), sizeof(glm::mat4));
+    m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
+    */
+}
+
 void Game::Exit()
 {
+
+    m_device.unmapMemory(m_world_view_projection_matrix_memory);
     /*
     for (auto& swapchain_data : m_swapchain_data) {
         m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);

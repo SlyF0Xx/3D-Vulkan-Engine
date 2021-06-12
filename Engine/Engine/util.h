@@ -12,10 +12,11 @@ struct buffer_output
 {
 	vk::Buffer m_buffer;
 	vk::DeviceMemory m_memory;
+	std::byte* m_mapped_memory;
 };
 
 template <typename T>
-buffer_output create_buffer(Game& game, const std::vector<T> & data, vk::BufferUsageFlags flags, uint32_t queue)
+buffer_output create_buffer(Game& game, const std::vector<T> & data, vk::BufferUsageFlags flags, uint32_t queue, bool unmap = true)
 {
 	std::array<uint32_t, 1> queues{ queue };
 	std::size_t buffer_size = data.size() * sizeof(T);
@@ -32,7 +33,10 @@ buffer_output create_buffer(Game& game, const std::vector<T> & data, vk::BufferU
 
 	game.get_device().bindBufferMemory(buffer, memory, {});
 	game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(memory, {}, memory_buffer_req.size));
-	game.get_device().unmapMemory(memory);
 
-	return { buffer, memory };
+	if (unmap) {
+		game.get_device().unmapMemory(memory);
+	}
+
+	return { buffer, memory, unmap ? nullptr : static_cast<std::byte*>(mapped_data) };
 }

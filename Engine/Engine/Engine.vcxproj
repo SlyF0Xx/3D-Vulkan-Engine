@@ -160,6 +160,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Game\util.h" />
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
