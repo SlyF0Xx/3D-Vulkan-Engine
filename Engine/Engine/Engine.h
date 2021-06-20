@@ -19,7 +19,13 @@
 struct PrimitiveColoredVertex
 {
     float x, y, z;
-    float color[4];
+    //float colors[4];
+    float tex_coords[2];
+};
+
+struct LightInfo
+{
+    glm::vec3 m_position;
 };
 
 // This class is exported from the dll
@@ -81,6 +87,13 @@ private:
 
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
     vk::PipelineLayout m_layout;
+
+
+    vk::DescriptorSet m_lights_descriptor_set;
+    std::vector<LightInfo> m_lights;
+    vk::Buffer m_lights_buffer;
+    vk::DeviceMemory m_lights_memory;
+    std::vector<std::byte> m_lights_memory_to_transfer;
 
     void InitializePipelineLayout();
 
@@ -155,6 +168,11 @@ public:
         return m_descriptor_set;
     }
 
+    const vk::DescriptorSet& get_lights_descriptor_set()
+    {
+        return m_lights_descriptor_set;
+    }
+
     const vk::PipelineLayout& get_layout()
     {
         return m_layout;
@@ -166,9 +184,11 @@ public:
     void register_material(MaterialType material_type, /*std::unique_ptr<*/IMaterial */*>*/ material);
     void register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh);
 
-    void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory);
+    void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory, vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 
     void update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
-    void update_world_matrix(const glm::mat4& world_matrix);
+
+    int add_light(const LightInfo&);
+    void update_light(int index, const LightInfo&);
 };

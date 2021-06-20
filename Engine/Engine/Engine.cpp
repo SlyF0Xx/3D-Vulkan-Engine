@@ -79,16 +79,16 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
     InitializePipelineLayout();
 
     auto images = m_device.getSwapchainImagesKHR(m_swapchain);
-    render = new DeferredRender(*this, images);
-    //render = new ForwardRender(*this, images);
+    //render = new DeferredRender(*this, images);
+    render = new ForwardRender(*this, images);
 
 
 
 
 
 
-    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
-    m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 2) };
+    m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 2, pool_size));
 
     m_descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[0]))[0];
 
@@ -101,8 +101,22 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
     m_world_view_projection_mapped_memory = out2.m_mapped_memory;
 
     std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_view_projection_matrix_buffer, {}, VK_WHOLE_SIZE) };
+
     std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
     m_device.updateDescriptorSets(write_descriptors, {});
+
+
+
+
+    m_lights_descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[3]))[0];
+
+    auto out3 = sync_create_empty_host_invisible_buffer(*this, sizeof(uint32_t) + 10 * sizeof(LightInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+    m_lights_buffer = out3.m_buffer;
+    m_lights_memory = out3.m_memory;
+
+    std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer, {}, VK_WHOLE_SIZE) };
+    std::array write_lights_descriptors{ vk::WriteDescriptorSet(m_lights_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}) };
+    m_device.updateDescriptorSets(write_lights_descriptors, {});
 }
 
 void Game::SecondInitialize()
@@ -115,25 +129,35 @@ void Game::SecondInitialize()
 void Game::InitializePipelineLayout()
 {
     std::array view_proj_binding{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr)
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr) /*view_proj*/
     };
 
     std::array world_binding{
         vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr)
     };
 
+    std::array material_bindings{
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr) /*albedo*/
+    };
+
+    std::array light_bindings{
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment, nullptr)  /*light*/
+    };
+
     m_descriptor_set_layouts = {
         m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, view_proj_binding)),
         m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, world_binding)),
+        m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, material_bindings)),
+        m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, light_bindings)),
     };
     m_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, {}));
 }
 
-void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & memory)
+void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & memory, vk::MemoryPropertyFlags flags)
 {
     auto memory_req = m_device.getImageMemoryRequirements(image);
 
-    uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, vk::MemoryPropertyFlagBits::eDeviceLocal);
+    uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, flags);
 
     memory = m_device.allocateMemory(vk::MemoryAllocateInfo(memory_req.size, image_index));
     m_device.bindImageMemory(image, memory, {});
@@ -243,16 +267,22 @@ void Game::update_camera_projection_matrixes(const glm::mat4& CameraMatrix, cons
     m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
 }
 
-void Game::update_world_matrix(const glm::mat4& world_matrix)
+int Game::add_light(const LightInfo& light)
 {
-    /*
-    std::vector matrixes{ world_matrix };
+    m_lights.push_back(light);
+    return m_lights.size() - 1;
+}
 
-    auto memory_buffer_req = m_device.getBufferMemoryRequirements(m_world_view_projection_matrix_buffer);
+void Game::update_light(int index, const LightInfo & light)
+{
+    m_lights[index] = light;
 
-    std::memcpy(static_cast<std::byte*>(m_world_view_projection_mapped_memory) + sizeof(glm::mat4), matrixes.data(), sizeof(glm::mat4));
-    m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
-    */
+    m_lights_memory_to_transfer.reserve(sizeof(uint32_t) + m_lights.size() * sizeof(LightInfo));
+
+    uint32_t size = static_cast<uint32_t>(m_lights.size());
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size + sizeof(size)));
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), m_lights.begin(), m_lights.end());
+    update_buffer(*this, m_lights_memory_to_transfer.size() * sizeof(std::byte), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
 }
 
 void Game::Exit()

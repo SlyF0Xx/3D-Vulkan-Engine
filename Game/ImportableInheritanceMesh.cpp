@@ -23,10 +23,15 @@ int ImportableInheritanceMesh::FillMeshes(
             vertex.x = scene.mMeshes[index]->mVertices[j].x;
             vertex.y = scene.mMeshes[index]->mVertices[j].y;
             vertex.z = scene.mMeshes[index]->mVertices[j].z;
+
+            vertex.tex_coords[0] = scene.mMeshes[index]->mTextureCoords[0][j].x;
+            vertex.tex_coords[1] = scene.mMeshes[index]->mTextureCoords[0][j].y;
+            /*
             vertex.color[0] = 0.7f;
             vertex.color[1] = 0.7f;
             vertex.color[2] = 0.7f;
             vertex.color[3] = 1.0f;
+            */
             verticies.push_back(vertex);
         }
 
@@ -39,7 +44,7 @@ int ImportableInheritanceMesh::FillMeshes(
 
         // TODO: generate it!
         BoundingSphere bounding_sphere;
-        m_game.register_mesh(0, new ImportableMesh(m_game, m_game_components[index], verticies, indexes, bounding_sphere));
+        m_game.register_mesh(m_start_material_index + scene.mMeshes[index]->mMaterialIndex, new ImportableMesh(m_game, m_game_components[index], verticies, indexes, bounding_sphere));
     }
 
     int own_index = index;
@@ -79,15 +84,26 @@ ImportableInheritanceMesh::ImportableInheritanceMesh(
     : m_game(game)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
+	const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
+
+    m_start_material_index = IMaterial::get_start_id();
 
     for (int i = 0; i < scene->mNumMaterials; ++i) {
         aiString name = scene->mMaterials[i]->GetName();
+        aiString str;
         for (int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE); ++j) {
-            aiString str;
             scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-            std::cout << str.C_Str();
         }
+
+        ImportableMaterial* material;
+        if (str.length == 0) {
+            material = new DefaultMaterial(game);
+        }
+        else {
+            material = new ImportableMaterial(game, std::filesystem::path(str.C_Str()));
+        }
+
+        game.register_material(MaterialType::Opaque, material);
     }
 
     ImportChildNodes(*scene->mRootNode, *scene, position, rotation, scale);

@@ -17,6 +17,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <chrono>
 #include <iostream>
 #include <map>
@@ -54,15 +57,15 @@ void add_cube(Game & vulkan, glm::vec3 translation)
 {
     auto component = new PrimitiveMesh(vulkan,
     //auto component = new PrimitiveComponentWithMatrixColor(vulkan,
-        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}},
+        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 0.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {1.0f, 0.0f}},
 
-          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 1.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {0.0f, 0.0f, 1.0f, 1.0f}}
+          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 0.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {1.0f, 0.0f}}
         },
         { 0, 1, 2,
           1, 3, 2,
@@ -85,13 +88,6 @@ void add_cube(Game & vulkan, glm::vec3 translation)
     vulkan.register_mesh(0, component);
     //vulkan.AddGameComponent(component);
 }
-
-class Material : public IMaterial
-{
-public:
-    void UpdateMaterial() override
-    {}
-};
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -147,7 +143,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     */
 
 
-    vulkan.register_material(MaterialType::Opaque, new Material());
+    vulkan.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
 
@@ -155,7 +151,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
         glm::vec3(0, 3, 50),
-        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), glm::pi<float>() / 2),
+        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
         glm::vec3(0.1, 0.1, 0.1));
     
     /*
@@ -171,17 +167,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 4, 5),
-        glm::vec3(-glm::pi<float>() / 2, 0, 0),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
         glm::vec3(1, 1, 1));
 
 
 
     auto plane = new PrimitiveMesh(vulkan,
     //auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
-        { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f, 0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 3.0,   0.0,  3.0,   {1.0f, 0.0f, 0.0f, 1.0f}}
+        { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {0.0f, 0.0f}},
+          PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f}},
+          PrimitiveColoredVertex{ 3.0,   0.0,  3.0,   {1.0f, 1.0f}}
         },
         { 0, 1, 3,
           0, 3, 2

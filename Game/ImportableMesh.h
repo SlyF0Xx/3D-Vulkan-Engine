@@ -16,7 +16,26 @@
 
 class ImportableMaterial : public IMaterial
 {
+private:
+    vk::Image m_albedo_image;
+    vk::DeviceMemory m_albedo_memory;
+    vk::ImageView m_albedo_image_view;
+    vk::Sampler m_albedo_sampler;
 
+    vk::DescriptorPool m_descriptor_pool;
+    vk::DescriptorSet m_descriptor_set;
+
+    Game& m_game;
+public:
+    ImportableMaterial(
+        Game& game, const std::filesystem::path & texture_path);
+    void UpdateMaterial(const vk::CommandBuffer& cmd_buffer) override;
+};
+
+class DefaultMaterial : public ImportableMaterial
+{
+public:
+    DefaultMaterial(Game& game);
 };
 
 class GameComponentMesh;

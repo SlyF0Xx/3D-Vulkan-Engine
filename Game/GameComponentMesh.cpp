@@ -75,6 +75,9 @@ void GameComponentMesh::join_to_game_component(const ImportableMesh& mesh)
 void GameComponentMesh::UpdateWorldMatrix(const glm::mat4& world_matrix)
 {
 	m_world_matrix = world_matrix;
+
+	// TODO: update childrens descriptor sets
+
 	/*
 	std::vector matrixes{ m_world_matrix };
 

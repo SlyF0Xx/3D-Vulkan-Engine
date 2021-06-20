@@ -145,7 +145,7 @@ void ForwardRender::InitializePipeline()
 
     std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
     std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
-                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, 3 * sizeof(float)) };
+                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)) };
 
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
@@ -196,7 +196,8 @@ void ForwardRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
-        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 0, m_game.get_descriptor_set(), { {} });
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 0, m_game.get_descriptor_set(), { {} }); /*view_proj_binding*/
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 3, m_game.get_lights_descriptor_set(), {});
 
         vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
         m_swapchain_data[i].m_command_buffer.setViewport(0, viewport);
@@ -205,7 +206,7 @@ void ForwardRender::InitCommandBuffer()
 
         for (auto& [mat_type, materials] : m_game.get_materials_by_type()) {
             for (auto& material : materials) {
-                m_game.get_materials().find(material)->second->UpdateMaterial();
+                m_game.get_materials().find(material)->second->UpdateMaterial(m_swapchain_data[i].m_command_buffer);
                 for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
                     mesh->Draw(m_swapchain_data[i].m_command_buffer);
                 }

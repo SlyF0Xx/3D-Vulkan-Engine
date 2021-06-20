@@ -17,6 +17,7 @@ class ImportableInheritanceMesh
 private:
     Game& m_game;
     std::vector<GameComponentMesh> m_game_components;
+    int m_start_material_index;
 
     int FillMeshes(
         const aiNode& root,

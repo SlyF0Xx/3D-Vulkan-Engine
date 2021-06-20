@@ -183,7 +183,7 @@ void DeferredRender::InitializeDeferredPipeline()
 
     std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
     std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
-                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, 3 * sizeof(float)) };
+                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)) };
 
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
@@ -267,7 +267,7 @@ void DeferredRender::InitCommandBuffer()
 
         for (auto& [mat_type, materials] : m_game.get_materials_by_type()) {
             for (auto& material : materials) {
-                m_game.get_materials().find(material)->second->UpdateMaterial();
+                m_game.get_materials().find(material)->second->UpdateMaterial(m_swapchain_data[i].m_command_buffer);
                 for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
                     mesh->Draw(m_swapchain_data[i].m_command_buffer);
                 }
@@ -280,6 +280,7 @@ void DeferredRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_composite_pipeline);
 
         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_composite_layout, 0, m_swapchain_data[i].m_descriptor_set, {});
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 1, m_game.get_lights_descriptor_set(), {});
         m_swapchain_data[i].m_command_buffer.draw(3, 1, 0, 0);
         m_swapchain_data[i].m_command_buffer.endRenderPass();
         m_swapchain_data[i].m_command_buffer.end();

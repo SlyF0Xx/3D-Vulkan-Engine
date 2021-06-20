@@ -9,6 +9,16 @@ layout (location = 0) out vec4 color;
 
 layout (location = 0) in vec2 inUV; 
 
+struct LightInfo
+{
+    vec3 m_position;
+};
+
+layout (set = 1, binding = 0) uniform Lights{
+	uint size;
+	LightInfo lights[10];
+} light_buffer;
+
 void main()
 {
 	vec4 albedo = texture(samplerAlbedo, inUV);
