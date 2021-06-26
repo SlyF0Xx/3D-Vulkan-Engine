@@ -70,9 +70,9 @@ void PrimitiveMesh::InitializeWorldMatrix(
     m_world_matrix = translation_matrix * rotation_matrix * scale_matrix;
 }
 
-void PrimitiveMesh::Draw(const vk::CommandBuffer& cmd_buffer)
+void PrimitiveMesh::Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer)
 {
-    cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 1, m_descriptor_set, { {} });
+    cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 1, m_descriptor_set, { {} });
 
     cmd_buffer.bindVertexBuffers(0, m_vertex_buffer, { {0} });
     cmd_buffer.bindIndexBuffer(m_index_buffer, {}, vk::IndexType::eUint32);

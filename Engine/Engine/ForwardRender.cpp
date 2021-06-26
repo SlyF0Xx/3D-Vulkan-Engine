@@ -6,6 +6,7 @@ ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain
 {
     m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
 
+    InitializePipelineLayout();
     InitializeRenderPass();
 
     m_swapchain_data.resize(swapchain_images.size());
@@ -53,6 +54,22 @@ void ForwardRender::Draw()
     m_game.get_queue().presentKHR(vk::PresentInfoKHR(wait_sems, m_game.get_swapchain(), next_image.value, results));
 }
 
+void ForwardRender::InitializePipelineLayout()
+{
+    std::array shadows_bindings{
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr), /*shadows*/
+    };
+
+    m_descriptor_set_layouts = m_game.get_descriptor_set_layouts();
+    m_descriptor_set_layouts.push_back(m_game.get_device().createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, shadows_bindings)));
+
+    std::array push_constants = {
+        vk::PushConstantRange(vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, 0, 4)
+    };
+
+    m_layout = m_game.get_device().createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, push_constants));
+}
+
 void ForwardRender::InitializeRenderPass()
 {
     std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_game.get_color_format(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR},
@@ -89,7 +106,18 @@ void ForwardRender::DestroyRenderPass()
 
 void ForwardRender::InitializeConstantPerImage()
 {
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2) };
+    auto descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 2, pool_size));
+
+    std::array layouts{
+        m_descriptor_set_layouts[m_descriptor_set_layouts.size() - 1],
+        m_descriptor_set_layouts[m_descriptor_set_layouts.size() - 1]
+    };
+
+    auto image_descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, layouts));
+
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_swapchain_data[i].m_shadows_descriptor_set = image_descriptor_set[i];
         m_swapchain_data[i].m_fence = m_game.get_device().createFence(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
         m_swapchain_data[i].m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
     }
@@ -107,6 +135,7 @@ void ForwardRender::InitializeVariablePerImage(const std::vector<vk::Image>& swa
 {
     std::array<uint32_t, 1> queues{ 0 };
 
+    std::vector<vk::WriteDescriptorSet> write_descriptors;
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         m_swapchain_data[i].m_color_image = swapchain_images[i];
 
@@ -118,7 +147,11 @@ void ForwardRender::InitializeVariablePerImage(const std::vector<vk::Image>& swa
 
         std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
         m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_game.m_width, m_game.m_height, 1));
+
+        std::array shadows_infos{ vk::DescriptorImageInfo(m_game.get_shadpwed_lights().get_depth_sampler(i), m_game.get_shadpwed_lights().get_depth_image_view(i), vk::ImageLayout::eShaderReadOnlyOptimal) };
+        write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
     }
+    m_game.get_device().updateDescriptorSets(write_descriptors, {});
 }
 
 void ForwardRender::DestroyVariablePerImageResources()
@@ -145,7 +178,8 @@ void ForwardRender::InitializePipeline()
 
     std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
     std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
-                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)) };
+                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)),
+                                        vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, 5 * sizeof(float)) };
 
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
@@ -154,7 +188,7 @@ void ForwardRender::InitializePipeline()
     std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
-    vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
+    vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
     vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
 
     vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
@@ -165,10 +199,10 @@ void ForwardRender::InitializePipeline()
 
     m_cache = m_game.get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
 
-    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eStencilReference /*just compatibility*/ };
     vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
 
-    auto pipeline_result = m_game.get_device().createGraphicsPipeline(m_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_game.get_layout(), m_render_pass));
+    auto pipeline_result = m_game.get_device().createGraphicsPipeline(m_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_layout, m_render_pass));
     m_pipeline = pipeline_result.value;
 }
 
@@ -193,11 +227,17 @@ void ForwardRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer = m_command_buffers[i];
 
         m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+
+        for (int j = 0; j < m_game.get_shadpwed_lights().get_shadowed_light().size(); ++j) {
+            m_game.get_shadpwed_lights().get_shadowed_light()[j].InitCommandBuffer(i, m_swapchain_data[i].m_command_buffer);
+        }
+
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
-        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 0, m_game.get_descriptor_set(), { {} }); /*view_proj_binding*/
-        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_game.get_layout(), 3, m_game.get_lights_descriptor_set(), {});
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, m_game.get_descriptor_set(), { {} }); /*view_proj_binding*/
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, m_game.get_lights_descriptor_set(), {});
+        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 4, m_swapchain_data[i].m_shadows_descriptor_set, {});
 
         vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
         m_swapchain_data[i].m_command_buffer.setViewport(0, viewport);
@@ -206,9 +246,9 @@ void ForwardRender::InitCommandBuffer()
 
         for (auto& [mat_type, materials] : m_game.get_materials_by_type()) {
             for (auto& material : materials) {
-                m_game.get_materials().find(material)->second->UpdateMaterial(m_swapchain_data[i].m_command_buffer);
+                m_game.get_materials().find(material)->second->UpdateMaterial(m_layout, m_swapchain_data[i].m_command_buffer);
                 for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
-                    mesh->Draw(m_swapchain_data[i].m_command_buffer);
+                    mesh->Draw(m_layout, m_swapchain_data[i].m_command_buffer);
                 }
             }
         }

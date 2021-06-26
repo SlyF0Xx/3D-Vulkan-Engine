@@ -14,9 +14,14 @@
 
 #include <filesystem>
 
-class ImportableMaterial : public IMaterial
+struct ImageData {
+    vk::Image m_image;
+    vk::DeviceMemory m_memory;
+};
+
+class UnlitMaterial : public IMaterial
 {
-private:
+protected:
     vk::Image m_albedo_image;
     vk::DeviceMemory m_albedo_memory;
     vk::ImageView m_albedo_image_view;
@@ -26,13 +31,31 @@ private:
     vk::DescriptorSet m_descriptor_set;
 
     Game& m_game;
+
+    ImageData prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath);
+
 public:
-    ImportableMaterial(
-        Game& game, const std::filesystem::path & texture_path);
-    void UpdateMaterial(const vk::CommandBuffer& cmd_buffer) override;
+    UnlitMaterial(Game& game);
+    UnlitMaterial(Game& game, const std::filesystem::path& texture_path);
+
+    void UpdateMaterial(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer) override;
 };
 
-class DefaultMaterial : public ImportableMaterial
+class ImportableMaterial : public UnlitMaterial
+{
+private:
+    vk::Image m_normal_image;
+    vk::DeviceMemory m_normal_memory;
+    vk::ImageView m_normal_image_view;
+    vk::Sampler m_normal_sampler;
+
+public:
+    ImportableMaterial(
+        Game& game, const std::filesystem::path & texture_path, const std::filesystem::path& normal_path);
+    void UpdateMaterial(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer) override;
+};
+
+class DefaultMaterial : public UnlitMaterial
 {
 public:
     DefaultMaterial(Game& game);
@@ -65,7 +88,7 @@ public:
         const std::vector<uint32_t>& indexes,
         const BoundingSphere& bounding_sphere);
 
-    void Draw(const vk::CommandBuffer& cmd_buffer) override;
+    void Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer) override;
 
     glm::mat4 get_world_matrix() const;
     bool Intersect(const ImportableMesh& other);

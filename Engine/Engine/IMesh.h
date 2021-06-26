@@ -9,5 +9,5 @@ class ENGINE_API IMesh
 {
 public:
     virtual ~IMesh() = default;
-    virtual void Draw(const vk::CommandBuffer& cmd_buffer) = 0;
+    virtual void Draw(const vk::PipelineLayout & layout, const vk::CommandBuffer& cmd_buffer) = 0;
 };

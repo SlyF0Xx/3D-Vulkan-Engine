@@ -6,12 +6,14 @@
 #include "IMaterial.h"
 #include "IMesh.h"
 #include "IRender.h"
+#include "Lights.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 #include <glm/glm.hpp>
 
+#include <optional>
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -21,12 +23,18 @@ struct PrimitiveColoredVertex
     float x, y, z;
     //float colors[4];
     float tex_coords[2];
+    float norm_coords[3];
 };
 
+/*
+#pragma pack(push, 1)
 struct LightInfo
 {
-    glm::vec3 m_position;
+    glm::vec3 m_direction;
+    uint32_t padding = 0;
 };
+#pragma pack(pop)
+*/
 
 // This class is exported from the dll
 class ENGINE_API Game {
@@ -84,16 +92,23 @@ private:
     std::unordered_map<int, std::unordered_set</*std::unique_ptr<*/IMesh */*>*/>> mesh_by_material;
 
     IRender* render;
+    std::vector<vk::Image> images;
 
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
-    vk::PipelineLayout m_layout;
+    //vk::PipelineLayout m_layout;
 
 
     vk::DescriptorSet m_lights_descriptor_set;
-    std::vector<LightInfo> m_lights;
+    //std::vector<LightInfo> m_lights;
     vk::Buffer m_lights_buffer;
     vk::DeviceMemory m_lights_memory;
     std::vector<std::byte> m_lights_memory_to_transfer;
+
+    std::unique_ptr<Lights> m_shadpwed_lights;
+
+    vk::Buffer m_lights_count_buffer;
+    vk::DeviceMemory m_lights_count_memory;
+    std::vector<std::byte> m_lights_count_memory_to_transfer;
 
     void InitializePipelineLayout();
 
@@ -173,9 +188,16 @@ public:
         return m_lights_descriptor_set;
     }
 
+    /*
     const vk::PipelineLayout& get_layout()
     {
         return m_layout;
+    }
+    */
+
+    Lights& get_shadpwed_lights()
+    {
+        return *m_shadpwed_lights;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
@@ -189,6 +211,6 @@ public:
 
     void update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
 
-    int add_light(const LightInfo&);
-    void update_light(int index, const LightInfo&);
+    int add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector);
+    //void update_light(int index, const LightInfo&);
 };

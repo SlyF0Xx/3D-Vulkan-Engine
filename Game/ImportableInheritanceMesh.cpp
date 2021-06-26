@@ -26,6 +26,10 @@ int ImportableInheritanceMesh::FillMeshes(
 
             vertex.tex_coords[0] = scene.mMeshes[index]->mTextureCoords[0][j].x;
             vertex.tex_coords[1] = scene.mMeshes[index]->mTextureCoords[0][j].y;
+
+            vertex.norm_coords[0] = scene.mMeshes[index]->mNormals[j].x;
+            vertex.norm_coords[1] = scene.mMeshes[index]->mNormals[j].y;
+            vertex.norm_coords[2] = scene.mMeshes[index]->mNormals[j].z;
             /*
             vertex.color[0] = 0.7f;
             vertex.color[1] = 0.7f;
@@ -95,12 +99,17 @@ ImportableInheritanceMesh::ImportableInheritanceMesh(
             scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
         }
 
-        ImportableMaterial* material;
+        aiString normal_str;
+        for (int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_NORMALS); ++j) {
+            scene->mMaterials[i]->GetTexture(aiTextureType_NORMALS, 0, &normal_str);
+        }
+
+        IMaterial* material;
         if (str.length == 0) {
             material = new DefaultMaterial(game);
         }
         else {
-            material = new ImportableMaterial(game, std::filesystem::path(str.C_Str()));
+            material = new ImportableMaterial(game, std::filesystem::path(str.C_Str()), std::filesystem::path(normal_str.C_Str()));
         }
 
         game.register_material(MaterialType::Opaque, material);

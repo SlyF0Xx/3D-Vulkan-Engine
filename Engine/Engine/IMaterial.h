@@ -13,7 +13,7 @@ public:
     IMaterial();
     virtual ~IMaterial() = default;
 
-    virtual void UpdateMaterial(const vk::CommandBuffer& cmd_buffer) = 0;
+    virtual void UpdateMaterial(const vk::PipelineLayout & layout, const vk::CommandBuffer& cmd_buffer) = 0;
     int get_id() { return id; };
 
     static int get_start_id();

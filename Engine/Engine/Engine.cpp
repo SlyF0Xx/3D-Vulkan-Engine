@@ -78,9 +78,6 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
 
     InitializePipelineLayout();
 
-    auto images = m_device.getSwapchainImagesKHR(m_swapchain);
-    //render = new DeferredRender(*this, images);
-    render = new ForwardRender(*this, images);
 
 
 
@@ -108,15 +105,31 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
 
 
 
-    m_lights_descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[3]))[0];
+    auto sets = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[3]));
+    m_lights_descriptor_set = sets[0];
 
-    auto out3 = sync_create_empty_host_invisible_buffer(*this, sizeof(uint32_t) + 10 * sizeof(LightInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+    auto out3 = sync_create_empty_host_invisible_buffer(*this, 10 * sizeof(LightShaderInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
     m_lights_buffer = out3.m_buffer;
     m_lights_memory = out3.m_memory;
 
     std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer, {}, VK_WHOLE_SIZE) };
-    std::array write_lights_descriptors{ vk::WriteDescriptorSet(m_lights_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}) };
+
+    auto out4 = sync_create_empty_host_invisible_buffer(*this, sizeof(uint32_t), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+    m_lights_count_buffer = out4.m_buffer;
+    m_lights_count_memory = out4.m_memory;
+
+    std::array lights_count_buffer_infos{ vk::DescriptorBufferInfo(m_lights_count_buffer, {}, VK_WHOLE_SIZE) };
+
+    std::array write_lights_descriptors{ vk::WriteDescriptorSet(m_lights_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}),
+                                         vk::WriteDescriptorSet(m_lights_descriptor_set, 1, 0, vk::DescriptorType::eUniformBuffer, {}, lights_count_buffer_infos, {}) };
     m_device.updateDescriptorSets(write_lights_descriptors, {});
+
+    images = m_device.getSwapchainImagesKHR(m_swapchain);
+    m_shadpwed_lights = std::make_unique<Lights>(*this, ProjectionMatrix, images);
+
+
+    //render = new DeferredRender(*this, images);
+    render = new ForwardRender(*this, images);
 }
 
 void Game::SecondInitialize()
@@ -137,11 +150,13 @@ void Game::InitializePipelineLayout()
     };
 
     std::array material_bindings{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr) /*albedo*/
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr), /*albedo*/
+        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr) /*normal*/
     };
 
     std::array light_bindings{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment, nullptr)  /*light*/
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr), /*light*/
+        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr)  /*light count*/
     };
 
     m_descriptor_set_layouts = {
@@ -150,7 +165,14 @@ void Game::InitializePipelineLayout()
         m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, material_bindings)),
         m_device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, light_bindings)),
     };
-    m_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, {}));
+
+    /*
+    std::array push_constants = {
+        vk::PushConstantRange(vk::ShaderStageFlagBits::eFragment, 0, 4)
+    };
+
+    m_layout = m_device.createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, push_constants));
+    */
 }
 
 void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & memory, vk::MemoryPropertyFlags flags)
@@ -206,7 +228,7 @@ void Game::Update(int width, int height)
     std::array<uint32_t, 1> queues{ 0 };
     m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, 2, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(width, height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate, VK_TRUE, m_swapchain));
 
-    auto images = m_device.getSwapchainImagesKHR(m_swapchain);
+    images = m_device.getSwapchainImagesKHR(m_swapchain);
     render->Update(images);
 }
 
@@ -267,24 +289,41 @@ void Game::update_camera_projection_matrixes(const glm::mat4& CameraMatrix, cons
     m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
 }
 
-int Game::add_light(const LightInfo& light)
+int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)
 {
-    m_lights.push_back(light);
-    return m_lights.size() - 1;
-}
+    m_shadpwed_lights->add_light(position, cameraTarget, upVector);
+    render->Update(images);
 
+    //m_lights.push_back(light);
+    std::vector<LightShaderInfo> light = m_shadpwed_lights->get_light_shader_info();
+
+    m_lights_memory_to_transfer.clear();
+    m_lights_memory_to_transfer.reserve(light.size() * sizeof(LightShaderInfo));
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(light.begin()._Ptr), reinterpret_cast<std::byte*>(light.end()._Ptr));
+    update_buffer(*this, m_lights_memory_to_transfer.size(), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+
+    uint32_t size = static_cast<uint32_t>(light.size());
+    m_lights_count_memory_to_transfer.clear();
+    m_lights_count_memory_to_transfer.reserve(sizeof(size));
+    m_lights_count_memory_to_transfer.insert(m_lights_count_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
+    update_buffer(*this, m_lights_count_memory_to_transfer.size(), m_lights_count_memory_to_transfer.data(), m_lights_count_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+
+    return light.size() - 1;
+}
+/*
 void Game::update_light(int index, const LightInfo & light)
 {
     m_lights[index] = light;
 
+    m_lights_memory_to_transfer.clear();
     m_lights_memory_to_transfer.reserve(sizeof(uint32_t) + m_lights.size() * sizeof(LightInfo));
 
     uint32_t size = static_cast<uint32_t>(m_lights.size());
-    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size + sizeof(size)));
-    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), m_lights.begin(), m_lights.end());
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(m_lights.begin()._Ptr), reinterpret_cast<std::byte*>(m_lights.end()._Ptr));
     update_buffer(*this, m_lights_memory_to_transfer.size() * sizeof(std::byte), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
 }
-
+*/
 void Game::Exit()
 {
 

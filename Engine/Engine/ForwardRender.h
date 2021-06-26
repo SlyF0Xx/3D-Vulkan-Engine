@@ -28,11 +28,15 @@ class ENGINE_API ForwardRender :
 
         vk::CommandBuffer m_command_buffer;
 
+        vk::DescriptorSet m_shadows_descriptor_set;
 
         // Constant per image value
         vk::Fence m_fence;
         vk::Semaphore m_sema;
     };
+
+    std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
+    vk::PipelineLayout m_layout;
 
     vk::Semaphore m_sema;
     std::vector<vk::CommandBuffer> m_command_buffers;
@@ -45,10 +49,13 @@ class ENGINE_API ForwardRender :
     vk::PipelineCache m_cache;
     vk::Pipeline m_pipeline;
 
+
     //vk::PipelineLayout m_layout;
     //std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
 
     Game& m_game;
+
+    void InitializePipelineLayout();
 
     void InitializeRenderPass();
     void DestroyRenderPass();

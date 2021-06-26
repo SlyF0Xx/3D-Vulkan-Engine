@@ -171,6 +171,8 @@
     <ClInclude Include="IMaterial.h" />
     <ClInclude Include="IMesh.h" />
     <ClInclude Include="IRender.h" />
+    <ClInclude Include="Lights.h" />
+    <ClInclude Include="ShadowMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoundingSphere.cpp" />
@@ -179,6 +181,9 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="IMaterial.cpp" />
+    <ClCompile Include="Lights.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

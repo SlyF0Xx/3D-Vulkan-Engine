@@ -13,6 +13,7 @@ public:
     virtual ~IRender() = default;
 
     virtual void Update(const std::vector<vk::Image>& swapchain_images) = 0;
+    //virtual void RecreateCommandBuffers() = 0;
 
     // Only after init objects
     virtual void Initialize() = 0;

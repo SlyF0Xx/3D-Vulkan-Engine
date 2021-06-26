@@ -45,7 +45,7 @@ public:
         const glm::vec3& rotation,
         const glm::vec3& scale);
 
-    void Draw(const vk::CommandBuffer& cmd_buffer) override;
+    void Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer) override;
 
     glm::mat4 get_world_matrix();
     void UpdateWorldMatrix(const glm::mat4& world_matrix);

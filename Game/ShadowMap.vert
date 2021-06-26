@@ -15,17 +15,13 @@ layout (set = 1, binding = 0) uniform WorldMatrix{
 	mat4 World;
 }world_mat;
 
+
 out gl_PerVertex
 {
 	vec4 gl_Position;
 };
 
-layout(location = 0) out vec2 out_tex_coords;
-layout(location = 1) out vec3 out_norm;
-
 void main()
 {
 	gl_Position = view_proj_mat.ViewProjection * world_mat.World * vec4(position, 1.0f);
-	out_tex_coords = tex_coords;
-	out_norm = in_norm;
 }

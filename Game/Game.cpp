@@ -143,6 +143,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     */
 
 
+    for (int i = 0; i < 1; ++i) {
+        vulkan.add_light(glm::vec3(4.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    }
+
     vulkan.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
@@ -166,11 +170,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImportableInheritanceMesh mandalorez(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 4, 5),
+        glm::vec3(4, 4, 1),
         glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
         glm::vec3(1, 1, 1));
 
-
+    ImportableInheritanceMesh tv(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 4, 5),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(1, 1, 1));
+    /*
+    ImportableInheritanceMesh tv(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 6, 1),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(1, 1, 1));
+    */
 
     auto plane = new PrimitiveMesh(vulkan,
     //auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
