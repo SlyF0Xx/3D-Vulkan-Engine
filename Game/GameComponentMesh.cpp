@@ -76,6 +76,15 @@ void GameComponentMesh::UpdateWorldMatrix(const glm::mat4& world_matrix)
 {
 	m_world_matrix = world_matrix;
 
+	std::vector matrixes{ get_world_matrix() };
+
+	auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_matrix_buffer);
+
+	void* mapped_data = nullptr;
+	m_game.get_device().mapMemory(m_world_matrix_memory, {}, memory_buffer_req.size, {}, &mapped_data);
+	std::memcpy(mapped_data, matrixes.data(), sizeof(glm::mat4));
+	m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
+	m_game.get_device().unmapMemory(m_world_matrix_memory);
 	// TODO: update childrens descriptor sets
 
 	/*

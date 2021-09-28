@@ -27,7 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -98,7 +98,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,30 +161,35 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Game\util.h" />
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="export.h" />
     <ClInclude Include="ForwardRender.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="IGameComponent.h" />
     <ClInclude Include="IMaterial.h" />
     <ClInclude Include="IMesh.h" />
     <ClInclude Include="IRender.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoundingSphere.cpp" />
+    <ClCompile Include="Component.ixx" />
+    <ClCompile Include="ComponentGuard.ixx" />
+    <ClCompile Include="ComponentManager.ixx" />
     <ClCompile Include="DeferredRender.cpp" />
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Entity.ixx" />
     <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="Identifier.ixx" />
     <ClCompile Include="IMaterial.cpp" />
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="System.ixx" />
+    <ClCompile Include="TransformComponent.ixx" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VulkanTransformComponent.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,13 +1,11 @@
 #pragma once
 
-#include "export.h"
-
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 #include <array>
 
-class ENGINE_API IRender
+class IRender
 {
 public:
     virtual ~IRender() = default;

@@ -1,7 +1,6 @@
 // Engine.cpp : Defines the exported functions for the DLL.
 //
 
-#include "framework.h"
 #include "Engine.h"
 #include "DeferredRender.h"
 #include "ForwardRender.h"

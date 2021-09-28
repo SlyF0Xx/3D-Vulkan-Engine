@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Engine/Engine/VulkanTransformComponent.ixx
+/Engine/Engine/TransformComponent.ixx
+/Game/RotateSystem.ixx
+/Engine/Engine/System.ixx
+/Engine/Engine/Identifier.ixx
+/Engine/Engine/Entity.ixx
+/Engine/Engine/ComponentManager.ixx
+/Engine/Engine/ComponentGuard.ixx
+/Engine/Engine/Component.ixx

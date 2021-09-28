@@ -1,7 +1,5 @@
 #pragma once
 
-#include "export.h"
-
 #include "IGameComponent.h"
 #include "IMaterial.h"
 #include "IMesh.h"
@@ -37,7 +35,7 @@ struct LightInfo
 */
 
 // This class is exported from the dll
-class ENGINE_API Game {
+class Game {
 public:
 	Game();
 	~Game();

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "export.h"
-
 #include "ShadowMap.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR

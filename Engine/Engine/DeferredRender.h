@@ -1,7 +1,5 @@
 #pragma once
 
-#include "export.h"
-
 #include "IRender.h"
 
 #include <memory>
@@ -10,7 +8,7 @@
 
 class Game;
 
-class ENGINE_API DeferredRender :
+class DeferredRender :
     public IRender
 {
     struct PerSwapchainImageData

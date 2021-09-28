@@ -1,6 +1,5 @@
 #pragma once
 
-#include "export.h"
 #include "Engine.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -16,7 +15,7 @@ struct buffer_output
 	std::byte* m_mapped_memory;
 };
 
-buffer_output ENGINE_API create_buffer(Game& game, std::size_t buffer_size, const void* data, vk::BufferUsageFlags flags, uint32_t queue, bool unmap = true);
+buffer_output create_buffer(Game& game, std::size_t buffer_size, const void* data, vk::BufferUsageFlags flags, uint32_t queue, bool unmap = true);
 
 template <typename T>
 buffer_output create_buffer(Game& game, const std::vector<T> & data, vk::BufferUsageFlags flags, uint32_t queue, bool unmap = true)
@@ -24,8 +23,8 @@ buffer_output create_buffer(Game& game, const std::vector<T> & data, vk::BufferU
 	return create_buffer(game, data.size() * sizeof(T), data.data(), flags, queue, unmap);
 }
 
-buffer_output ENGINE_API sync_create_empty_host_invisible_buffer(Game& game, size_t buffer_size, vk::BufferUsageFlags flags, uint32_t queue);
-void ENGINE_API update_buffer(Game& game, std::size_t buffer_size, void* data, const vk::Buffer& dst_buffer, vk::BufferUsageFlags flags, uint32_t queue);
+buffer_output sync_create_empty_host_invisible_buffer(Game& game, size_t buffer_size, vk::BufferUsageFlags flags, uint32_t queue);
+void update_buffer(Game& game, std::size_t buffer_size, void* data, const vk::Buffer& dst_buffer, vk::BufferUsageFlags flags, uint32_t queue);
 
 template <typename T>
 buffer_output sync_create_host_invisible_buffer(Game& game, const std::vector<T>& data, vk::BufferUsageFlags flags, uint32_t queue)

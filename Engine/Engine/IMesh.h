@@ -1,11 +1,9 @@
 #pragma once
 
-#include "export.h"
-
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
-class ENGINE_API IMesh
+class IMesh
 {
 public:
     virtual ~IMesh() = default;

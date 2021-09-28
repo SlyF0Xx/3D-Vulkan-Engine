@@ -13,21 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\EntityComponentSystem">
+      <UniqueIdentifier>{16cd016f-ded7-4ec4-8eb1-bb6f8287339c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{89a64fa9-556f-4efc-82be-64848855884e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BaseComponents">
+      <UniqueIdentifier>{ddf66381-3f0d-4e4d-9e94-53c18963c49b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IGameComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="export.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BoundingSphere.h">
@@ -48,21 +51,18 @@
     <ClInclude Include="ForwardRender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Game\util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ShadowMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Lights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BoundingSphere.cpp">
@@ -85,6 +85,30 @@
     </ClCompile>
     <ClCompile Include="Lights.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.ixx">
+      <Filter>Header Files\EntityComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Identifier.ixx">
+      <Filter>Header Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentManager.ixx">
+      <Filter>Header Files\EntityComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.ixx">
+      <Filter>Header Files\EntityComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentGuard.ixx">
+      <Filter>Header Files\EntityComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="System.ixx">
+      <Filter>Header Files\EntityComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.ixx">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanTransformComponent.ixx">
+      <Filter>Header Files\BaseComponents</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

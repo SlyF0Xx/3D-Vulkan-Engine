@@ -39,5 +39,10 @@ public:
         const glm::vec3& position,
         const glm::vec3& rotation,
         const glm::vec3& scale);
+
+    std::vector<GameComponentMesh>& get_game_components()
+    {
+        return m_game_components;
+    }
 };
 

@@ -1,12 +1,10 @@
 #pragma once
 
-#include "export.h"
-
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 // Actually, DescriptorSet - different textures
-class ENGINE_API IMaterial
+class IMaterial
 {
     int id;
 public:
@@ -19,7 +17,7 @@ public:
     static int get_start_id();
 };
 
-enum class ENGINE_API MaterialType
+enum class MaterialType
 {
     Opaque
 };

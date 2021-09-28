@@ -144,9 +144,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     for (int i = 0; i < 1; ++i) {
-        vulkan.add_light(glm::vec3(4.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        vulkan.add_light(glm::vec3(4.0f, 5.0f, -3.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     }
-
+    /*
+    vulkan.add_light(glm::vec3(2.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    vulkan.add_light(glm::vec3(6.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    vulkan.add_light(glm::vec3(6.0f, 5.0f, 5.0f), glm::vec3(4.0f, 5.0f, 5.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    */
     vulkan.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
@@ -177,9 +182,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImportableInheritanceMesh tv(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 4, 5),
+        glm::vec3(4, 3, 5),
         glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(1, 1, 1));
+        glm::vec3(2, 2, 2));
     /*
     ImportableInheritanceMesh tv(
         vulkan,
@@ -225,12 +230,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
 
-    //glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
+    glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
 
-    //glm::mat4 rotation_matrix(1);
-    //glm::vec3 RotationZ(0, 0, 1.0);
+    glm::mat4 rotation_matrix(1);
+    glm::vec3 RotationZ(0, 0, 1.0);
 
-    //std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
     MSG msg;
     while (TRUE) {
@@ -243,14 +248,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            /*
-            if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(1)) {
-                rotation_matrix = glm::rotate(rotation_matrix, 0.01f, RotationZ);
-                component1->UpdateWorldMatrix(rotation_matrix * translation_matrix);
+            if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
+                rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
+                for (auto& component : mandalorez.get_game_components()) {
+                    component.UpdateWorldMatrix(component.get_world_matrix() * rotation_matrix);
+                }
+                //tv->UpdateWorldMatrix(rotation_matrix * translation_matrix);
 
                 time_point = std::chrono::steady_clock::now();
             }
-            */
+
             vulkan.Draw();
         }
     }

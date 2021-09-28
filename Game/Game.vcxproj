@@ -92,7 +92,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\Engine\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,6 +166,7 @@
     <ClCompile Include="PrimitiveComponent.cpp" />
     <ClCompile Include="PrimitiveComponentWithMatrixColor.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
+    <ClCompile Include="RotateSystem.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Game.rc" />
@@ -172,6 +174,11 @@
   <ItemGroup>
     <Image Include="Game.ico" />
     <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">
+      <Project>{d00a8ad5-d52f-412a-a67b-0eca2f5611c4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
