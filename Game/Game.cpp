@@ -3,8 +3,6 @@
 
 #include "framework.h"
 #include "Game.h"
-#include "PrimitiveComponent.h"
-#include "PrimitiveComponentWithMatrixColor.h"
 #include "PrimitiveMesh.h"
 #include "ImportableInheritanceMesh.h"
 
@@ -43,11 +41,6 @@ glm::mat4 g_projectionMatrix;
 glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
 glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
 glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
-/*
-std::vector<PrimitiveComponentWithMatrixColor*> components;
-std::vector<PrimitiveComponentWithMatrixColor*> potential_linked_components;
-std::vector<PrimitiveComponentWithMatrixColor*> linked_components;
-*/
 
 std::vector<PrimitiveMesh*> components;
 std::vector<PrimitiveMesh*> potential_linked_components;
@@ -56,7 +49,6 @@ std::vector<PrimitiveMesh*> linked_components;
 void add_cube(Game & vulkan, glm::vec3 translation)
 {
     auto component = new PrimitiveMesh(vulkan,
-    //auto component = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {0.0f, 1.0f}},
           PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 0.0f}},
           PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {1.0f, 1.0f}},
@@ -125,22 +117,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
-    /*
-    vulkan.AddGameComponent(new PrimitiveComponent(vulkan,
-    { PrimitiveVertex{0.25f, 0.75f, 0.5f},
-      PrimitiveVertex{0.25f,  0.25f, 0.5f},
-      PrimitiveVertex{0.75f, 0.75f, 0.5f},
-
-      PrimitiveVertex{0.25f,  0.25f, 0.5f},
-      PrimitiveVertex{0.75f, 0.25f, 0.5f},
-      PrimitiveVertex{0.75f, 0.75f, 0.5f}
-    }));
-    vulkan.AddGameComponent(new PrimitiveComponent(vulkan,
-        { PrimitiveVertex{-0.25f, 0.75f, 0.5f},
-          PrimitiveVertex{-0.5f,  0.25f, 0.5f},
-          PrimitiveVertex{-0.75f, 0.75f, 0.5f}
-        }));
-    */
 
 
     for (int i = 0; i < 1; ++i) {
@@ -195,7 +171,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     */
 
     auto plane = new PrimitiveMesh(vulkan,
-    //auto plane = new PrimitiveComponentWithMatrixColor(vulkan,
         { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {0.0f, 0.0f}},
           PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {0.0f, 1.0f}},
           PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f}},

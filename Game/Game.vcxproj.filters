@@ -27,12 +27,6 @@
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PrimitiveComponentWithMatrixColor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PrimitiveMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,12 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PrimitiveComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PrimitiveComponentWithMatrixColor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PrimitiveMesh.cpp">
