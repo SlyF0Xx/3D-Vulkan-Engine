@@ -119,30 +119,6 @@
     <ClCompile Include="Lights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Component.ixx">
-      <Filter>Header Files\EntityComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="Identifier.ixx">
-      <Filter>Header Files\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentManager.ixx">
-      <Filter>Header Files\EntityComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.ixx">
-      <Filter>Header Files\EntityComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentGuard.ixx">
-      <Filter>Header Files\EntityComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="System.ixx">
-      <Filter>Header Files\EntityComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformComponent.ixx">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanTransformComponent.ixx">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClCompile>
     <ClCompile Include="Component.cpp">
       <Filter>Source Files\EntityComponentSystem</Filter>
     </ClCompile>

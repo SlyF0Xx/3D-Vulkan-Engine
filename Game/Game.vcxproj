@@ -164,7 +164,6 @@
     <ClCompile Include="ImportableMesh.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
     <ClCompile Include="RotateSystem.cpp" />
-    <ClCompile Include="RotateSystem.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Game.rc" />

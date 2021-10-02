@@ -59,9 +59,6 @@
     <ClCompile Include="GameComponentMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RotateSystem.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RotateSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
