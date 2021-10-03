@@ -22,7 +22,8 @@ public:
 		Game& game,
 		const glm::vec3& position,
 		const glm::vec3& rotation,
-		const glm::vec3& scale);
+		const glm::vec3& scale,
+		const std::vector<Tag>& tags);
 
 	virtual void UpdateWorldMatrix(const glm::mat4& world_matrix) override;
 
@@ -30,6 +31,10 @@ public:
 	{
 		return m_descriptor_set;
 	}
+
+	void Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer);
+
+	static Tag s_vulkan_transform_component_tag;
 
 private:
 	Game& m_game;

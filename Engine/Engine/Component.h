@@ -38,4 +38,11 @@ private:
 	ComponentIdentifier m_id;
 };
 
+std::vector<Component::Tag> concat_vectors(const std::vector<Component::Tag> & left, const std::vector<Component::Tag> & right)
+{
+	std::vector<Component::Tag> tmp = left;
+	tmp.insert(tmp.end(), right.begin(), right.end());
+	return tmp;
+}
+
 } // namespace diffusion {

@@ -31,6 +31,12 @@
     <Filter Include="Source Files\BaseComponents">
       <UniqueIdentifier>{edd70691-a432-49c2-964c-adfb7183c8a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\BaseSystems">
+      <UniqueIdentifier>{e1d64972-1ebf-4191-866c-cf22f5640e09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\BaseSystems">
+      <UniqueIdentifier>{8b31b69b-1353-479e-8396-614149759732}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -93,6 +99,15 @@
     <ClInclude Include="VulkanTransformComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanMeshComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRenderSystem.h">
+      <Filter>Header Files\BaseSystems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -142,6 +157,15 @@
     </ClCompile>
     <ClCompile Include="VulkanTransformComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanMeshComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanRenderSystem.cpp">
+      <Filter>Source Files\BaseSystems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

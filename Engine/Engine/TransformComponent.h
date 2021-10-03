@@ -14,7 +14,8 @@ public:
 	TransformComponent(
 		const glm::vec3& position,
 		const glm::vec3& rotation,
-		const glm::vec3& scale);
+		const glm::vec3& scale,
+		const std::vector<Tag>& tags);
 
 	virtual void UpdateWorldMatrix(const glm::mat4& world_matrix);
 

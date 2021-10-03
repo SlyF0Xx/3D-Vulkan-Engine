@@ -5,8 +5,12 @@
 
 namespace diffusion {
 
-TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
-	: Component({ s_transform_component_tag })
+TransformComponent::TransformComponent(
+	const glm::vec3& position,
+	const glm::vec3& rotation,
+	const glm::vec3& scale,
+	const std::vector<Tag>& tags)
+	: Component(concat_vectors({ s_transform_component_tag }, tags))
 {
 	glm::mat4 translation_matrix = glm::translate(glm::mat4(1), position);
 
