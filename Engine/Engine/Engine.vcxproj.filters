@@ -117,6 +117,9 @@
     <ClInclude Include="VulkanMeshComponentManager.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
+    <ClInclude Include="BoundingComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -183,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImportableVulkanMeshComponents.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
   </ItemGroup>

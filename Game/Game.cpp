@@ -6,7 +6,9 @@
 #include "PrimitiveMesh.h"
 #include "ImportableEntity.h"
 #include "Material.h"
-
+#include "CubeEntity.h"
+#include "PlaneEntity.h"
+#include "VulkanMeshComponentManager.h"
 
 #include <Engine.h>
 
@@ -43,45 +45,11 @@ glm::mat4 g_projectionMatrix;
 glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
 glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
 glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
-
+/*
 std::vector<PrimitiveMesh*> components;
 std::vector<PrimitiveMesh*> potential_linked_components;
 std::vector<PrimitiveMesh*> linked_components;
-
-void add_cube(Game & vulkan, glm::vec3 translation)
-{
-    auto component = new PrimitiveMesh(vulkan,
-        { PrimitiveColoredVertex{-0.25f, 0.75f, 0.5f, {0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.5f, {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.5f, {1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.5f, {1.0f, 0.0f}},
-
-          PrimitiveColoredVertex{-0.25f, 0.75f, 0.7f, {0.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.25f, 0.25f, 0.7f, {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.75f, 0.7f, {1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.75f, 0.25f, 0.7f, {1.0f, 0.0f}}
-        },
-        { 0, 1, 2,
-          1, 3, 2,
-          0, 4, 5,
-          0, 5, 1,
-          2, 6, 7,
-          2, 7, 3,
-          4, 5, 6,
-          5, 7, 6,
-          1, 5, 7,
-          1, 7, 3,
-          0, 4, 6,
-          0, 6, 2 },
-        BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
-        translation,
-        { 0, 0, 0 },
-        { 1, 1, 1 });
-    components.push_back(component);
-
-    vulkan.register_mesh(0, component);
-    //vulkan.AddGameComponent(component);
-}
+*/
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -130,7 +98,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     vulkan.add_light(glm::vec3(6.0f, 5.0f, 5.0f), glm::vec3(4.0f, 5.0f, 5.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     */
-    vulkan.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
+
+    diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
 
@@ -164,32 +133,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
         glm::vec3(2, 2, 2));
 
+    diffusion::PlaneEntity plane(vulkan);
+    //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f },
+    //components.push_back(plane);
 
-    auto plane = new PrimitiveMesh(vulkan,
-        { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-3.0,   0.0,  3.0,   {0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 3.0,   0.0, -3.0,   {1.0f, 0.0f}},
-          PrimitiveColoredVertex{ 3.0,   0.0,  3.0,   {1.0f, 1.0f}}
-        },
-        { 0, 1, 3,
-          0, 3, 2
-        },
-        BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f },
-        { 0, -3.0, 0 },
-        { 0, 0, 0 },
-        { 10, 10, 1 });
-    components.push_back(plane);
 
-    vulkan.register_mesh(0, plane);
+    diffusion::CubeEntity cube1(vulkan, { 0, 0, 0 });
+    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
+    //components.push_back(component);
+    //linked_components.push_back(components.back());
 
-    add_cube(vulkan, { 0, 0, 0 });
-    linked_components.push_back(components.back());
+    diffusion::CubeEntity cube2(vulkan, { 3.0, 0, 0 });
+    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
+    //components.push_back(component);
+    //potential_linked_components.push_back(components.back());
 
-    add_cube(vulkan, {  3.0, 0, 0 });
-    potential_linked_components.push_back(components.back());
-
-    add_cube(vulkan, { -3.0, 0, 0 });
-    potential_linked_components.push_back(components.back());
+    diffusion::CubeEntity cube3(vulkan, { -3.0, 0, 0 });
+    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
+    //components.push_back(component);
+    //potential_linked_components.push_back(components.back());
 
 
 
@@ -349,6 +311,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_KEYDOWN:
     {
+        /*
         switch (wParam)
         {
         case 'w':
@@ -495,6 +458,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         );
 
         g_vulkan->update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
+        */
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

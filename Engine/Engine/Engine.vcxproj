@@ -161,6 +161,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingComponent.h" />
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentGuard.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BoundingComponent.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentGuard.cpp" />

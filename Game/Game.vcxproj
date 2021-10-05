@@ -147,17 +147,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CubeEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ImportableEntity.h" />
+    <ClInclude Include="PlaneEntity.h" />
+    <ClInclude Include="PrimitiveEntity.h" />
     <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RotateSystem.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CubeEntity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImportableEntity.cpp" />
+    <ClCompile Include="PlaneEntity.cpp" />
+    <ClCompile Include="PrimitiveEntity.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
     <ClCompile Include="RotateSystem.cpp" />
   </ItemGroup>

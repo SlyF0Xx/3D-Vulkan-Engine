@@ -3,16 +3,16 @@
 #include "Entity.h"
 #include "Engine.h"
 
-#include <filesystem>
-
 namespace diffusion {
 
-class ImportableEntity : public Entity
+class PrimitiveEntity :
+    public Entity
 {
 public:
-	ImportableEntity(
+	PrimitiveEntity(
 		Game& game,
-		const std::filesystem::path& path,
+		const std::vector<PrimitiveColoredVertex>& verticies,
+		const std::vector<uint32_t>& indexes,
 		const glm::vec3& position,
 		const glm::vec3& rotation,
 		const glm::vec3& scale);
