@@ -1,8 +1,6 @@
 #pragma once
 
-#include "IGameComponent.h"
 #include "IMaterial.h"
-#include "IMesh.h"
 #include "IRender.h"
 #include "Lights.h"
 
@@ -83,12 +81,6 @@ private:
     vk::DescriptorPool m_descriptor_pool;
     vk::DescriptorSet m_descriptor_set;
 
-
-
-    std::unordered_map<int, /*std::unique_ptr<*/IMaterial */*>*/> m_materials;
-    std::unordered_map<MaterialType, std::unordered_set<int>> materials_by_type;
-    std::unordered_map<int, std::unordered_set</*std::unique_ptr<*/IMesh */*>*/>> mesh_by_material;
-
     IRender* render;
     std::vector<vk::Image> images;
 
@@ -149,27 +141,6 @@ public:
     {
         return m_swapchain;
     }
-    /*
-    const std::vector<std::unique_ptr<IGameComponent>>& get_game_components()
-    {
-        return m_game_components;
-    }
-    */
-
-    const std::unordered_map<int, IMaterial*>& get_materials()
-    {
-        return m_materials;
-    }
-
-    const std::unordered_map<MaterialType, std::unordered_set<int>>& get_materials_by_type()
-    {
-        return materials_by_type;
-    }
-
-    const std::unordered_map<int, std::unordered_set<IMesh*>>& get_mesh_by_material()
-    {
-        return mesh_by_material;
-    }
 
     const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts()
     {
@@ -200,9 +171,6 @@ public:
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
     uint32_t find_appropriate_memory_type(vk::MemoryRequirements& mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags);
-
-    void register_material(MaterialType material_type, /*std::unique_ptr<*/IMaterial */*>*/ material);
-    void register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh);
 
     void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory, vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal);
 

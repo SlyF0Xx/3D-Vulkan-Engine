@@ -3,12 +3,14 @@
 
 #include "framework.h"
 #include "Game.h"
-#include "PrimitiveMesh.h"
 #include "ImportableEntity.h"
 #include "Material.h"
 #include "CubeEntity.h"
 #include "PlaneEntity.h"
 #include "VulkanMeshComponentManager.h"
+#include "KitamoriMovingSystem.h"
+#include "RotateSystem.h"
+#include "Camera.h"
 
 #include <Engine.h>
 
@@ -39,17 +41,9 @@ BOOL                InitInstance(HINSTANCE, int, Game& vulkan, const glm::mat4& 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+
 Game* g_vulkan;
-glm::mat4 g_camera_matrix;
-glm::mat4 g_projectionMatrix;
-glm::vec3 cameraPosition{ 0.0f, 0.0f, -10.0f };
-glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
-glm::vec3 upVector{ 0.0f, -1.0f, 0.0f };
-/*
-std::vector<PrimitiveMesh*> components;
-std::vector<PrimitiveMesh*> potential_linked_components;
-std::vector<PrimitiveMesh*> linked_components;
-*/
+diffusion::Camera* g_camera;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -67,23 +61,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-
-    g_camera_matrix = glm::lookAt(
-        cameraPosition, // Позиция камеры в мировом пространстве
-        cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
-        upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
-
-    g_projectionMatrix = glm::perspective(
-        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
-        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
-        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
-        100.0f                                 // Дальняя плоскость отсечения.
-    );
-
     Game vulkan; g_vulkan = &vulkan;
 
-    if (!InitInstance (hInstance, nCmdShow, vulkan, g_camera_matrix, g_projectionMatrix))
+    diffusion::Camera camera(vulkan); g_camera = &camera;
+
+    if (!InitInstance (hInstance, nCmdShow, vulkan, camera.get_camera_matrix(), camera.get_projection_matrix()))
     {
         return FALSE;
     }
@@ -99,11 +81,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     */
 
+    vulkan.update_camera_projection_matrixes(camera.get_camera_matrix(), camera.get_projection_matrix());
+
     diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
-    vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
-
-    diffusion::ImportableEntity cat(
+    diffusion::CatImportableEntity cat(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
         glm::vec3(0, 3, 50),
@@ -134,38 +116,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(2, 2, 2));
 
     diffusion::PlaneEntity plane(vulkan);
-    //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f },
-    //components.push_back(plane);
+    //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
 
     diffusion::CubeEntity cube1(vulkan, { 0, 0, 0 });
-    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
-    //components.push_back(component);
-    //linked_components.push_back(components.back());
-
     diffusion::CubeEntity cube2(vulkan, { 3.0, 0, 0 });
-    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
-    //components.push_back(component);
-    //potential_linked_components.push_back(components.back());
-
     diffusion::CubeEntity cube3(vulkan, { -3.0, 0, 0 });
-    //BoundingSphere{ glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f },
-    //components.push_back(component);
-    //potential_linked_components.push_back(components.back());
-
 
 
     vulkan.SecondInitialize();
 
 
+    // Systems Initialization
+    //std::find(cube1.get_components().begin(), cube1.get_components().end(), 
+    diffusion::KitamoriMovingSystem kitamori(
+        static_cast<diffusion::BoundingComponent*>(&diffusion::s_component_manager_instance.get_components_by_tag(diffusion::BoundingComponent::s_bounding_component_tag)[0].get()));
+    camera.callback_list.append([&kitamori](glm::vec3 direction) {
+        kitamori.update_position(direction);
+    });
+
+    diffusion::RotateSystem rotate_system;
+
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
 
-    glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
+    //glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
 
-    glm::mat4 rotation_matrix(1);
-    glm::vec3 RotationZ(0, 0, 1.0);
+    //glm::mat4 rotation_matrix(1);
+    //glm::vec3 RotationZ(0, 0, 1.0);
 
     std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
@@ -180,17 +159,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            /*
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
+                rotate_system.tick();
+                /*
                 rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
                 for (auto& component : mandalorez.get_game_components()) {
                     component.UpdateWorldMatrix(component.get_world_matrix() * rotation_matrix);
                 }
                 //tv->UpdateWorldMatrix(rotation_matrix * translation_matrix);
-
+                */
                 time_point = std::chrono::steady_clock::now();
             }
-            */
             vulkan.Draw();
         }
     }
@@ -311,154 +290,45 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_KEYDOWN:
     {
-        /*
         switch (wParam)
         {
         case 'w':
         case 'W':
         {
-            glm::vec3 direction = glm::normalize(cameraTarget - cameraPosition) * 0.1f;
-            cameraPosition += direction;
-            cameraTarget += direction;
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), direction));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-
+            g_camera->move_forward(0.1f);
             break;
         }
         case 's':
         case 'S':
         {
-            glm::vec3 direction = glm::normalize(cameraTarget - cameraPosition) * 0.1f;
-            cameraPosition -= direction;
-            cameraTarget -= direction;
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -direction));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-
+            g_camera->move_backward(0.1f);
             break;
         }
         case 'a':
         case 'A':
         {
-            glm::vec3 forward_vec = glm::normalize(cameraTarget - cameraPosition);
-            glm::vec3 direction = glm::cross(forward_vec, upVector) * 0.1f;
-            cameraPosition -= direction;
-            cameraTarget -= direction;
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -direction));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-
+            g_camera->move_left(0.1f);
             break;
         }
         case 'd':
         case 'D':
         {
-            glm::vec3 forward_vec = glm::normalize(cameraTarget - cameraPosition);
-            glm::vec3 direction = glm::cross(forward_vec, upVector) * 0.1f;
-            cameraPosition += direction;
-            cameraTarget += direction;
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), direction));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-
+            g_camera->move_right(0.1f);
             break;
         }
         case VK_SPACE:
         {
-            cameraPosition += glm::vec3(upVector * 0.1f);
-            cameraTarget += glm::vec3(upVector * 0.1f);
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), upVector * 0.1f));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
+            g_camera->move_up(0.1f);
             break;
         }
         case VK_SHIFT:
         {
-            cameraPosition -= glm::vec3(upVector * 0.1f);
-            cameraTarget -= glm::vec3(upVector * 0.1f);
-
-            for (auto& linked_component : linked_components) {
-                linked_component->UpdateWorldMatrix(glm::translate(linked_component->get_world_matrix(), -upVector * 0.1f));
-            }
-
-            for (auto it = potential_linked_components.begin(); it != potential_linked_components.end(); ) {
-                if (linked_components.front()->Intersect(**it)) {
-                    linked_components.push_back(*it);
-                    it = potential_linked_components.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
+            g_camera->move_down(0.1f);
             break;
         }
         default:
             break;
         }
-        g_camera_matrix = glm::lookAt(
-            cameraPosition, // Позиция камеры в мировом пространстве
-            cameraTarget,   // Указывает куда вы смотрите в мировом пространстве
-            upVector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-        );
-
-        g_vulkan->update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
-        */
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

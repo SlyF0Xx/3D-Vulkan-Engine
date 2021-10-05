@@ -1,5 +1,7 @@
 #include "CubeEntity.h"
 
+#include "BoundingComponent.h"
+
 namespace diffusion {
 
 CubeEntity::CubeEntity(Game& game, glm::vec3 translation)
@@ -35,6 +37,7 @@ CubeEntity::CubeEntity(Game& game, glm::vec3 translation)
         { 1, 1, 1 }
     )
 {
+    add_component(ComponentGuard(std::make_unique<BoundingComponent>(glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f, std::vector<Component::Tag>{}, this)));
 }
 
 } // namespace diffusion {

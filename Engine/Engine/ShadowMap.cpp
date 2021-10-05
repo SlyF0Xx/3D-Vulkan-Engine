@@ -173,12 +173,12 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
                 inner_component.get().get_tags().end(),
                 diffusion::VulkanTransformComponent::s_vulkan_transform_component_tag);
             if (it != inner_component.get().get_tags().end()) {
-                auto comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
+                auto & comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
                 comp.Draw(m_layout, command_buffer);
             }
         }
 
-        auto comp = dynamic_cast<diffusion::VulkanMeshComponent&>(mesh_component.get());
+        auto & comp = dynamic_cast<diffusion::VulkanMeshComponent&>(mesh_component.get());
         comp.Draw(command_buffer);
     }
     /*

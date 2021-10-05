@@ -26,7 +26,7 @@ public:
 		const std::vector<Tag>& tags,
 		Entity* parent);
 
-	virtual void UpdateWorldMatrix(const glm::mat4& world_matrix) override;
+	void UpdateWorldMatrix(const glm::mat4& world_matrix) override;
 
 	vk::DescriptorSet get_descriptor_set() const
 	{

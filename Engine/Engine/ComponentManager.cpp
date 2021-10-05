@@ -31,7 +31,7 @@ std::vector<std::reference_wrapper<Component>> ComponentManager::get_components_
 	std::set<Component::ComponentIdentifier> component_ids;
 	for (auto& tag : tags) {
 		for (auto it = components_by_tag.find(tag); it != components_by_tag.end() && it->first == tag; ++it) {
-			component_ids.insert(it->first);
+			component_ids.insert(it->second);
 		}
 	}
 
@@ -50,7 +50,7 @@ Component& ComponentManager::get_component_by_id(Component::ComponentIdentifier 
 void ComponentManager::register_component(const Component& component)
 {
 	for (auto& tag : component.get_tags()) {
-		components_by_tag.insert(std::make_pair(component.get_id(), tag));
+		components_by_tag.insert(std::make_pair(tag, component.get_id()));
 	}
 }
 

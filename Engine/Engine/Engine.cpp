@@ -191,19 +191,6 @@ void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & m
     m_device.bindImageMemory(image, memory, {});
 }
 
-void Game::register_material(MaterialType material_type, /*std::unique_ptr<*/ IMaterial * /*>*/ material)
-{
-    m_materials.emplace(material->get_id(), material);
-    //m_materials.emplace(std::pair(material->get_id(), std::move(material)));
-    materials_by_type[material_type].insert(material->get_id());
-}
-
-void Game::register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh)
-{
-    mesh_by_material[material_id].emplace(mesh);
-    //mesh_by_material[material_id].emplace(std::move(mesh));
-}
-
 void Game::Update(int width, int height)
 {
     // Don't react to resize until after first initialization.

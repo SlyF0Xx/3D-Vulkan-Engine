@@ -73,7 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Bin32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\eventpp-master\include;E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,9 +151,10 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ImportableEntity.h" />
+    <ClInclude Include="KitamoriMovingSystem.h" />
+    <ClInclude Include="KitamoriSystem.h" />
     <ClInclude Include="PlaneEntity.h" />
     <ClInclude Include="PrimitiveEntity.h" />
-    <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RotateSystem.h" />
     <ClInclude Include="targetver.h" />
@@ -162,9 +163,10 @@
     <ClCompile Include="CubeEntity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImportableEntity.cpp" />
+    <ClCompile Include="KitamoriMovingSystem.cpp" />
+    <ClCompile Include="KitamoriSystem.cpp" />
     <ClCompile Include="PlaneEntity.cpp" />
     <ClCompile Include="PrimitiveEntity.cpp" />
-    <ClCompile Include="PrimitiveMesh.cpp" />
     <ClCompile Include="RotateSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
