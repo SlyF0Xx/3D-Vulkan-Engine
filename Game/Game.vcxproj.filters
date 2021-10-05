@@ -30,15 +30,6 @@
     <ClInclude Include="PrimitiveMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImportableMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImportableInheritanceMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameComponentMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RotateSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,15 +42,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PrimitiveMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImportableMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImportableInheritanceMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameComponentMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RotateSystem.cpp">

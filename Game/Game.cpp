@@ -4,8 +4,8 @@
 #include "framework.h"
 #include "Game.h"
 #include "PrimitiveMesh.h"
-#include "ImportableInheritanceMesh.h"
 #include "ImportableEntity.h"
+#include "Material.h"
 
 
 #include <Engine.h>
@@ -134,16 +134,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
 
-    // TODO: restore
-    /*
-    ImportableInheritanceMesh cat(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
-        glm::vec3(0, 3, 50),
-        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
-        glm::vec3(0.1, 0.1, 0.1));
-    */
-
     diffusion::ImportableEntity cat(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
@@ -151,9 +141,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
         glm::vec3(0.1, 0.1, 0.1));
 
-
     /*
-    ImportableInheritanceMesh griffon(
+    * griffon
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\Griffon.fbx",
         glm::vec3(3, 0, -6),
@@ -161,23 +150,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(0.01, 0.01, 0.01));
     */
 
-
-    // TODO: restore
-    /*
-    ImportableInheritanceMesh mandalorez(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 4, 1),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(1, 1, 1));
-
-    ImportableInheritanceMesh tv(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 3, 5),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(2, 2, 2));
-    */
     diffusion::ImportableEntity mandalorez(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
@@ -192,15 +164,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
         glm::vec3(2, 2, 2));
 
-
-    /*
-    ImportableInheritanceMesh tv(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 6, 1),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(1, 1, 1));
-    */
 
     auto plane = new PrimitiveMesh(vulkan,
         { PrimitiveColoredVertex{-3.0,   0.0, -3.0,   {0.0f, 0.0f}},
