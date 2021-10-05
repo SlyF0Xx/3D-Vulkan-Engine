@@ -5,6 +5,8 @@
 #include "Game.h"
 #include "PrimitiveMesh.h"
 #include "ImportableInheritanceMesh.h"
+#include "ImportableEntity.h"
+
 
 #include <Engine.h>
 
@@ -132,13 +134,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     vulkan.update_camera_projection_matrixes(g_camera_matrix, g_projectionMatrix);
 
+    // TODO: restore
+    /*
     ImportableInheritanceMesh cat(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
         glm::vec3(0, 3, 50),
         glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
         glm::vec3(0.1, 0.1, 0.1));
-    
+    */
+
+    diffusion::ImportableEntity cat(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
+        glm::vec3(0, 3, 50),
+        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
+        glm::vec3(0.1, 0.1, 0.1));
+
+
     /*
     ImportableInheritanceMesh griffon(
         vulkan,
@@ -148,6 +161,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(0.01, 0.01, 0.01));
     */
 
+
+    // TODO: restore
+    /*
     ImportableInheritanceMesh mandalorez(
         vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
@@ -161,6 +177,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         glm::vec3(4, 3, 5),
         glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
         glm::vec3(2, 2, 2));
+    */
+    diffusion::ImportableEntity mandalorez(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 4, 1),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(1, 1, 1));
+
+    diffusion::ImportableEntity tv(
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 3, 5),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(2, 2, 2));
+
+
     /*
     ImportableInheritanceMesh tv(
         vulkan,
@@ -223,6 +255,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            /*
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
                 rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
                 for (auto& component : mandalorez.get_game_components()) {
@@ -232,7 +265,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
                 time_point = std::chrono::steady_clock::now();
             }
-
+            */
             vulkan.Draw();
         }
     }

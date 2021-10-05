@@ -42,6 +42,11 @@ std::vector<std::reference_wrapper<Component>> ComponentManager::get_components_
 	return components;
 }
 
+Component& ComponentManager::get_component_by_id(Component::ComponentIdentifier id)
+{
+	return *m_components.find(id)->second;
+}
+
 void ComponentManager::register_component(const Component& component)
 {
 	for (auto& tag : component.get_tags()) {

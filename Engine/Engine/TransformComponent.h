@@ -9,13 +9,14 @@ namespace diffusion {
 class TransformComponent : public Component
 {
 public:
-	static Tag s_transform_component_tag;
+	inline static Tag s_transform_component_tag;
 
 	TransformComponent(
 		const glm::vec3& position,
 		const glm::vec3& rotation,
 		const glm::vec3& scale,
-		const std::vector<Tag>& tags);
+		const std::vector<Tag>& tags,
+		Entity* parent);
 
 	virtual void UpdateWorldMatrix(const glm::mat4& world_matrix);
 

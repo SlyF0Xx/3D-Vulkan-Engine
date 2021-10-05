@@ -23,7 +23,8 @@ public:
 		const glm::vec3& position,
 		const glm::vec3& rotation,
 		const glm::vec3& scale,
-		const std::vector<Tag>& tags);
+		const std::vector<Tag>& tags,
+		Entity* parent);
 
 	virtual void UpdateWorldMatrix(const glm::mat4& world_matrix) override;
 
@@ -34,7 +35,7 @@ public:
 
 	void Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer);
 
-	static Tag s_vulkan_transform_component_tag;
+	inline static Tag s_vulkan_transform_component_tag;
 
 private:
 	Game& m_game;

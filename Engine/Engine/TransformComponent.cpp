@@ -9,8 +9,9 @@ TransformComponent::TransformComponent(
 	const glm::vec3& position,
 	const glm::vec3& rotation,
 	const glm::vec3& scale,
-	const std::vector<Tag>& tags)
-	: Component(concat_vectors({ s_transform_component_tag }, tags))
+	const std::vector<Tag>& tags,
+	Entity* parent)
+	: Component(concat_vectors({ s_transform_component_tag }, tags), parent)
 {
 	glm::mat4 translation_matrix = glm::translate(glm::mat4(1), position);
 

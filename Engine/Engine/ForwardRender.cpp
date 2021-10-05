@@ -1,8 +1,14 @@
 #include "ForwardRender.h"
 #include "Engine.h"
 
+#include "VulkanTransformComponent.h"
+#include "VulkanMeshComponent.h"
+#include "Entity.h"
+#include "VulkanMeshComponentManager.h"
+
+
 ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images)
-    : m_game(game)
+    : diffusion::System({}), m_game(game)
 {
     m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
 
@@ -52,6 +58,11 @@ void ForwardRender::Draw()
 
     std::array results{ vk::Result() };
     m_game.get_queue().presentKHR(vk::PresentInfoKHR(wait_sems, m_game.get_swapchain(), next_image.value, results));
+}
+
+void ForwardRender::tick()
+{
+    Draw();
 }
 
 void ForwardRender::InitializePipelineLayout()
@@ -244,12 +255,36 @@ void ForwardRender::InitCommandBuffer()
         vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
         m_swapchain_data[i].m_command_buffer.setScissor(0, scissor);
 
-        for (auto& [mat_type, materials] : m_game.get_materials_by_type()) {
+        for (auto& [mat_type, materials] : diffusion::s_vulkan_mesh_component_manager.get_materials_by_type()) {
             for (auto& material : materials) {
-                m_game.get_materials().find(material)->second->UpdateMaterial(m_layout, m_swapchain_data[i].m_command_buffer);
+                diffusion::s_vulkan_mesh_component_manager.get_materials().find(material)->second->UpdateMaterial(m_layout, m_swapchain_data[i].m_command_buffer);
+                
+
+                for (auto& mesh_component : diffusion::s_vulkan_mesh_component_manager.get_mesh_by_material().find(material)->second) {
+                    diffusion::Entity* parent = mesh_component->get_parrent();
+                    for (auto& inner_component : parent->get_components()) {
+                        auto it = std::find(
+                            inner_component.get().get_tags().begin(),
+                            inner_component.get().get_tags().end(),
+                            diffusion::VulkanTransformComponent::s_vulkan_transform_component_tag);
+                        if (it != inner_component.get().get_tags().end()) {
+                            auto comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
+                            comp.Draw(m_layout, m_swapchain_data[i].m_command_buffer);
+                        }
+                    }
+
+                    auto comp = dynamic_cast<diffusion::VulkanMeshComponent*>(mesh_component);
+                    comp->Draw(m_swapchain_data[i].m_command_buffer);
+                }
+
+                
+                /*
                 for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
                     mesh->Draw(m_layout, m_swapchain_data[i].m_command_buffer);
                 }
+                */
+
+
             }
         }
 

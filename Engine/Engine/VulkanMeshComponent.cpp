@@ -7,8 +7,9 @@ VulkanMeshComponent::VulkanMeshComponent(
     Game& game,
     const std::vector<PrimitiveColoredVertex>& verticies,
     const std::vector<uint32_t>& indexes,
-    const std::vector<Tag>& tags)
-    : MeshComponent(game, verticies, indexes, concat_vectors({ s_vulkan_mesh_component_tag }, tags))
+    const std::vector<Tag>& tags,
+    Entity* parent)
+    : MeshComponent(game, verticies, indexes, concat_vectors({ s_vulkan_mesh_component_tag }, tags), parent)
 {
     auto out = sync_create_host_invisible_buffer(m_game, m_verticies, vk::BufferUsageFlagBits::eVertexBuffer, 0);
     m_vertex_buffer = out.m_buffer;

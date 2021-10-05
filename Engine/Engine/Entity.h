@@ -9,9 +9,12 @@ namespace diffusion {
 class Entity
 {
 public:
-	Entity(const std::vector<ComponentGuard>& components)
-		: m_components(components)
+	Entity(std::vector<ComponentGuard> components)
+		: m_components(std::move(components))
 	{}
+
+	std::vector<std::reference_wrapper<Component>> get_components();
+	Component& add_component(ComponentGuard component);
 
 private:
 	std::vector<ComponentGuard> m_components;

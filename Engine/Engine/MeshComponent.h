@@ -13,9 +13,10 @@ public:
         Game& game,
         const std::vector<PrimitiveColoredVertex>& verticies,
         const std::vector<uint32_t>& indexes,
-        const std::vector<Tag>& tags);
+        const std::vector<Tag>& tags,
+        Entity* parent);
 
-    static Tag s_mesh_component_tag;
+    inline static Tag s_mesh_component_tag;
 
 protected:
     std::vector<PrimitiveColoredVertex> m_verticies;

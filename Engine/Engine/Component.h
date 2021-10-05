@@ -6,14 +6,16 @@
 
 namespace diffusion {
 
+class Entity;
+
 class Component
 {
 public:
 	using ComponentIdentifier = Identifier;
 	using Tag = Identifier;
 
-	Component(const std::vector<Tag>& tags)
-		: m_tags(tags)
+	Component(const std::vector<Tag>& tags, Entity* parent)
+		: m_tags(tags), m_parent(parent)
 	{}
 
 	virtual ~Component() = default;
@@ -33,12 +35,23 @@ public:
 		return m_id;
 	}
 
+	Entity* get_parrent()
+	{
+		return m_parent;
+	}
+
+	Entity* get_parrent() const
+	{
+		return m_parent;
+	}
+
 private:
 	std::vector<Tag> m_tags;
 	ComponentIdentifier m_id;
+	Entity* m_parent;
 };
 
-std::vector<Component::Tag> concat_vectors(const std::vector<Component::Tag> & left, const std::vector<Component::Tag> & right)
+inline std::vector<Component::Tag> concat_vectors(const std::vector<Component::Tag> & left, const std::vector<Component::Tag> & right)
 {
 	std::vector<Component::Tag> tmp = left;
 	tmp.insert(tmp.end(), right.begin(), right.end());

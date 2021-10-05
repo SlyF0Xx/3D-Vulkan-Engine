@@ -29,28 +29,35 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
 
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
 
-    std::array layers = {
-        "VK_LAYER_KHRONOS_validation",
-        "VK_LAYER_LUNARG_api_dump",
-        "VK_LAYER_LUNARG_monitor",
+
+    std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
+
+
+    //std::array layers = {
+        //"VK_LAYER_KHRONOS_validation",
+        //"VK_LAYER_LUNARG_api_dump",
+      //  "VK_LAYER_LUNARG_monitor",
 
         // "VK_LAYER_RENDERDOC_Capture",
 #ifdef VK_TRACE
         "VK_LAYER_LUNARG_vktrace",
 #endif
-    };
+    //};
+            std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
         "VK_EXT_debug_report",
         "VK_EXT_debug_utils",
-        "VK_KHR_external_memory_capabilities",
-        "VK_NV_external_memory_capabilities",
+        //"VK_KHR_external_memory_capabilities",
+        //"VK_NV_external_memory_capabilities",
         "VK_EXT_swapchain_colorspace",
         "VK_KHR_surface",
         "VK_KHR_win32_surface",
 
-        "VK_KHR_get_physical_device_properties2"
+        //"VK_KHR_get_physical_device_properties2"
     };
+
+    //std::array<const char* const, 0> extensions = {};
 
     m_instance = vk::createInstance(vk::InstanceCreateInfo({}, &application_info, layers, extensions));
 

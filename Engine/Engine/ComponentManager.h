@@ -16,6 +16,7 @@ public:
 	void destroy_component(Component::ComponentIdentifier id);
 	std::vector<std::reference_wrapper<Component>> get_components_by_tag(const Component::Tag& tag);
 	std::vector<std::reference_wrapper<Component>> get_components_by_tags(const std::vector<Component::Tag>& tags);
+	Component& get_component_by_id(Component::ComponentIdentifier id);
 
 private:
 	void register_component(const Component& component);
@@ -25,6 +26,6 @@ private:
 	std::map<Component::ComponentIdentifier, std::unique_ptr<Component>> m_components;
 };
 
-ComponentManager s_component_manager_instance;
+inline ComponentManager s_component_manager_instance;
 
 } // namespace diffusion {

@@ -7,8 +7,9 @@ VulkanTransformComponent::VulkanTransformComponent(
 	const glm::vec3& position,
 	const glm::vec3& rotation,
 	const glm::vec3& scale,
-	const std::vector<Tag>& tags)
-	: TransformComponent(position, rotation, scale, concat_vectors({ s_vulkan_transform_component_tag }, tags)), m_game(game)
+	const std::vector<Tag>& tags,
+	Entity* parent)
+	: TransformComponent(position, rotation, scale, concat_vectors({ s_vulkan_transform_component_tag }, tags), parent), m_game(game)
 {
 	std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
 	m_descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));

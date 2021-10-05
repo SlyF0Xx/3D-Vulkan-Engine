@@ -150,6 +150,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameComponentMesh.h" />
+    <ClInclude Include="ImportableEntity.h" />
     <ClInclude Include="ImportableInheritanceMesh.h" />
     <ClInclude Include="ImportableMesh.h" />
     <ClInclude Include="PrimitiveMesh.h" />
@@ -160,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameComponentMesh.cpp" />
+    <ClCompile Include="ImportableEntity.cpp" />
     <ClCompile Include="ImportableInheritanceMesh.cpp" />
     <ClCompile Include="ImportableMesh.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
