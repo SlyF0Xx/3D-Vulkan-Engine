@@ -27,7 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -73,8 +73,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Engine</TargetName>
-    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Bin32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
+    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Bin32;E:\programming\VulkanSDK\1.2.176.1\Bin32;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -98,7 +98,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,14 +161,55 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingSphere.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentGuard.h" />
+    <ClInclude Include="ComponentManager.h" />
+    <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="export.h" />
-    <ClInclude Include="framework.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="ForwardRender.h" />
+    <ClInclude Include="Identifier.h" />
     <ClInclude Include="IGameComponent.h" />
+    <ClInclude Include="IMaterial.h" />
+    <ClInclude Include="IMesh.h" />
+    <ClInclude Include="ImportableVulkanMeshComponents.h" />
+    <ClInclude Include="IRender.h" />
+    <ClInclude Include="Lights.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="System.h" />
+    <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="VulkanMeshComponent.h" />
+    <ClInclude Include="VulkanMeshComponentManager.h" />
+    <ClInclude Include="VulkanRenderSystem.h" />
+    <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="BoundingSphere.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentGuard.cpp" />
+    <ClCompile Include="ComponentManager.cpp" />
+    <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="Identifier.cpp" />
+    <ClCompile Include="IMaterial.cpp" />
+    <ClCompile Include="ImportableVulkanMeshComponents.cpp" />
+    <ClCompile Include="Lights.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="System.cpp" />
+    <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="VulkanMeshComponent.cpp" />
+    <ClCompile Include="VulkanMeshComponentManager.cpp" />
+    <ClCompile Include="VulkanRenderSystem.cpp" />
+    <ClCompile Include="VulkanTransformComponent.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

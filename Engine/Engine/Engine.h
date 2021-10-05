@@ -1,20 +1,49 @@
 #pragma once
 
-#include "export.h"
-
 #include "IGameComponent.h"
+#include "IMaterial.h"
+#include "IMesh.h"
+#include "IRender.h"
+#include "Lights.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
+#include <glm/glm.hpp>
+
+#include <optional>
+#include <memory>
+#include <unordered_set>
+#include <unordered_map>
+
+struct PrimitiveColoredVertex
+{
+    float x, y, z;
+    //float colors[4];
+    float tex_coords[2];
+    float norm_coords[3];
+};
+
+/*
+#pragma pack(push, 1)
+struct LightInfo
+{
+    glm::vec3 m_direction;
+    uint32_t padding = 0;
+};
+#pragma pack(pop)
+*/
+
 // This class is exported from the dll
-class ENGINE_API Game {
+class Game {
 public:
 	Game();
 	~Game();
 
 //#ifdef _WIN32
-	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
+	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
+
+    void SecondInitialize();
 //#endif // WIN_32
 
     void Update(int width, int height);
@@ -22,8 +51,6 @@ public:
 
 	void Exit();
 	void Draw();
-
-
 
     int m_width;
     int m_height;
@@ -42,15 +69,46 @@ private:
 
     vk::SurfaceKHR m_surface;
     vk::SwapchainKHR m_swapchain;
-    //std::vector<std::unique_ptr<IGameComponent>> m_game_components;
-    std::vector<IGameComponent*> m_game_components;
 
-    vk::Semaphore m_sema;
 
-    std::vector<PerSwapchainImageData> m_swapchain_data;
 
-    vk::RenderPass m_render_pass;
-    vk::RenderPass m_game_component_render_pass;
+
+    glm::mat4 m_view_projection_matrix;
+    //glm::mat4 m_world_matrix;
+
+    vk::Buffer m_world_view_projection_matrix_buffer;
+    vk::DeviceMemory m_world_view_projection_matrix_memory;
+    std::byte* m_world_view_projection_mapped_memory;
+
+    vk::DescriptorPool m_descriptor_pool;
+    vk::DescriptorSet m_descriptor_set;
+
+
+
+    std::unordered_map<int, /*std::unique_ptr<*/IMaterial */*>*/> m_materials;
+    std::unordered_map<MaterialType, std::unordered_set<int>> materials_by_type;
+    std::unordered_map<int, std::unordered_set</*std::unique_ptr<*/IMesh */*>*/>> mesh_by_material;
+
+    IRender* render;
+    std::vector<vk::Image> images;
+
+    std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
+    //vk::PipelineLayout m_layout;
+
+
+    vk::DescriptorSet m_lights_descriptor_set;
+    //std::vector<LightInfo> m_lights;
+    vk::Buffer m_lights_buffer;
+    vk::DeviceMemory m_lights_memory;
+    std::vector<std::byte> m_lights_memory_to_transfer;
+
+    std::unique_ptr<Lights> m_shadpwed_lights;
+
+    vk::Buffer m_lights_count_buffer;
+    vk::DeviceMemory m_lights_count_memory;
+    std::vector<std::byte> m_lights_count_memory_to_transfer;
+
+    void InitializePipelineLayout();
 
 public:
     const vk::Instance& get_instance()
@@ -97,26 +155,60 @@ public:
         return m_game_components;
     }
     */
-    const std::vector<IGameComponent*>& get_game_components()
+
+    const std::unordered_map<int, IMaterial*>& get_materials()
     {
-        return m_game_components;
-    }
-    const std::vector<PerSwapchainImageData>& get_swapchain_data()
-    {
-        return m_swapchain_data;
-    }
-    const vk::Semaphore& get_sema()
-    {
-        return m_sema;
+        return m_materials;
     }
 
-    vk::RenderPass get_game_component_render_pass()
+    const std::unordered_map<MaterialType, std::unordered_set<int>>& get_materials_by_type()
     {
-        return m_game_component_render_pass;
+        return materials_by_type;
+    }
+
+    const std::unordered_map<int, std::unordered_set<IMesh*>>& get_mesh_by_material()
+    {
+        return mesh_by_material;
+    }
+
+    const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts()
+    {
+        return m_descriptor_set_layouts;
+    }
+
+    const vk::DescriptorSet& get_descriptor_set()
+    {
+        return m_descriptor_set;
+    }
+
+    const vk::DescriptorSet& get_lights_descriptor_set()
+    {
+        return m_lights_descriptor_set;
+    }
+
+    /*
+    const vk::PipelineLayout& get_layout()
+    {
+        return m_layout;
+    }
+    */
+
+    Lights& get_shadpwed_lights()
+    {
+        return *m_shadpwed_lights;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
     uint32_t find_appropriate_memory_type(vk::MemoryRequirements& mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags);
-    // void AddGameComponent(std::unique_ptr<IGameComponent> component);
-    void AddGameComponent(IGameComponent * component);
+
+    void register_material(MaterialType material_type, /*std::unique_ptr<*/IMaterial */*>*/ material);
+    void register_mesh(int material_id, /*std::unique_ptr<*/IMesh * /*>*/ mesh);
+
+    void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory, vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+
+    void update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
+
+    int add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector);
+    //void update_light(int index, const LightInfo&);
 };
