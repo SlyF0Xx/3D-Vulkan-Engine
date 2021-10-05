@@ -11,10 +11,12 @@ namespace diffusion {
 class RotateSystem : public System
 {
 public:
+    RotateSystem();
+
     void components_callback(const std::vector<std::reference_wrapper<Component>>& components) override {
         rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
         for (auto& component : components) {
-            auto comp = dynamic_cast<TransformComponent&>(component.get());
+            auto & comp = dynamic_cast<TransformComponent&>(component.get());
             comp.UpdateWorldMatrix(comp.get_world_matrix() * rotation_matrix);
         }
     }

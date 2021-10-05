@@ -74,7 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Engine</TargetName>
     <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Bin32;E:\programming\VulkanSDK\1.2.176.1\Bin32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\eventpp-master\include;E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -161,7 +161,8 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BoundingSphere.h" />
+    <ClInclude Include="BoundingComponent.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentGuard.h" />
     <ClInclude Include="ComponentManager.h" />
@@ -170,9 +171,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="Identifier.h" />
-    <ClInclude Include="IGameComponent.h" />
     <ClInclude Include="IMaterial.h" />
-    <ClInclude Include="IMesh.h" />
     <ClInclude Include="ImportableVulkanMeshComponents.h" />
     <ClInclude Include="IRender.h" />
     <ClInclude Include="Lights.h" />
@@ -184,11 +183,11 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="VulkanMeshComponent.h" />
     <ClInclude Include="VulkanMeshComponentManager.h" />
-    <ClInclude Include="VulkanRenderSystem.h" />
     <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BoundingSphere.cpp" />
+    <ClCompile Include="BoundingComponent.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentGuard.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
@@ -208,7 +207,6 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanMeshComponent.cpp" />
     <ClCompile Include="VulkanMeshComponentManager.cpp" />
-    <ClCompile Include="VulkanRenderSystem.cpp" />
     <ClCompile Include="VulkanTransformComponent.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

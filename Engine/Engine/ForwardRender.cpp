@@ -268,7 +268,7 @@ void ForwardRender::InitCommandBuffer()
                             inner_component.get().get_tags().end(),
                             diffusion::VulkanTransformComponent::s_vulkan_transform_component_tag);
                         if (it != inner_component.get().get_tags().end()) {
-                            auto comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
+                            auto & comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
                             comp.Draw(m_layout, m_swapchain_data[i].m_command_buffer);
                         }
                     }
