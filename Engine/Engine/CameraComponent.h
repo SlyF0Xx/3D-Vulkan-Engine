@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Component.h"
 #include "Engine.h"
 
 #include "eventpp/callbacklist.h"
@@ -7,10 +8,11 @@
 
 namespace diffusion {
 
-class Camera
+class CameraComponent :
+	public Component
 {
 public:
-	Camera(Game& game);
+	CameraComponent(Game& game, const std::vector<Tag>& tags, Entity* parent);
 
 	void move_forward(float multiplier);
 	void move_backward(float multiplier);
@@ -31,9 +33,11 @@ public:
 		return m_projection_matrix;
 	}
 
+	static inline Tag s_camera_component_tag;
+	static inline Tag s_main_camera_component_tag;
 
-private:
-	void recalculate_state();
+protected:
+	virtual void recalculate_state();
 
 	Game& m_game;
 	glm::mat4 m_camera_matrix;

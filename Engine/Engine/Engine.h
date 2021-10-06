@@ -39,7 +39,7 @@ public:
 	~Game();
 
 //#ifdef _WIN32
-	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
+	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
 
     void SecondInitialize();
 //#endif // WIN_32
@@ -70,16 +70,7 @@ private:
 
 
 
-
-    glm::mat4 m_view_projection_matrix;
-    //glm::mat4 m_world_matrix;
-
-    vk::Buffer m_world_view_projection_matrix_buffer;
-    vk::DeviceMemory m_world_view_projection_matrix_memory;
-    std::byte* m_world_view_projection_mapped_memory;
-
     vk::DescriptorPool m_descriptor_pool;
-    vk::DescriptorSet m_descriptor_set;
 
     IRender* render;
     std::vector<vk::Image> images;
@@ -147,11 +138,6 @@ public:
         return m_descriptor_set_layouts;
     }
 
-    const vk::DescriptorSet& get_descriptor_set()
-    {
-        return m_descriptor_set;
-    }
-
     const vk::DescriptorSet& get_lights_descriptor_set()
     {
         return m_lights_descriptor_set;
@@ -173,9 +159,6 @@ public:
     uint32_t find_appropriate_memory_type(vk::MemoryRequirements& mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags);
 
     void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory, vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-
-    void update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix);
 
     int add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector);
     //void update_light(int index, const LightInfo&);

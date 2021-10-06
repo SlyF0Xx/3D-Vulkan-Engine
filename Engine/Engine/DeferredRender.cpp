@@ -5,6 +5,7 @@
 #include "VulkanMeshComponent.h"
 #include "Entity.h"
 #include "VulkanMeshComponentManager.h"
+#include "VulkanCameraComponent.h"
 
 DeferredRender::DeferredRender(Game& game, const std::vector<vk::Image>& swapchain_images)
     : m_game(game)
@@ -329,7 +330,8 @@ void DeferredRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_deffered_render_pass, m_swapchain_data[i].m_deffered_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_deffered_pipeline);
 
-        m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_deferred_layout, 0, m_game.get_descriptor_set(), { {} });
+        auto comps = diffusion::s_component_manager_instance.get_components_by_tags({ diffusion::VulkanCameraComponent::s_vulkan_camera_component, diffusion::CameraComponent::s_main_camera_component_tag });
+        static_cast<diffusion::VulkanCameraComponent&>(comps[0].get()).Draw(m_deferred_layout, m_swapchain_data[i].m_command_buffer);
 
         vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
         m_swapchain_data[i].m_command_buffer.setViewport(0, viewport);

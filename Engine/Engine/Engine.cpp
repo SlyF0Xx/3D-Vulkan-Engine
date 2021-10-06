@@ -22,7 +22,7 @@ Game::~Game()
 {
 }
 
-void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix)
+void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
 {
     m_width = width;
     m_height = height;
@@ -90,24 +90,8 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
 
 
 
-    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 2) };
-    m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 2, pool_size));
-
-    m_descriptor_set = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[0]))[0];
-
-    m_view_projection_matrix = ProjectionMatrix * CameraMatrix;
-
-    std::vector matrixes{ m_view_projection_matrix };
-    auto out2 = create_buffer(*this, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
-    m_world_view_projection_matrix_buffer = out2.m_buffer;
-    m_world_view_projection_matrix_memory = out2.m_memory;
-    m_world_view_projection_mapped_memory = out2.m_mapped_memory;
-
-    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_view_projection_matrix_buffer, {}, VK_WHOLE_SIZE) };
-
-    std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
-    m_device.updateDescriptorSets(write_descriptors, {});
-
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
+    m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
 
 
 
@@ -131,6 +115,13 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height, con
     m_device.updateDescriptorSets(write_lights_descriptors, {});
 
     images = m_device.getSwapchainImagesKHR(m_swapchain);
+
+    glm::mat4 ProjectionMatrix = glm::perspective(
+        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
+        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
+        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
+        100.0f                                 // Дальняя плоскость отсечения.
+    );
     m_shadpwed_lights = std::make_unique<Lights>(*this, ProjectionMatrix, images);
 
 
@@ -270,18 +261,6 @@ uint32_t Game::find_appropriate_memory_type(vk::MemoryRequirements & mem_req, co
     return -1;
 }
 
-void Game::update_camera_projection_matrixes(const glm::mat4& CameraMatrix, const glm::mat4& ProjectionMatrix)
-{
-    m_view_projection_matrix = ProjectionMatrix * CameraMatrix;
-
-    std::vector matrixes{ m_view_projection_matrix };
-
-    auto memory_buffer_req = m_device.getBufferMemoryRequirements(m_world_view_projection_matrix_buffer);
-
-    std::memcpy(m_world_view_projection_mapped_memory, matrixes.data(), sizeof(glm::mat4));
-    m_device.flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
-}
-
 int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)
 {
     m_shadpwed_lights->add_light(position, cameraTarget, upVector);
@@ -319,8 +298,6 @@ void Game::update_light(int index, const LightInfo & light)
 */
 void Game::Exit()
 {
-
-    m_device.unmapMemory(m_world_view_projection_matrix_memory);
     /*
     for (auto& swapchain_data : m_swapchain_data) {
         m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);

@@ -108,8 +108,14 @@
     <ClInclude Include="BoundingComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="PossessedComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanCameraComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,8 +182,14 @@
     <ClCompile Include="BoundingComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="PossessedComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanCameraComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

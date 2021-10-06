@@ -12,4 +12,11 @@ public:
     CubeEntity(Game& game, glm::vec3 translation);
 };
 
+class CubePossesedEntity :
+    public CubeEntity
+{
+public:
+    CubePossesedEntity(Game& game, glm::vec3 translation);
+};
+
 } // namespace diffusion {

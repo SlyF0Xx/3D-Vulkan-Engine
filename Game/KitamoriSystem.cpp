@@ -1,13 +1,27 @@
 #include "KitamoriSystem.h"
 
 #include "ComponentManager.h"
+#include "Entity.h"
+#include "PossessedComponent.h"
 
 namespace diffusion {
 
-KitamoriSystem::KitamoriSystem(BoundingComponent* initial)
-    : System({}), m_linked_components({ initial })
+KitamoriSystem::KitamoriSystem()
+    : System({})
     //: System({ BoundingComponent::s_bounding_component_tag })
 {
+    for (auto& component : s_component_manager_instance.get_components_by_tag(PossessedComponent::s_possessed_tag)) {
+        for (auto& inner_component : component.get().get_parrent()->get_components()) {
+            auto it = std::find(
+                inner_component.get().get_tags().begin(),
+                inner_component.get().get_tags().end(),
+                diffusion::BoundingComponent::s_bounding_component_tag);
+            if (it != inner_component.get().get_tags().end()) {
+                auto& comp = dynamic_cast<diffusion::BoundingComponent&>(inner_component.get());
+                m_linked_components.push_back(static_cast<BoundingComponent*>(&comp));
+            }
+        }
+    }
 }
 
 void KitamoriSystem::update_components()

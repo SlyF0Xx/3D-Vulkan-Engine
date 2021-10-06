@@ -1,5 +1,7 @@
 #include "ComponentManager.h"
 
+#include <algorithm>
+
 namespace diffusion {
 
 void ComponentManager::create_component(std::unique_ptr<Component> component)
@@ -28,6 +30,16 @@ std::vector<std::reference_wrapper<Component>> ComponentManager::get_components_
 
 std::vector<std::reference_wrapper<Component>> ComponentManager::get_components_by_tags(const std::vector<Component::Tag>& tags)
 {
+	std::vector<std::reference_wrapper<Component>> components;
+	for (auto& [_, component] : m_components) {
+		if (std::all_of(tags.begin(), tags.end(), [&component] (const Component::Tag & tag) {
+				return std::find(component->get_tags().begin(), component->get_tags().end(), tag) != component->get_tags().end();
+			})) {
+			components.push_back(std::ref(*component));
+		}
+	}
+
+	/*
 	std::set<Component::ComponentIdentifier> component_ids;
 	for (auto& tag : tags) {
 		for (auto it = components_by_tag.find(tag); it != components_by_tag.end() && it->first == tag; ++it) {
@@ -39,6 +51,7 @@ std::vector<std::reference_wrapper<Component>> ComponentManager::get_components_
 	for (auto& component_id : component_ids) {
 		components.push_back(std::ref(*m_components.find(component_id)->second));
 	}
+	*/
 	return components;
 }
 

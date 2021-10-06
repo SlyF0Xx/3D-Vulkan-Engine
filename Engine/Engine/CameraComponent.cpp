@@ -1,9 +1,9 @@
-#include "Camera.h"
+#include "CameraComponent.h"
 
 namespace diffusion {
 
-Camera::Camera(Game& game)
-    : m_game(game)
+CameraComponent::CameraComponent(Game& game, const std::vector<Tag>& tags, Entity* parent)
+    : Component(concat_vectors({ s_camera_component_tag }, tags), parent), m_game(game)
 {
     m_projection_matrix = glm::perspective(
         static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
@@ -20,7 +20,7 @@ Camera::Camera(Game& game)
     );
 }
 
-void Camera::move_forward(float multiplier)
+void CameraComponent::move_forward(float multiplier)
 {
     glm::vec3 direction = glm::normalize(m_camera_target - m_camera_position) * multiplier;
     m_camera_position += direction;
@@ -30,7 +30,7 @@ void Camera::move_forward(float multiplier)
     callback_list(direction);
 }
 
-void Camera::move_backward(float multiplier)
+void CameraComponent::move_backward(float multiplier)
 {
     glm::vec3 direction = glm::normalize(m_camera_target - m_camera_position) * multiplier;
     m_camera_position -= direction;
@@ -40,7 +40,7 @@ void Camera::move_backward(float multiplier)
     callback_list(-direction);
 }
 
-void Camera::move_left(float multiplier)
+void CameraComponent::move_left(float multiplier)
 {
     glm::vec3 forward_vec = glm::normalize(m_camera_target - m_camera_position);
     glm::vec3 direction = glm::cross(forward_vec, m_up_vector) * multiplier;
@@ -51,7 +51,7 @@ void Camera::move_left(float multiplier)
     callback_list(-direction);
 }
 
-void Camera::move_right(float multiplier)
+void CameraComponent::move_right(float multiplier)
 {
     glm::vec3 forward_vec = glm::normalize(m_camera_target - m_camera_position);
     glm::vec3 direction = glm::cross(forward_vec, m_up_vector) * multiplier;
@@ -62,7 +62,7 @@ void Camera::move_right(float multiplier)
     callback_list(direction);
 }
 
-void Camera::move_up(float multiplier)
+void CameraComponent::move_up(float multiplier)
 {
     glm::vec3 direction = glm::vec3(m_up_vector * multiplier);
     m_camera_position += direction;
@@ -72,7 +72,7 @@ void Camera::move_up(float multiplier)
     callback_list(direction);
 }
 
-void Camera::move_down(float multiplier)
+void CameraComponent::move_down(float multiplier)
 {
     glm::vec3 direction = glm::vec3(m_up_vector * multiplier);
     m_camera_position -= direction;
@@ -82,7 +82,7 @@ void Camera::move_down(float multiplier)
     callback_list(-direction);
 }
 
-void Camera::recalculate_state()
+void CameraComponent::recalculate_state()
 {
     m_camera_matrix = glm::lookAt(
         m_camera_position, // Позиция камеры в мировом пространстве
@@ -90,7 +90,7 @@ void Camera::recalculate_state()
         m_up_vector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
     );
 
-    m_game.update_camera_projection_matrixes(m_camera_matrix, m_projection_matrix);
+    // m_game.update_camera_projection_matrixes(m_camera_matrix, m_projection_matrix);
 }
 
 } // namespace diffusion {

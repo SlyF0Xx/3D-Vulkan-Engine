@@ -9,7 +9,6 @@ class KitamoriMovingSystem :
     public KitamoriSystem
 {
 public:
-    using KitamoriSystem::KitamoriSystem;
     void update_position(glm::vec3 direction);
 };
 

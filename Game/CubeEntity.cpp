@@ -1,6 +1,9 @@
 #include "CubeEntity.h"
 
 #include "BoundingComponent.h"
+#include "TransformComponent.h"
+#include "PossessedComponent.h"
+#include "VulkanCameraComponent.h"
 
 namespace diffusion {
 
@@ -38,6 +41,13 @@ CubeEntity::CubeEntity(Game& game, glm::vec3 translation)
     )
 {
     add_component(ComponentGuard(std::make_unique<BoundingComponent>(glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f, std::vector<Component::Tag>{}, this)));
+}
+
+CubePossesedEntity::CubePossesedEntity(Game& game, glm::vec3 translation)
+    : CubeEntity(game, translation)
+{
+    add_component(ComponentGuard(std::make_unique<PossessedComponent>(std::vector<Component::Tag>{}, this)));
+    add_component(ComponentGuard(std::make_unique<VulkanCameraComponent>(game, std::vector<Component::Tag>{ CameraComponent::s_main_camera_component_tag }, this)));
 }
 
 } // namespace diffusion {
