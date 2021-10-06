@@ -111,6 +111,9 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PossessedComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PossessedComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ class KitamoriSystem :
     public System
 {
 public:
-    KitamoriSystem(BoundingComponent* initial);
+    KitamoriSystem();
     void update_components();
 
 protected:

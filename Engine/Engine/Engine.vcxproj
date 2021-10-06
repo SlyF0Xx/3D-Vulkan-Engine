@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -177,6 +177,7 @@
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="PossessedComponent.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="TransformComponent.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="PossessedComponent.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="TransformComponent.cpp" />

@@ -45,6 +45,10 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 Game* g_vulkan;
 diffusion::Camera* g_camera;
 
+std::set<std::unique_ptr<diffusion::Entity>> s_entity_manager;
+
+void init_components();
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -85,52 +89,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
 
-    diffusion::CatImportableEntity cat(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
-        glm::vec3(0, 3, 50),
-        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
-        glm::vec3(0.1, 0.1, 0.1));
-
-    /*
-    * griffon
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\Griffon.fbx",
-        glm::vec3(3, 0, -6),
-        glm::vec3(0, 0, 0),
-        glm::vec3(0.01, 0.01, 0.01));
-    */
-
-    diffusion::ImportableEntity mandalorez(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 4, 1),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(1, 1, 1));
-
-    diffusion::ImportableEntity tv(
-        vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 3, 5),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
-        glm::vec3(2, 2, 2));
-
-    diffusion::PlaneEntity plane(vulkan);
-    //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
-
-
-    diffusion::CubeEntity cube1(vulkan, { 0, 0, 0 });
-    diffusion::CubeEntity cube2(vulkan, { 3.0, 0, 0 });
-    diffusion::CubeEntity cube3(vulkan, { -3.0, 0, 0 });
-
+    init_components();
 
     vulkan.SecondInitialize();
 
 
     // Systems Initialization
-    //std::find(cube1.get_components().begin(), cube1.get_components().end(), 
-    diffusion::KitamoriMovingSystem kitamori(
-        static_cast<diffusion::BoundingComponent*>(&diffusion::s_component_manager_instance.get_components_by_tag(diffusion::BoundingComponent::s_bounding_component_tag)[0].get()));
+    diffusion::KitamoriMovingSystem kitamori;
     camera.callback_list.append([&kitamori](glm::vec3 direction) {
         kitamori.update_position(direction);
     });
@@ -139,12 +104,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
-
-
-    //glm::mat4 translation_matrix = glm::translate(glm::mat4(1), glm::vec3(3, 0, 0));
-
-    //glm::mat4 rotation_matrix(1);
-    //glm::vec3 RotationZ(0, 0, 1.0);
 
     std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
@@ -161,13 +120,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
                 rotate_system.tick();
-                /*
-                rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
-                for (auto& component : mandalorez.get_game_components()) {
-                    component.UpdateWorldMatrix(component.get_world_matrix() * rotation_matrix);
-                }
-                //tv->UpdateWorldMatrix(rotation_matrix * translation_matrix);
-                */
                 time_point = std::chrono::steady_clock::now();
             }
             vulkan.Draw();
@@ -176,7 +128,46 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
+void init_components()
+{
+    s_entity_manager.emplace(std::make_unique<diffusion::CatImportableEntity>(
+        *g_vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
+        glm::vec3(0, 3, 50),
+        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
+        glm::vec3(0.1, 0.1, 0.1)));
 
+    /*
+    * griffon
+        vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\Griffon.fbx",
+        glm::vec3(3, 0, -6),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0.01, 0.01, 0.01));
+    */
+
+    s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
+        *g_vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 4, 1),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(1, 1, 1)));
+
+    s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
+        *g_vulkan,
+        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 3, 5),
+        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(2, 2, 2)));
+
+    s_entity_manager.emplace(std::make_unique<diffusion::PlaneEntity>(*g_vulkan));
+    //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
+
+
+    s_entity_manager.emplace(std::make_unique<diffusion::CubePossesedEntity>(*g_vulkan, glm::vec3{ 0, 0, 0 }));
+    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 3.0, 0, 0 }));
+    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -3.0, 0, 0 }));
+}
 
 //
 //  FUNCTION: MyRegisterClass()
