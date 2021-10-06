@@ -10,7 +10,9 @@
 #include "VulkanMeshComponentManager.h"
 #include "KitamoriMovingSystem.h"
 #include "RotateSystem.h"
-#include "Camera.h"
+#include "CameraComponent.h"
+#include "InputSystem.h"
+#include "InputEvents.h"
 
 #include <Engine.h>
 
@@ -37,13 +39,12 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int, Game& vulkan, const glm::mat4& camera_matrix, const glm::mat4& projectionMatrix);
+BOOL                InitInstance(HINSTANCE, int, Game& vulkan);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 
 Game* g_vulkan;
-diffusion::Camera* g_camera;
 
 std::set<std::unique_ptr<diffusion::Entity>> s_entity_manager;
 
@@ -67,12 +68,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Perform application initialization:
     Game vulkan; g_vulkan = &vulkan;
 
-    diffusion::Camera camera(vulkan); g_camera = &camera;
-
-    if (!InitInstance (hInstance, nCmdShow, vulkan, camera.get_camera_matrix(), camera.get_projection_matrix()))
+    if (!InitInstance (hInstance, nCmdShow, vulkan))
     {
         return FALSE;
     }
+
+    diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
+
+    init_components();
 
 
     for (int i = 0; i < 1; ++i) {
@@ -85,18 +88,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     */
 
-    vulkan.update_camera_projection_matrixes(camera.get_camera_matrix(), camera.get_projection_matrix());
-
-    diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
-
-    init_components();
-
     vulkan.SecondInitialize();
 
 
     // Systems Initialization
+
+    diffusion::InputSystem input_system;
+    diffusion::move_forward.append([&input_system]() {input_system.move_forward(); });
+    diffusion::move_backward.append([&input_system]() {input_system.move_backward(); });
+    diffusion::move_left.append([&input_system]() {input_system.move_left(); });
+    diffusion::move_right.append([&input_system]() {input_system.move_right(); });
+    diffusion::move_up.append([&input_system]() {input_system.move_up(); });
+    diffusion::move_down.append([&input_system]() {input_system.move_down(); });
+
+
     diffusion::KitamoriMovingSystem kitamori;
-    camera.callback_list.append([&kitamori](glm::vec3 direction) {
+    static_cast<diffusion::CameraComponent&>(diffusion::s_component_manager_instance.get_components_by_tag(diffusion::CameraComponent::s_main_camera_component_tag)[0].get()).callback_list.append([&kitamori](glm::vec3 direction) {
         kitamori.update_position(direction);
     });
 
@@ -205,7 +212,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan, const glm::mat4 & camera_matrix, const glm::mat4& projectionMatrix)
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
@@ -216,7 +223,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan, const glm::m
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd, 1904, 962, camera_matrix, projectionMatrix);
+   vulkan.Initialize(hInstance, hWnd, 1904, 962);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -286,35 +293,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case 'w':
         case 'W':
         {
-            g_camera->move_forward(0.1f);
+            diffusion::move_forward();
             break;
         }
         case 's':
         case 'S':
         {
-            g_camera->move_backward(0.1f);
+            diffusion::move_backward();
             break;
         }
         case 'a':
         case 'A':
         {
-            g_camera->move_left(0.1f);
+            diffusion::move_left();
             break;
         }
         case 'd':
         case 'D':
         {
-            g_camera->move_right(0.1f);
+            diffusion::move_right();
             break;
         }
         case VK_SPACE:
         {
-            g_camera->move_up(0.1f);
+            diffusion::move_up();
             break;
         }
         case VK_SHIFT:
         {
-            g_camera->move_down(0.1f);
+            diffusion::move_down();
             break;
         }
         default:

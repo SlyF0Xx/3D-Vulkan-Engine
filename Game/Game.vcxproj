@@ -151,6 +151,8 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ImportableEntity.h" />
+    <ClInclude Include="InputEvents.h" />
+    <ClInclude Include="InputSystem.h" />
     <ClInclude Include="KitamoriMovingSystem.h" />
     <ClInclude Include="KitamoriSystem.h" />
     <ClInclude Include="PlaneEntity.h" />
@@ -163,6 +165,7 @@
     <ClCompile Include="CubeEntity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImportableEntity.cpp" />
+    <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="KitamoriMovingSystem.cpp" />
     <ClCompile Include="KitamoriSystem.cpp" />
     <ClCompile Include="PlaneEntity.cpp" />

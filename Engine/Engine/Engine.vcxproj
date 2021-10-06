@@ -162,7 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingComponent.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentGuard.h" />
     <ClInclude Include="ComponentManager.h" />
@@ -182,13 +182,14 @@
     <ClInclude Include="System.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="VulkanCameraComponent.h" />
     <ClInclude Include="VulkanMeshComponent.h" />
     <ClInclude Include="VulkanMeshComponentManager.h" />
     <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoundingComponent.cpp" />
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentGuard.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
@@ -207,6 +208,7 @@
     <ClCompile Include="System.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VulkanCameraComponent.cpp" />
     <ClCompile Include="VulkanMeshComponent.cpp" />
     <ClCompile Include="VulkanMeshComponentManager.cpp" />
     <ClCompile Include="VulkanTransformComponent.cpp" />
