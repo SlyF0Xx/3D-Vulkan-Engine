@@ -52,9 +52,9 @@ void main()
 		for (int i = 0; i < lights_count.light_buffer_size; ++i) {
 			// Light to fragment
 			vec3 L = normalize(light_buffer.lights[i].m_direction);
-			L = vec3(L.x, -L.z, L.y);
+			//L = vec3(L.x, -L.z, L.y);
 
-			float NdotL = max(0.0, dot(N, L));
+			float NdotL = max(0.0, dot(N, -L));
 			vec3 diffuse = vec3(1.0f, 1.0f, 1.0f) * albedo.rgb * NdotL;
 			// ubo.lights[i].color
 

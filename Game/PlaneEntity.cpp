@@ -6,10 +6,10 @@ PlaneEntity::PlaneEntity(Game& game, glm::vec3 translation, glm::vec3 rotation, 
     : PrimitiveEntity(
         game,
         {
-          PrimitiveColoredVertex{-0.5,   0.0, -0.5,   {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-0.5,   0.0,  0.5,   {0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 0.5,   0.0, -0.5,   {1.0f, 0.0f}},
-          PrimitiveColoredVertex{ 0.5,   0.0,  0.5,   {1.0f, 1.0f}}
+          PrimitiveColoredVertex{-0.5,  -0.5, 0.0,   {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5,   0.5, 0.0,   {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 0.5,  -0.5, 0.0,   {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 0.5,   0.5, 0.0,   {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}
         },
         {
           0, 1, 3,
@@ -26,14 +26,14 @@ PlaneLitEntity::PlaneLitEntity(Game& game, glm::vec3 translation, glm::vec3 rota
     : PrimitiveLitEntity(
         game,
         {
-          PrimitiveColoredVertex{-0.5,   0.0, -0.5,   {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-0.5,   0.0,  0.5,   {0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 0.5,   0.0, -0.5,   {1.0f, 0.0f}},
-          PrimitiveColoredVertex{ 0.5,   0.0,  0.5,   {1.0f, 1.0f}}
+          PrimitiveColoredVertex{-0.5,  -0.5, 0.0,   {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5,   0.5, 0.0,   {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 0.5,  -0.5, 0.0,   {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 0.5,   0.5, 0.0,   {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}
         },
         {
-          0, 1, 3,
-          0, 3, 2
+          3, 1, 0,
+          2, 3, 0
         },
         translation,
         rotation,

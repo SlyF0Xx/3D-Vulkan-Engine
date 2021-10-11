@@ -11,40 +11,40 @@ CubeEntity::CubeEntity(Game& game, glm::vec3 translation, glm::vec3 rotation, gl
     : PrimitiveEntity(
         game,
         {
-          PrimitiveColoredVertex{ 0.5f,  0.5f, -0.5f, {0.0f, 1.0f}},
+          PrimitiveColoredVertex{ 0.5f, -0.5f,  0.5f, {0.0f, 1.0f}},
           PrimitiveColoredVertex{ 0.5f, -0.5f, -0.5f, {0.0f, 0.0f}},
-          PrimitiveColoredVertex{-0.5f,  0.5f, -0.5f, {1.0f, 1.0f}},
+          PrimitiveColoredVertex{-0.5f, -0.5f,  0.5f, {1.0f, 1.0f}},
           PrimitiveColoredVertex{-0.5f, -0.5f, -0.5f, {1.0f, 0.0f}},
 
           PrimitiveColoredVertex{ 0.5f,  0.5f,  0.5f, {0.0f, 1.0f}},
-          PrimitiveColoredVertex{ 0.5f, -0.5f,  0.5f, {0.0f, 0.0f}},
+          PrimitiveColoredVertex{ 0.5f,  0.5f, -0.5f, {0.0f, 0.0f}},
           PrimitiveColoredVertex{-0.5f,  0.5f,  0.5f, {1.0f, 1.0f}},
-          PrimitiveColoredVertex{-0.5f, -0.5f,  0.5f, {1.0f, 0.0f}}
+          PrimitiveColoredVertex{-0.5f,  0.5f, -0.5f, {1.0f, 0.0f}}
         },
         { 
           // forward
-          0, 1, 2,
-          1, 3, 2,
+          2, 1, 0,
+          2, 3, 1,
 
           // right
-          0, 4, 5,
-          0, 5, 1,
+          5, 4, 0,
+          1, 5, 0,
 
           // left
-          7, 6, 2,
-          3, 7, 2,
+          2, 6, 7,
+          2, 7, 3,
 
           // backward
-          4, 5, 6,
-          5, 7, 6,
+          6, 5, 4,
+          6, 7, 5,
 
           // down
-          1, 5, 7,
-          1, 7, 3,
+          7, 5, 1,
+          3, 7, 1,
 
           // top
-          6, 4, 0,
-          2, 6, 0
+          0, 4, 6,
+          0, 6, 2
         },
         translation,
         rotation,
