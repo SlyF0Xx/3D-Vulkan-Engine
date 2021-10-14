@@ -23,9 +23,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include <chrono>
 #include <iostream>
 #include <map>
@@ -81,8 +78,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     for (int i = 0; i < 1; ++i) {
         vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-        //vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, -4.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     }
+
+    vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
     /*
     vulkan.add_light(glm::vec3(2.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     vulkan.add_light(glm::vec3(6.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -230,7 +229,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd, 1904, 962);
+   vulkan.Initialize(hInstance, hWnd);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

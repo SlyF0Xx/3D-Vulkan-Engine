@@ -152,10 +152,7 @@ void DeferredRender::InitializeConstantPerImage()
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 4) };
     auto descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 4, pool_size));
 
-    std::array layouts{
-        m_composite_descriptor_set_layouts[0],
-        m_composite_descriptor_set_layouts[0]
-    };
+    std::vector layouts(m_swapchain_data.size(), m_composite_descriptor_set_layouts[0]);
 
     auto image_descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, layouts));
     /*
@@ -317,7 +314,7 @@ void DeferredRender::InitCommandBuffer()
                        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
-    auto command_buffers = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, 2));
+    auto command_buffers = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, m_swapchain_data.size()));
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         m_swapchain_data[i].m_command_buffer = command_buffers[i];
 

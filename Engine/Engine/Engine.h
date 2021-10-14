@@ -39,7 +39,7 @@ public:
 	~Game();
 
 //#ifdef _WIN32
-	void Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height);
+	void Initialize(HINSTANCE hinstance, HWND hwnd);
 
     void SecondInitialize();
 //#endif // WIN_32
@@ -61,8 +61,8 @@ private:
     vk::CommandPool m_command_pool;
 
     // material
-    vk::Format m_color_format = vk::Format::eB8G8R8A8Unorm /* vk::Format::eR16G16B16A16Sfloat */;
-    vk::Format m_depth_format = vk::Format::eD32SfloatS8Uint;
+    vk::Format m_color_format;// = vk::Format::eB8G8R8A8Unorm /* vk::Format::eR16G16B16A16Sfloat */;
+    vk::Format m_depth_format;// = vk::Format::eD32SfloatS8Uint;
     vk::PhysicalDeviceMemoryProperties m_memory_props;
 
     vk::SurfaceKHR m_surface;
@@ -92,6 +92,7 @@ private:
     std::vector<std::byte> m_lights_count_memory_to_transfer;
 
     void InitializePipelineLayout();
+    void InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats);
 
 public:
     const vk::Instance& get_instance()

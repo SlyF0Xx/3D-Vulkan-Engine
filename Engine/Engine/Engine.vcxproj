@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -84,8 +84,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Engine</TargetName>
-    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
+    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Bin;E:\programming\VulkanSDK\1.2.176.1\Bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Bin;E:\programming\VulkanSDK\1.2.176.1\Include;..\..\eventpp-master\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,7 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
