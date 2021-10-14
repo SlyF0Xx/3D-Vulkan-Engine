@@ -42,9 +42,9 @@ protected:
 	Game& m_game;
 	glm::mat4 m_camera_matrix;
 	glm::mat4 m_projection_matrix;
-	glm::vec3 m_camera_position{ 0.0f, 0.0f, -10.0f };
+	glm::vec3 m_camera_position{ 0.0f, -10.0f, 0.0f };
 	glm::vec3 m_camera_target{ 0.0f, 0.0f, 0.0f };
-	glm::vec3 m_up_vector{ 0.0f, -1.0f, 0.0f };
+	glm::vec3 m_up_vector{ 0.0f, 0.0f, -1.0f };
 };
 
 } // namespace diffusion {

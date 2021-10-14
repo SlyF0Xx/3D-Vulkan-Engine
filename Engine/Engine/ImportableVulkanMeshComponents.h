@@ -11,6 +11,7 @@
 
 namespace diffusion {
 
+// Edittor component
 class ImportableVulkanMeshComponents :
     public Component
 {

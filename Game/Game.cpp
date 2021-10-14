@@ -23,9 +23,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include <chrono>
 #include <iostream>
 #include <map>
@@ -74,13 +71,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new DefaultMaterial(vulkan));
+    diffusion::s_vulkan_mesh_component_manager.register_material(MaterialType::Opaque, new ImportableMaterial(vulkan, "default.png", "red.png"));
 
     init_components();
 
 
     for (int i = 0; i < 1; ++i) {
-        vulkan.add_light(glm::vec3(4.0f, 5.0f, -3.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     }
+
+    vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
     /*
     vulkan.add_light(glm::vec3(2.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     vulkan.add_light(glm::vec3(6.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -139,10 +140,11 @@ void init_components()
 {
     s_entity_manager.emplace(std::make_unique<diffusion::CatImportableEntity>(
         *g_vulkan,
+        //"E:\\programming\\Graphics\\Game\\Game\\untitled.fbx",
         "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
-        glm::vec3(0, 3, 50),
-        glm::vec3(glm::pi<float>() / 2, glm::pi<float>(), -glm::pi<float>() / 2),
-        glm::vec3(0.1, 0.1, 0.1)));
+        glm::vec3(0, 10, -5),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0.05, 0.05, 0.05)));
 
     /*
     * griffon
@@ -156,24 +158,28 @@ void init_components()
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 4, 1),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(4, 1, -4),
+        glm::vec3(0, 0, 0),
         glm::vec3(1, 1, 1)));
 
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
         "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
-        glm::vec3(4, 3, 5),
-        glm::vec3(-glm::pi<float>() / 2, 0, glm::pi<float>()),
+        glm::vec3(4, 5, -5),
+        glm::vec3(0, 0, 0),
         glm::vec3(2, 2, 2)));
 
-    s_entity_manager.emplace(std::make_unique<diffusion::PlaneEntity>(*g_vulkan));
+    s_entity_manager.emplace(std::make_unique<diffusion::PlaneLitEntity>(*g_vulkan, glm::vec3{0, 0, -5}, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 }));
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
 
     s_entity_manager.emplace(std::make_unique<diffusion::CubePossesedEntity>(*g_vulkan, glm::vec3{ 0, 0, 0 }));
     s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 3.0, 0, 0 }));
     s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -3.0, 0, 0 }));
+
+
+    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
+    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
 }
 
 //
@@ -223,7 +229,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd, 1904, 962);
+   vulkan.Initialize(hInstance, hWnd);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

@@ -118,13 +118,10 @@ void ForwardRender::DestroyRenderPass()
 
 void ForwardRender::InitializeConstantPerImage()
 {
-    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2) };
-    auto descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 2, pool_size));
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, m_swapchain_data.size()) };
+    auto descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, m_swapchain_data.size(), pool_size));
 
-    std::array layouts{
-        m_descriptor_set_layouts[m_descriptor_set_layouts.size() - 1],
-        m_descriptor_set_layouts[m_descriptor_set_layouts.size() - 1]
-    };
+    std::vector<vk::DescriptorSetLayout> layouts(m_swapchain_data.size(), m_descriptor_set_layouts[m_descriptor_set_layouts.size() - 1]);
 
     auto image_descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, layouts));
 
@@ -234,7 +231,7 @@ void ForwardRender::InitCommandBuffer()
                        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
-    m_command_buffers = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, 2));
+    m_command_buffers = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, m_swapchain_data.size()));
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         m_swapchain_data[i].m_command_buffer = m_command_buffers[i];
 

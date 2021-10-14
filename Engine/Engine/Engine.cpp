@@ -13,6 +13,9 @@
 #include <memory>
 #include <vector>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // This is the constructor of a class that has been exported.
 Game::Game()
 {
@@ -22,31 +25,74 @@ Game::~Game()
 {
 }
 
-void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
+void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR> & formats)
 {
-    m_width = width;
-    m_height = height;
+    for (auto& format : formats) {
+        switch (format.format)
+        {
+        case vk::Format::eB8G8R8A8Unorm: {
+            m_color_format = format.format;
+            break;
+        }
+        case vk::Format::eR8G8B8A8Unorm: {
+            m_color_format = format.format;
+            break;
+        }
 
+
+        case vk::Format::eD32SfloatS8Uint: {
+            m_depth_format = format.format;
+            break;
+        }
+        case vk::Format::eD16UnormS8Uint: {
+            m_depth_format = format.format;
+            break;
+        }
+        case vk::Format::eD24UnormS8Uint: {
+            m_depth_format = format.format;
+            break;
+        }
+        }
+    }
+
+    if (m_color_format == vk::Format::eUndefined) {
+        throw std::exception("Color format is not supported");
+    }
+
+    if (m_depth_format == vk::Format::eUndefined) {
+        throw std::exception("Depth format is not supported");
+    }
+}
+
+void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
+{
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
 
+    std::vector<vk::LayerProperties> enlayers = vk::enumerateInstanceLayerProperties();
+
+    std::ofstream fout("layers.txt");
+    for (auto& layer : enlayers) {
+        fout << layer.layerName << std::endl;
+    }
 
     std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
 
-
-    //std::array layers = {
-        //"VK_LAYER_KHRONOS_validation",
-        //"VK_LAYER_LUNARG_api_dump",
+    std::array layers = {
+        //"VK_LAYER_Galaxy_Overlay_DEBUG",
+        //"VK_LAYER_Galaxy_Overlay_VERBOSE",
+        //"VK_LAYER_Galaxy_Overlay"
+        "VK_LAYER_KHRONOS_validation",
+        "VK_LAYER_LUNARG_api_dump",
       //  "VK_LAYER_LUNARG_monitor",
 
-        // "VK_LAYER_RENDERDOC_Capture",
+        //"VK_LAYER_RENDERDOC_Capture",
 #ifdef VK_TRACE
         "VK_LAYER_LUNARG_vktrace",
 #endif
-    //};
-            std::array<const char* const, 0> layers = {};
+    };
+           // std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
-        "VK_EXT_debug_report",
         "VK_EXT_debug_utils",
         //"VK_KHR_external_memory_capabilities",
         //"VK_NV_external_memory_capabilities",
@@ -68,7 +114,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
     std::array device_extensions{ "VK_KHR_swapchain" };
     m_device = devices[0].createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
     m_queue = m_device.getQueue(0, 0);
-    m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, 0));
+    m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
     m_surface = m_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hinstance, hwnd));
 
     //safe check
@@ -76,11 +122,35 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd, int width, int height)
         throw std::exception("device doesn't support surface");
     }
 
-    auto formats = devices[0].getSurfaceFormatsKHR(m_surface);
+    m_depth_format = vk::Format::eD32SfloatS8Uint;
+    InitializeColorFormats(devices[0].getSurfaceFormatsKHR(m_surface));
     m_memory_props = devices[0].getMemoryProperties();
 
+    auto capabilities = devices[0].getSurfaceCapabilitiesKHR(m_surface);
+    m_width = capabilities.currentExtent.width;
+    m_height = capabilities.currentExtent.height;
+
+    size_t image_count = 2;
+    if (capabilities.maxImageCount > 2) {
+        image_count = 3;
+    }
+
+    if (!(capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
+        throw std::exception("Supported Composite Alpha is not supported");
+    }
+    
+    if (!(capabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eColorAttachment)) {
+        throw std::exception("Supported Usage Flags is not supported");
+    }
+
+    auto present_modes = devices[0].getSurfacePresentModesKHR(m_surface);
+
+    if (auto it = std::find(present_modes.begin(), present_modes.end(), vk::PresentModeKHR::eImmediate); it == present_modes.end()) {
+        throw std::exception("Present mode is not supported");
+    }  
+
     std::array<uint32_t, 1> queues{ 0 };
-    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, 2, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(width, height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
+    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(m_width, m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
 
     InitializePipelineLayout();
 
