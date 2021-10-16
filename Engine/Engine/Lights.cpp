@@ -27,8 +27,8 @@ void Lights::add_light(const glm::vec3& position, const glm::vec3& cameraTarget,
 	for (int i = 0; i < m_swapchain_data.size(); ++i) {
 		m_game.get_device().destroySampler(m_swapchain_data[i].m_depth_sampler);
 		m_game.get_device().destroyImageView(m_swapchain_data[i].m_depth_image_view);
-		m_game.get_device().freeMemory(m_swapchain_data[i].m_depth_memory);
 		m_game.get_device().destroyImage(m_swapchain_data[i].m_depth_image);
+		m_game.get_device().freeMemory(m_swapchain_data[i].m_depth_memory);
 
 		m_swapchain_data[i].m_depth_image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined));
 		m_game.create_memory_for_image(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);

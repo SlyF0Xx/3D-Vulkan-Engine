@@ -72,18 +72,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Bin32;E:\programming\VulkanSDK\1.2.176.1\Bin32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>..\eventpp-master\include;E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib32;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(VK_SDK_PATH)\Third-Party\Bin32;$(VK_SDK_PATH)\Bin32;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>..\eventpp-master\include;$(VK_SDK_PATH)\Third-Party\Include;$(VK_SDK_PATH)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExecutablePath>E:\programming\VulkanSDK\1.2.176.1\Third-Party\Bin;E:\programming\VulkanSDK\1.2.176.1\Bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>E:\programming\VulkanSDK\1.2.176.1\Bin;..\eventpp-master\include;E:\programming\VulkanSDK\1.2.176.1\Third-Party\Include;E:\programming\VulkanSDK\1.2.176.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\programming\VulkanSDK\1.2.176.1\Lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(VK_SDK_PATH)\Third-Party\Bin;$(VK_SDK_PATH)\Bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>..\eventpp-master\include;$(VK_SDK_PATH)\Third-Party\Include;$(VK_SDK_PATH)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

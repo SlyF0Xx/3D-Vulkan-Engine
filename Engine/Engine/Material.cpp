@@ -7,7 +7,7 @@ ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command
     std::array<uint32_t, 1> queues{ 0 };
 
     int tex_width, tex_height, n;
-    auto* data = stbi_load((std::filesystem::path("E:\\programming\\Graphics\\Game\\Game\\Materials") / filepath).string().c_str(), &tex_width, &tex_height, &n, 4);
+    auto* data = stbi_load((std::filesystem::path("Materials") / filepath).string().c_str(), &tex_width, &tex_height, &n, 4);
 
     n = 4;
 
@@ -57,9 +57,9 @@ ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command
     std::array finish_barrier{ vk::ImageMemoryBarrier(vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eShaderRead, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 0, 0, image, vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)) };
 
 
-    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands /*vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eFragmentShader*/, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, start_barrier);
+    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, start_barrier);
     command_buffer.copyBufferToImage(cpy_buffer, image, vk::ImageLayout::eTransferDstOptimal, regions);
-    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, finish_barrier);
+    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, finish_barrier);
 
     return { image, memory };
 }
@@ -105,7 +105,7 @@ UnlitMaterial::UnlitMaterial(Game& game, const std::filesystem::path& texture_pa
 void UnlitMaterial::UpdateMaterial(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer)
 {
     int unlit = 1;
-    cmd_buffer.pushConstants(layout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(int), &unlit);
+    cmd_buffer.pushConstants(layout, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex /*because of layout*/, 0, sizeof(int), &unlit);
     cmd_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 0);
     cmd_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 0);
     cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 2, m_descriptor_set, { });
@@ -160,7 +160,7 @@ ImportableMaterial::ImportableMaterial(
 void ImportableMaterial::UpdateMaterial(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer)
 {
     int unlit = 0;
-    cmd_buffer.pushConstants(layout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(int), &unlit);
+    cmd_buffer.pushConstants(layout, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex /*because of layout*/, 0, sizeof(int), &unlit);
     cmd_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 1);
     cmd_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 1);
     cmd_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 2, m_descriptor_set, { });

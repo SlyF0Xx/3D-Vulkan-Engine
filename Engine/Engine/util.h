@@ -53,9 +53,9 @@ buffer_output sync_create_host_invisible_buffer(Game& game, const std::vector<T>
 	std::array finish_barrier{ vk::BufferMemoryBarrier(vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eShaderRead, 0, 0, buffer, 0, buffer_size) };
 
     command_buffer.begin(vk::CommandBufferBeginInfo());
-	command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands /*vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eFragmentShader*/, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, start_barrier, {});
+	command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, start_barrier, {});
 	command_buffer.copyBuffer(tmp_buffer.m_buffer, buffer, regions);
-	command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, finish_barrier, {});
+	command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, finish_barrier, {});
     command_buffer.end();
 
 

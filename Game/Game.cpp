@@ -141,7 +141,7 @@ void init_components()
     s_entity_manager.emplace(std::make_unique<diffusion::CatImportableEntity>(
         *g_vulkan,
         //"E:\\programming\\Graphics\\Game\\Game\\untitled.fbx",
-        "E:\\programming\\Graphics\\Game\\Game\\CatWithAnim7.fbx",
+        std::filesystem::path("Models") / "CatWithAnim7.fbx",
         glm::vec3(0, 10, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(0.05, 0.05, 0.05)));
@@ -157,14 +157,14 @@ void init_components()
 
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 1, -4),
         glm::vec3(0, 0, 0),
         glm::vec3(1, 1, 1)));
 
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
-        "E:\\programming\\Graphics\\Game\\Game\\uploads_files_2941243_retrotv0319.fbx",
+        std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 5, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(2, 2, 2)));

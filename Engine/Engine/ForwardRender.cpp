@@ -171,8 +171,8 @@ void ForwardRender::DestroyVariablePerImageResources()
         m_game.get_device().destroyImageView(m_swapchain_data[i].m_depth_image_view);
         m_game.get_device().destroyImageView(m_swapchain_data[i].m_color_image_view);
 
-        m_game.get_device().freeMemory(m_swapchain_data[i].m_depth_memory);
         m_game.get_device().destroyImage(m_swapchain_data[i].m_depth_image);
+        m_game.get_device().freeMemory(m_swapchain_data[i].m_depth_memory);
     }
 }
 
