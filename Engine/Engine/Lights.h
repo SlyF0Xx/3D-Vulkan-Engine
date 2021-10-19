@@ -5,6 +5,8 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
+#include <vk_mem_alloc.hpp>
+
 #include <glm/glm.hpp>
 
 struct LightShaderInfo
@@ -26,7 +28,7 @@ private:
     struct PerSwapchainImageData
     {
         vk::Image m_depth_image;
-        vk::DeviceMemory m_depth_memory;
+        vma::Allocation m_depth_memory;
 
         vk::ImageView m_depth_image_view;
         vk::Sampler m_depth_sampler;

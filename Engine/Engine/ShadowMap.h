@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include <vk_mem_alloc.hpp>
+
 #include <vector>
 
 class Game;
@@ -40,7 +42,7 @@ class ShadowMap
     glm::mat4 m_CameraMatrix;
 
     vk::Buffer m_world_view_projection_matrix_buffer;
-    vk::DeviceMemory m_world_view_projection_matrix_memory;
+    vma::Allocation m_world_view_projection_matrix_memory;
     std::byte* m_world_view_projection_mapped_memory;
 
     Game& m_game;

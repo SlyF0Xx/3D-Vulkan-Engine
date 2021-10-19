@@ -17,7 +17,7 @@ VulkanCameraComponent::VulkanCameraComponent(Game& game, const std::vector<Tag>&
 	std::vector matrixes{ m_view_projection_matrix };
 	auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
 	m_world_view_projection_matrix_buffer = out2.m_buffer;
-	m_world_view_projection_matrix_memory = out2.m_memory;
+	m_world_view_projection_matrix_memory = out2.m_allocation;
 	m_world_view_projection_mapped_memory = out2.m_mapped_memory;
 
 	std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_view_projection_matrix_buffer, {}, VK_WHOLE_SIZE) };
@@ -28,7 +28,7 @@ VulkanCameraComponent::VulkanCameraComponent(Game& game, const std::vector<Tag>&
 
 VulkanCameraComponent::~VulkanCameraComponent()
 {
-	m_game.get_device().unmapMemory(m_world_view_projection_matrix_memory);
+	m_game.get_allocator().destroyBuffer(m_world_view_projection_matrix_buffer, m_world_view_projection_matrix_memory);
 }
 
 void VulkanCameraComponent::recalculate_state()
@@ -42,7 +42,7 @@ void VulkanCameraComponent::recalculate_state()
 	auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_view_projection_matrix_buffer);
 
 	std::memcpy(m_world_view_projection_mapped_memory, matrixes.data(), sizeof(glm::mat4));
-	m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
+	//m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_view_projection_matrix_memory, {}, memory_buffer_req.size));
 }
 
 void VulkanCameraComponent::Draw(const vk::PipelineLayout& layout, const vk::CommandBuffer& cmd_buffer)

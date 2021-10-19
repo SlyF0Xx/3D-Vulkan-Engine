@@ -12,10 +12,12 @@ VulkanMeshComponent::VulkanMeshComponent(
     : MeshComponent(game, verticies, indexes, concat_vectors({ s_vulkan_mesh_component_tag }, tags), parent)
 {
     auto out = sync_create_host_invisible_buffer(m_game, m_verticies, vk::BufferUsageFlagBits::eVertexBuffer, 0);
-    m_vertex_buffer = out;
+    m_vertex_buffer = out.m_buffer;
+    m_vertex_memory = out.m_allocation;
 
     auto out3 = sync_create_host_invisible_buffer(m_game, m_indexes, vk::BufferUsageFlagBits::eIndexBuffer, 0);
-    m_index_buffer = out3;
+    m_index_buffer = out3.m_buffer;
+    m_index_memory = out3.m_allocation;
 }
 
 void VulkanMeshComponent::Draw(const vk::CommandBuffer& cmd_buffer)

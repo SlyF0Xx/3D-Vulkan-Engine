@@ -1,5 +1,7 @@
 #include "Material.h"
 
+#include "util.h"
+
 #include <stb_image.h>
 
 ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath)
@@ -17,22 +19,18 @@ ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command
 
     vk::Format texture_format = vk::Format::eB8G8R8A8Unorm;
 
-    auto image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, texture_format, vk::Extent3D(tex_width, tex_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-    vk::DeviceMemory memory;
-    m_game.create_memory_for_image(image, memory);
 
+    auto [image, image_memory] = m_game.get_allocator().createImage(
+        vk::ImageCreateInfo({}, vk::ImageType::e2D, texture_format, vk::Extent3D(tex_width, tex_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eLinear, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+        vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 
-
-    /* TODO: copy-paste from  */
-    auto cpy_buffer = m_game.get_device().createBuffer(vk::BufferCreateInfo({}, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::SharingMode::eExclusive, queues));
-    auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(cpy_buffer);
-
-    uint32_t buffer_index = m_game.find_appropriate_memory_type(memory_buffer_req, m_game.get_memory_props(), vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-
-    auto cpy_buffer_memory = m_game.get_device().allocateMemory(vk::MemoryAllocateInfo(memory_buffer_req.size, buffer_index));
+    auto buffer_memory =
+        m_game.get_allocator().createBuffer(vk::BufferCreateInfo({}, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::SharingMode::eExclusive, queues),
+            vma::AllocationCreateInfo(vma::AllocationCreateInfo({}, vma::MemoryUsage::eCpuToGpu)));
 
     void* mapped_data = nullptr;
-    m_game.get_device().mapMemory(cpy_buffer_memory, {}, memory_buffer_req.size, {}, &mapped_data);
+    m_game.get_allocator().mapMemory(buffer_memory.second, &mapped_data);
+
 
     auto staging_image_layout = m_game.get_device().getImageSubresourceLayout(image, vk::ImageSubresource(vk::ImageAspectFlagBits::eColor, 0, 0));
 
@@ -47,9 +45,8 @@ ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command
         }
     }
 
-    m_game.get_device().bindBufferMemory(cpy_buffer, cpy_buffer_memory, {});
-    m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(cpy_buffer_memory, {}, memory_buffer_req.size));
-    m_game.get_device().unmapMemory(cpy_buffer_memory);
+    //m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(cpy_buffer_memory, {}, memory_buffer_req.size));
+    m_game.get_allocator().unmapMemory(buffer_memory.second);
 
     std::array regions{ vk::BufferImageCopy({}, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {}, {static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height), 1}) };
 
@@ -58,10 +55,10 @@ ImageData UnlitMaterial::prepare_image_for_copy(const vk::CommandBuffer& command
 
 
     command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, start_barrier);
-    command_buffer.copyBufferToImage(cpy_buffer, image, vk::ImageLayout::eTransferDstOptimal, regions);
+    command_buffer.copyBufferToImage(buffer_memory.first, image, vk::ImageLayout::eTransferDstOptimal, regions);
     command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, finish_barrier);
 
-    return { image, memory };
+    return { image, image_memory };
 }
 
 UnlitMaterial::UnlitMaterial(Game& game)

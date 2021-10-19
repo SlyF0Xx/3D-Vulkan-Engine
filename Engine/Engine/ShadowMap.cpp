@@ -54,7 +54,7 @@ void ShadowMap::InitializeDescriptorSet()
     std::vector matrixes{ m_view_projection_matrix };
     auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
     m_world_view_projection_matrix_buffer = out2.m_buffer;
-    m_world_view_projection_matrix_memory = out2.m_memory;
+    m_world_view_projection_matrix_memory = out2.m_allocation;
     m_world_view_projection_mapped_memory = out2.m_mapped_memory;
 
     std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_view_projection_matrix_buffer, {}, VK_WHOLE_SIZE) };

@@ -169,13 +169,13 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     auto out3 = sync_create_empty_host_invisible_buffer(*this, 10 * sizeof(LightShaderInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
     m_lights_buffer = out3.m_buffer;
-    m_lights_memory = out3.m_memory;
+    m_lights_memory = out3.m_allocation;
 
     std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer, {}, VK_WHOLE_SIZE) };
 
     auto out4 = sync_create_empty_host_invisible_buffer(*this, sizeof(uint32_t), vk::BufferUsageFlagBits::eUniformBuffer, 0);
     m_lights_count_buffer = out4.m_buffer;
-    m_lights_count_memory = out4.m_memory;
+    m_lights_count_memory = out4.m_allocation;
 
     std::array lights_count_buffer_infos{ vk::DescriptorBufferInfo(m_lights_count_buffer, {}, VK_WHOLE_SIZE) };
 
@@ -241,16 +241,6 @@ void Game::InitializePipelineLayout()
     */
 }
 
-void Game::create_memory_for_image(const vk::Image & image, vk::DeviceMemory & memory, vk::MemoryPropertyFlags flags)
-{
-    auto memory_req = m_device.getImageMemoryRequirements(image);
-
-    uint32_t image_index = find_appropriate_memory_type(memory_req, m_memory_props, flags);
-
-    memory = m_device.allocateMemory(vk::MemoryAllocateInfo(memory_req.size, image_index));
-    m_device.bindImageMemory(image, memory, {});
-}
-
 void Game::Update(int width, int height)
 {
     // Don't react to resize until after first initialization.
@@ -314,20 +304,6 @@ vk::ShaderModule Game::loadSPIRVShader(std::string filename)
     {
         throw std::logic_error("Error: Could not open shader file \"" + filename + "\"");
     }
-}
-
-uint32_t Game::find_appropriate_memory_type(vk::MemoryRequirements & mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags)
-{
-    for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; ++i) {
-        if ((mem_req.memoryTypeBits & 1) == 1) {
-            // Type is available, does it match user properties?
-            if ((memory_props.memoryTypes[i].propertyFlags & memory_flags) == memory_flags) {
-                return i;
-            }
-        }
-        mem_req.memoryTypeBits >>= 1;
-    }
-    return -1;
 }
 
 int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)

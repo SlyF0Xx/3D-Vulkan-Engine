@@ -179,17 +179,30 @@ void DeferredRender::InitializeVariablePerImage(const std::vector<vk::Image>& sw
     std::vector<vk::WriteDescriptorSet> write_descriptors;
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         m_swapchain_data[i].m_color_image = swapchain_images[i];
-        m_swapchain_data[i].m_deffered_depth_image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        m_game.create_memory_for_image(m_swapchain_data[i].m_deffered_depth_image, m_swapchain_data[i].m_deffered_depth_memory);
 
-        m_swapchain_data[i].m_depth_image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        m_game.create_memory_for_image(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
+        auto deffered_allocation = m_game.get_allocator().createImage(
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+        m_swapchain_data[i].m_deffered_depth_image = deffered_allocation.first;
+        m_swapchain_data[i].m_deffered_depth_memory = deffered_allocation.second;
 
-        m_swapchain_data[i].m_albedo_image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        m_game.create_memory_for_image(m_swapchain_data[i].m_albedo_image, m_swapchain_data[i].m_albedo_memory);
+        auto depth_allocation = m_game.get_allocator().createImage(
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+        m_swapchain_data[i].m_depth_image = depth_allocation.first;
+        m_swapchain_data[i].m_depth_memory = depth_allocation.second;
 
-        m_swapchain_data[i].m_normal_image = m_game.get_device().createImage(vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/));
-        m_game.create_memory_for_image(m_swapchain_data[i].m_normal_image, m_swapchain_data[i].m_normal_memory);
+        auto albedo_allocation = m_game.get_allocator().createImage(
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+        m_swapchain_data[i].m_albedo_image = albedo_allocation.first;
+        m_swapchain_data[i].m_albedo_memory = albedo_allocation.second;
+
+        auto normal_allocation = m_game.get_allocator().createImage(
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+        m_swapchain_data[i].m_normal_image = normal_allocation.first;
+        m_swapchain_data[i].m_normal_memory = normal_allocation.second;
 
         m_swapchain_data[i].m_albedo_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_albedo_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_normal_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_normal_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));

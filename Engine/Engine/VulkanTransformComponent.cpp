@@ -17,9 +17,10 @@ VulkanTransformComponent::VulkanTransformComponent(
 	m_descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_game.get_descriptor_set_layouts()[1]))[0];
 
 	std::vector matrixes{ get_world_matrix() };
-	auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+	auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
 	m_world_matrix_buffer = out2.m_buffer;
-	m_world_matrix_memory = out2.m_memory;
+	m_world_matrix_memory = out2.m_allocation;
+	m_mapped_world_matrix_memory = out2.m_mapped_memory;
 
 	std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(m_world_matrix_buffer, {}, VK_WHOLE_SIZE) };
 	std::array write_descriptors{ vk::WriteDescriptorSet(m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
@@ -37,13 +38,8 @@ void VulkanTransformComponent::UpdateWorldMatrix(const glm::mat4& world_matrix)
 
 	std::vector matrixes{ get_world_matrix() };
 
-	auto memory_buffer_req = m_game.get_device().getBufferMemoryRequirements(m_world_matrix_buffer);
-
-	void* mapped_data = nullptr;
-	m_game.get_device().mapMemory(m_world_matrix_memory, {}, memory_buffer_req.size, {}, &mapped_data);
-	std::memcpy(mapped_data, matrixes.data(), sizeof(glm::mat4));
-	m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
-	m_game.get_device().unmapMemory(m_world_matrix_memory);
+	std::memcpy(m_mapped_world_matrix_memory, matrixes.data(), sizeof(glm::mat4));
+	//m_game.get_device().flushMappedMemoryRanges(vk::MappedMemoryRange(m_world_matrix_memory, {}, memory_buffer_req.size));
 }
 
 } // namespace diffusion {

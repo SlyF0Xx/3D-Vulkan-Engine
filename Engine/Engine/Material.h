@@ -5,20 +5,22 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
+#include <vk_mem_alloc.hpp>
+
 #include <glm/glm.hpp>
 
 #include <filesystem>
 
 struct ImageData {
     vk::Image m_image;
-    vk::DeviceMemory m_memory;
+    vma::Allocation m_memory;
 };
 
 class UnlitMaterial : public IMaterial
 {
 protected:
     vk::Image m_albedo_image;
-    vk::DeviceMemory m_albedo_memory;
+    vma::Allocation m_albedo_memory;
     vk::ImageView m_albedo_image_view;
     vk::Sampler m_albedo_sampler;
 
@@ -40,7 +42,7 @@ class ImportableMaterial : public UnlitMaterial
 {
 private:
     vk::Image m_normal_image;
-    vk::DeviceMemory m_normal_memory;
+    vma::Allocation m_normal_memory;
     vk::ImageView m_normal_image_view;
     vk::Sampler m_normal_sampler;
 

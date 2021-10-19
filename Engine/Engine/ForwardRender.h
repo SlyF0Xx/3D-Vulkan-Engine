@@ -3,6 +3,8 @@
 #include "IRender.h"
 #include "System.h"
 
+#include <vk_mem_alloc.hpp>
+
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -19,7 +21,7 @@ class ForwardRender :
         vk::Image m_color_image;
 
         vk::Image m_depth_image;
-        vk::DeviceMemory m_depth_memory;
+        vma::Allocation m_depth_memory;
 
         vk::ImageView m_color_image_view;
         vk::ImageView m_depth_image_view;

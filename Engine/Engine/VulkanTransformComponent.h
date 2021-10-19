@@ -9,6 +9,8 @@
 
 #include <glm/glm.hpp>
 
+#include <vk_mem_alloc.hpp>
+
 #include <array>
 #include <vector>
 #include <cstring>
@@ -40,7 +42,8 @@ public:
 private:
 	Game& m_game;
 	vk::Buffer m_world_matrix_buffer;
-	vk::DeviceMemory m_world_matrix_memory;
+	vma::Allocation m_world_matrix_memory;
+	std::byte* m_mapped_world_matrix_memory;
 
 	vk::DescriptorPool m_descriptor_pool;
 	vk::DescriptorSet m_descriptor_set;

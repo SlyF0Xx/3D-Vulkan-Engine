@@ -84,13 +84,13 @@ private:
     vk::DescriptorSet m_lights_descriptor_set;
     //std::vector<LightInfo> m_lights;
     vk::Buffer m_lights_buffer;
-    vk::DeviceMemory m_lights_memory;
+    vma::Allocation m_lights_memory;
     std::vector<std::byte> m_lights_memory_to_transfer;
 
     std::unique_ptr<Lights> m_shadpwed_lights;
 
     vk::Buffer m_lights_count_buffer;
-    vk::DeviceMemory m_lights_count_memory;
+    vma::Allocation m_lights_count_memory;
     std::vector<std::byte> m_lights_count_memory_to_transfer;
 
     vma::Allocator m_allocator;
@@ -166,9 +166,6 @@ public:
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
-    uint32_t find_appropriate_memory_type(vk::MemoryRequirements& mem_req, const vk::PhysicalDeviceMemoryProperties& memory_props, vk::MemoryPropertyFlags memory_flags);
-
-    void create_memory_for_image(const vk::Image& view, vk::DeviceMemory& memory, vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     int add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector);
     //void update_light(int index, const LightInfo&);
