@@ -37,7 +37,14 @@ ImportableVulkanMeshComponents::ImportableVulkanMeshComponents(
         for (int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_NORMALS); ++j) {
             scene->mMaterials[i]->GetTexture(aiTextureType_NORMALS, 0, &normal_str);
         }
-
+        /*
+        aiString other_str;
+        for (int k = 0; k < aiTextureType_UNKNOWN; ++k) {
+            for (int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType(k)); ++j) {
+                scene->mMaterials[i]->GetTexture(aiTextureType(k), 0, &other_str);
+            }
+        }
+        */
         IMaterial* material;
         if (str.length == 0) {
             material = new DefaultMaterial(game);

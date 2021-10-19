@@ -176,6 +176,13 @@ void init_components()
         glm::vec3(0, 0, 0),
         glm::vec3(2, 2, 2)));
 
+    s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
+        *g_vulkan,
+        std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
+        glm::vec3(-4, 5, -5),
+        glm::vec3(glm::pi<float>() / 2, 0, 0),
+        glm::vec3(0.1, 0.1, 0.1)));
+
     s_entity_manager.emplace(std::make_unique<diffusion::PlaneLitEntity>(*g_vulkan, glm::vec3{0, 0, -5}, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 }));
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
