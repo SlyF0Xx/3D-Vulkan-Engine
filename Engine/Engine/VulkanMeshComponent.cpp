@@ -24,7 +24,7 @@ void VulkanMeshComponent::Draw(const vk::CommandBuffer& cmd_buffer)
 {
     cmd_buffer.bindVertexBuffers(0, m_vertex_buffer, { {0} });
     cmd_buffer.bindIndexBuffer(m_index_buffer, {}, vk::IndexType::eUint32);
-    cmd_buffer.drawIndexed(m_indexes.size(), m_indexes.size() / 3, 0, 0, 0);
+    cmd_buffer.drawIndexed(m_indexes.size(), 1, 0, 0, 0);
 }
 
 } // namespace diffusion {
