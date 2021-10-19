@@ -85,7 +85,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Engine</TargetName>
     <ExecutablePath>$(VK_SDK_PATH)\Third-Party\Bin;$(VK_SDK_PATH)\Bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(VK_SDK_PATH)\Bin;$(VK_SDK_PATH)\Include;..\..\eventpp-master\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\VulkanMemoryAllocator-Hpp-master;$(VK_SDK_PATH)\Bin;$(VK_SDK_PATH)\Include;..\..\eventpp-master\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -65,6 +65,11 @@ public:
         return m_swapchain_data[index].m_depth_image_view;
     }
 
+    const vk::Image& get_depth_image(int index)
+    {
+        return m_swapchain_data[index].m_depth_image;
+    }
+
     std::vector<LightShaderInfo> get_light_shader_info();
 };
 

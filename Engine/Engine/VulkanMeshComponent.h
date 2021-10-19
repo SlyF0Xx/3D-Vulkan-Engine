@@ -24,10 +24,7 @@ public:
 
 private:
     vk::Buffer m_vertex_buffer;
-    vk::DeviceMemory m_vertex_memory;
-
     vk::Buffer m_index_buffer;
-    vk::DeviceMemory m_index_memory;
 };
 
 } // namespace diffusion {

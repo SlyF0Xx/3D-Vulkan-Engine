@@ -7,6 +7,8 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
+#include <vk_mem_alloc.hpp>
+
 #include <glm/glm.hpp>
 
 #include <optional>
@@ -91,6 +93,8 @@ private:
     vk::DeviceMemory m_lights_count_memory;
     std::vector<std::byte> m_lights_count_memory_to_transfer;
 
+    vma::Allocator m_allocator;
+
     void InitializePipelineLayout();
     void InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats);
 
@@ -154,6 +158,11 @@ public:
     Lights& get_shadpwed_lights()
     {
         return *m_shadpwed_lights;
+    }
+
+    vma::Allocator& get_allocator()
+    {
+        return m_allocator;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);

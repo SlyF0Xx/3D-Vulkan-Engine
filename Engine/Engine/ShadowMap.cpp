@@ -81,17 +81,19 @@ void ShadowMap::InitializeDeferredRenderPass()
     subpass.pDepthStencilAttachment = &depth_attachment;
 
     std::array dependencies{ vk::SubpassDependency(VK_SUBPASS_EXTERNAL, 0,
-                                                   vk::PipelineStageFlagBits::eFragmentShader,
-                                                   vk::PipelineStageFlagBits::eEarlyFragmentTests,
-                                                   vk::AccessFlagBits::eShaderRead,
-                                                   vk::AccessFlagBits::eDepthStencilAttachmentWrite),
-                             vk::SubpassDependency(0, VK_SUBPASS_EXTERNAL,
-                                                   vk::PipelineStageFlagBits::eLateFragmentTests,
-                                                   vk::PipelineStageFlagBits::eFragmentShader,
-                                                   vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-                                                   vk::AccessFlagBits::eShaderRead)
+                                               vk::PipelineStageFlagBits::eFragmentShader,
+                                               vk::PipelineStageFlagBits::eEarlyFragmentTests,
+                                               vk::AccessFlagBits::eShaderRead,
+                                               vk::AccessFlagBits::eDepthStencilAttachmentWrite/*,
+                                               vk::DependencyFlagBits::eByRegion*/),
+                         vk::SubpassDependency(0, VK_SUBPASS_EXTERNAL,
+                                               vk::PipelineStageFlagBits::eLateFragmentTests,
+                                               vk::PipelineStageFlagBits::eFragmentShader,
+                                               vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                                               vk::AccessFlagBits::eShaderRead/*,
+                                               vk::DependencyFlagBits::eByRegion*/)
     };
-
+    
     m_render_pass = m_game.get_device().createRenderPass(vk::RenderPassCreateInfo({}, attachment_descriptions, subpass, dependencies));
 }
 

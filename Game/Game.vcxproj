@@ -82,7 +82,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(VK_SDK_PATH)\Third-Party\Bin;$(VK_SDK_PATH)\Bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>..\eventpp-master\include;$(VK_SDK_PATH)\Third-Party\Include;$(VK_SDK_PATH)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\VulkanMemoryAllocator-Hpp-master;..\eventpp-master\include;$(VK_SDK_PATH)\Third-Party\Include;$(VK_SDK_PATH)\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -76,7 +76,6 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
     }
 
     std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
-
     std::array layers = {
         //"VK_LAYER_Galaxy_Overlay_DEBUG",
         //"VK_LAYER_Galaxy_Overlay_VERBOSE",
@@ -90,7 +89,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
         "VK_LAYER_LUNARG_vktrace",
 #endif
     };
-           // std::array<const char* const, 0> layers = {};
+           //std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
         "VK_EXT_debug_utils",
@@ -154,10 +153,10 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     InitializePipelineLayout();
 
-
-
-
-
+    vma::AllocatorCreateInfo allocator_info({}, devices[0], m_device);
+    allocator_info.instance = m_instance;
+    allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
+    m_allocator = vma::createAllocator(allocator_info);
 
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };

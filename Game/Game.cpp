@@ -1,5 +1,7 @@
 // Game.cpp : Defines the entry point for the application.
 //
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.hpp>
 
 #include "framework.h"
 #include "Game.h"
@@ -22,6 +24,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.hpp>
+
+
 
 #include <chrono>
 #include <iostream>
