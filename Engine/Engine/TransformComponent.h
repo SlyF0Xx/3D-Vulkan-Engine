@@ -6,6 +6,15 @@
 
 namespace diffusion {
 
+namespace entt {
+
+struct TransformComponent
+{
+	glm::mat4 m_world_matrix;
+};
+
+}
+
 class TransformComponent : public Component
 {
 public:

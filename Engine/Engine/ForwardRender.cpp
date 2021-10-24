@@ -7,10 +7,59 @@
 #include "VulkanMeshComponentManager.h"
 #include "VulkanCameraComponent.h"
 
+#include "util.h"
+
+void ForwardRender::add_vulkan_transform_component(entt::registry& registry, entt::entity parent_entity)
+{
+    auto& transform = registry.get<diffusion::entt::TransformComponent>(parent_entity);
+
+    std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
+
+    vk::DescriptorPool descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
+    vk::DescriptorSet descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, m_game.get_descriptor_set_layouts()[1]))[0];
+
+    std::vector matrixes{ transform.m_world_matrix };
+    auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
+
+    std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(out2.m_buffer, {}, VK_WHOLE_SIZE) };
+    std::array write_descriptors{ vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
+    m_game.get_device().updateDescriptorSets(write_descriptors, {});
+
+    registry.emplace<diffusion::entt::VulkanTransformComponent>(parent_entity, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory, descriptor_pool, descriptor_set);
+}
+
+void ForwardRender::transform_component_changed(entt::registry& registry, entt::entity parent_entity)
+{
+    auto& transform = registry.get<diffusion::entt::TransformComponent>(parent_entity);
+
+    // Use patch instead of just editing memory to create on_update event
+    registry.patch<diffusion::entt::VulkanTransformComponent>(parent_entity, [&transform](auto& vulkan_transform) {
+        std::memcpy(vulkan_transform.m_mapped_world_matrix_memory, &transform.m_world_matrix, sizeof(glm::mat4));
+    });
+}
+
+void ForwardRender::add_vulkan_mesh_component(entt::registry& registry, entt::entity parent_entity)
+{
+    auto& mesh = registry.get<diffusion::entt::MeshComponent>(parent_entity);
+
+    std::vector<diffusion::entt::VulkanSubMesh> submeshes;
+    for (auto& submesh : mesh.m_submeshes) {
+        auto vertex_memory = sync_create_host_invisible_buffer(m_game, submesh.m_verticies, vk::BufferUsageFlagBits::eVertexBuffer, 0);
+        auto index_memory = sync_create_host_invisible_buffer(m_game, submesh.m_indexes, vk::BufferUsageFlagBits::eIndexBuffer, 0);
+
+        submeshes.emplace_back(vertex_memory.m_buffer, vertex_memory.m_allocation, index_memory.m_buffer, index_memory.m_allocation);
+    }
+
+    registry.emplace<diffusion::entt::VulkanMeshComponent>(parent_entity, submeshes);
+}
 
 ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry& registry)
     : diffusion::System({}), m_game(game), m_registry(registry)
 {
+    m_registry.on_construct<diffusion::entt::TransformComponent>().connect<&ForwardRender::add_vulkan_transform_component>(*this);
+    m_registry.on_update<diffusion::entt::TransformComponent>().connect<&ForwardRender::transform_component_changed>(*this);
+    m_registry.on_construct<diffusion::entt::MeshComponent>().connect<&ForwardRender::add_vulkan_mesh_component>(*this);
+
     m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
 
     InitializePipelineLayout();
@@ -277,6 +326,7 @@ void ForwardRender::InitCommandBuffer()
                     }
                 });
 
+                /*
                 for (auto& mesh_component : diffusion::s_vulkan_mesh_component_manager.get_mesh_by_material().find(material)->second) {
                     diffusion::Entity* parent = mesh_component->get_parrent();
                     for (auto& inner_component : parent->get_components()) {
@@ -293,7 +343,7 @@ void ForwardRender::InitCommandBuffer()
                     auto comp = dynamic_cast<diffusion::VulkanMeshComponent*>(mesh_component);
                     comp->Draw(m_swapchain_data[i].m_command_buffer);
                 }
-
+                */
                 
                 /*
                 for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
