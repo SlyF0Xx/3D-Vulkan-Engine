@@ -5,6 +5,21 @@
 
 namespace diffusion {
 
+namespace entt {
+
+struct SubMesh
+{
+    std::vector<PrimitiveColoredVertex> m_verticies;
+    std::vector<uint32_t> m_indexes;
+};
+
+struct MeshComponent
+{
+    std::vector<SubMesh> m_submeshes;
+};
+
+}
+
 class MeshComponent :
     public Component
 {

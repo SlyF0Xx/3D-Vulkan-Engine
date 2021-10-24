@@ -195,7 +195,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 
 
     //render = new DeferredRender(*this, images);
-    render = new ForwardRender(*this, images);
+    render = new ForwardRender(*this, images, m_registry);
 }
 
 void Game::SecondInitialize()

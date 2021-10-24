@@ -11,11 +11,27 @@
 
 #include <vk_mem_alloc.hpp>
 
+#include <entt/entt.hpp>
+
 #include <array>
 #include <vector>
 #include <cstring>
 
 namespace diffusion {
+
+namespace entt {
+
+struct VulkanTransformComponent
+{
+	vk::Buffer m_world_matrix_buffer;
+	vma::Allocation m_world_matrix_memory;
+	std::byte* m_mapped_world_matrix_memory;
+
+	vk::DescriptorPool m_descriptor_pool;
+	vk::DescriptorSet m_descriptor_set;
+};
+
+}
 
 class VulkanTransformComponent : public TransformComponent
 {

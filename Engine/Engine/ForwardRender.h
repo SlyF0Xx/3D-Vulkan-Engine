@@ -5,6 +5,8 @@
 
 #include <vk_mem_alloc.hpp>
 
+#include <entt/entt.hpp>
+
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -56,6 +58,7 @@ class ForwardRender :
     //std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
 
     Game& m_game;
+    entt::registry& m_registry;
 
     void InitializePipelineLayout();
 
@@ -78,7 +81,7 @@ class ForwardRender :
     void DestroyResources();
 
 public:
-    ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images);
+    ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry & registry);
     ~ForwardRender();
 
     void Update(const std::vector<vk::Image>& swapchain_images) override;

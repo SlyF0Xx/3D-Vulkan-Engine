@@ -8,8 +8,8 @@
 #include "VulkanCameraComponent.h"
 
 
-ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images)
-    : diffusion::System({}), m_game(game)
+ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry& registry)
+    : diffusion::System({}), m_game(game), m_registry(registry)
 {
     m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
 
@@ -250,7 +250,6 @@ void ForwardRender::InitCommandBuffer()
         auto comps = diffusion::s_component_manager_instance.get_components_by_tags({ diffusion::VulkanCameraComponent::s_vulkan_camera_component, diffusion::CameraComponent::s_main_camera_component_tag });
         static_cast<diffusion::VulkanCameraComponent&>(comps[0].get()).Draw(m_layout, m_swapchain_data[i].m_command_buffer); /*view_proj_binding*/
 
-
         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, m_game.get_lights_descriptor_set(), {});
         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 4, m_swapchain_data[i].m_shadows_descriptor_set, {});
 
@@ -263,6 +262,20 @@ void ForwardRender::InitCommandBuffer()
             for (auto& material : materials) {
                 diffusion::s_vulkan_mesh_component_manager.get_materials().find(material)->second->UpdateMaterial(m_layout, m_swapchain_data[i].m_command_buffer);
                 
+                // TODO: выставить материал
+                auto view = m_registry.view<const diffusion::entt::VulkanTransformComponent, const diffusion::entt::VulkanMeshComponent, const diffusion::entt::MeshComponent>();
+
+                view.each([this, i](const diffusion::entt::VulkanTransformComponent& transform,
+                                    const diffusion::entt::VulkanMeshComponent& vulkan_mesh,
+                                    const diffusion::entt::MeshComponent& mesh) {
+                    m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 1, transform.m_descriptor_set, { {} });
+
+                    for (size_t j = 0; j < vulkan_mesh.m_meshes.size(); ++j) {
+                        m_swapchain_data[i].m_command_buffer.bindVertexBuffers(0, vulkan_mesh.m_meshes[j].m_vertex_buffer, { {0} });
+                        m_swapchain_data[i].m_command_buffer.bindIndexBuffer(vulkan_mesh.m_meshes[j].m_index_buffer, {}, vk::IndexType::eUint32);
+                        m_swapchain_data[i].m_command_buffer.drawIndexed(mesh.m_submeshes[j].m_indexes.size(), 1, 0, 0, 0);
+                    }
+                });
 
                 for (auto& mesh_component : diffusion::s_vulkan_mesh_component_manager.get_mesh_by_material().find(material)->second) {
                     diffusion::Entity* parent = mesh_component->get_parrent();

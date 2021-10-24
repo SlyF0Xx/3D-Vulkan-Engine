@@ -9,6 +9,23 @@
 
 namespace diffusion {
 
+namespace entt {
+
+struct VulkanSubMesh
+{
+    vk::Buffer m_vertex_buffer;
+    vma::Allocation m_vertex_memory;
+    vk::Buffer m_index_buffer;
+    vma::Allocation m_index_memory;
+};
+
+struct VulkanMeshComponent
+{
+    std::vector<VulkanSubMesh> m_meshes;
+};
+
+}
+
 class VulkanMeshComponent :
     public MeshComponent
 {

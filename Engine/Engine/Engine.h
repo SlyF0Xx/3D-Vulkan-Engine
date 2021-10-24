@@ -11,6 +11,8 @@
 
 #include <glm/glm.hpp>
 
+#include <entt/entt.hpp>
+
 #include <optional>
 #include <memory>
 #include <unordered_set>
@@ -57,6 +59,8 @@ public:
     bool m_initialized = false;
 
 private:
+    entt::registry m_registry;
+
     vk::Instance m_instance;
     vk::Device m_device;
     vk::Queue m_queue;
