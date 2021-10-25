@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\Engine\Engine\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "..\Game\Game.vcxproj", "{CDDB2010-5097-4646-9ACE-A3F3DB7CEC8F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "..\Editor\Editor.vcxproj", "{FC614FC5-7923-4C20-A27A-80ECAEEE261D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{CDDB2010-5097-4646-9ACE-A3F3DB7CEC8F}.Release|x64.Build.0 = Release|x64
 		{CDDB2010-5097-4646-9ACE-A3F3DB7CEC8F}.Release|x86.ActiveCfg = Release|Win32
 		{CDDB2010-5097-4646-9ACE-A3F3DB7CEC8F}.Release|x86.Build.0 = Release|Win32
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Debug|x64.ActiveCfg = Debug|x64
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Debug|x64.Build.0 = Debug|x64
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Debug|x86.ActiveCfg = Debug|Win32
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Debug|x86.Build.0 = Debug|Win32
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Release|x64.ActiveCfg = Release|x64
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Release|x64.Build.0 = Release|x64
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Release|x86.ActiveCfg = Release|Win32
+		{FC614FC5-7923-4C20-A27A-80ECAEEE261D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
