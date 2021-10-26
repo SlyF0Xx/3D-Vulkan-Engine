@@ -1,5 +1,4 @@
 #pragma once
-#include "Component.h"
 
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
@@ -16,14 +15,5 @@ struct PossessedEntity
 };
 
 }
-
-class PossessedComponent :
-    public Component
-{
-public:
-	PossessedComponent(const std::vector<Tag>& tags, Entity* parent);
-
-	static inline Component::Tag s_possessed_tag;
-};
 
 } // namespace diffusion {

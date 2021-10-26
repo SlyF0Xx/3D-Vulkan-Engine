@@ -3,6 +3,7 @@
 #include "IRender.h"
 
 #include <vk_mem_alloc.hpp>
+#include <entt/entt.hpp>
 
 #include <memory>
 #include <unordered_set>
@@ -74,6 +75,7 @@ class DeferredRender :
     std::array<vk::DescriptorSetLayout, 2> m_composite_descriptor_set_layouts;
 
     Game& m_game;
+    entt::registry& m_registry;
 
     void InitializeDeferredPipelineLayout();
     void InitializeCompositePipelineLayout();

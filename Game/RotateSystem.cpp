@@ -6,7 +6,6 @@ namespace diffusion {
 
 RotateSystem::RotateSystem(::entt::registry& registry)
     : m_registry(registry)
-	//: System({ CatImportableEntity::s_special_cat_transform_tag })
 {
 }
 

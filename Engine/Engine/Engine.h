@@ -1,6 +1,5 @@
 #pragma once
 
-#include "IMaterial.h"
 #include "IRender.h"
 #include "Lights.h"
 #include "VulkanInitializer.h"

@@ -1,10 +1,8 @@
 #pragma once
 
 #include "IRender.h"
-#include "System.h"
 
 #include <vk_mem_alloc.hpp>
-
 #include <entt/entt.hpp>
 
 #include <memory>
@@ -14,8 +12,7 @@
 class Game;
 
 class ForwardRender :
-    public IRender,
-    public diffusion::System
+    public IRender
 {
     struct PerSwapchainImageData
     {
@@ -90,7 +87,5 @@ public:
     void Initialize() override;
 
     void Draw() override;
-
-    void tick() override;
 };
 

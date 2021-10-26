@@ -2,10 +2,8 @@
 
 #include "Engine.h"
 #include "util.h"
-#include "ComponentManager.h"
 #include "VulkanMeshComponent.h"
 #include "VulkanTransformComponent.h"
-#include "Entity.h"
 
 #include "VulkanTransformComponent.h"
 #include "VulkanMeshComponent.h"
@@ -171,8 +169,6 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
     vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
     command_buffer.setScissor(0, scissor);
 
-
-
     auto view = m_game.get_registry().view<
         const diffusion::entt::VulkanTransformComponent,
         const diffusion::entt::VulkanSubMesh,
@@ -188,34 +184,6 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
         command_buffer.bindIndexBuffer(vulkan_mesh.m_index_buffer, {}, vk::IndexType::eUint32);
         command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
     });
-
-
-
-    for (auto& mesh_component : diffusion::s_component_manager_instance.get_components_by_tag(diffusion::VulkanMeshComponent::s_vulkan_mesh_component_tag)) {
-        diffusion::Entity* parent = mesh_component.get().get_parrent();
-        for (auto& inner_component : parent->get_components()) {
-            auto it = std::find(
-                inner_component.get().get_tags().begin(),
-                inner_component.get().get_tags().end(),
-                diffusion::VulkanTransformComponent::s_vulkan_transform_component_tag);
-            if (it != inner_component.get().get_tags().end()) {
-                auto & comp = dynamic_cast<diffusion::VulkanTransformComponent&>(inner_component.get());
-                comp.Draw(m_layout, command_buffer);
-            }
-        }
-
-        auto & comp = dynamic_cast<diffusion::VulkanMeshComponent&>(mesh_component.get());
-        comp.Draw(command_buffer);
-    }
-    /*
-    for (auto& [mat_type, materials] : m_game.get_materials_by_type()) {
-        for (auto& material : materials) {
-            for (auto& mesh : m_game.get_mesh_by_material().find(material)->second) {
-                mesh->Draw(m_layout, command_buffer);
-            }
-        }
-    }
-    */
 
     command_buffer.endRenderPass();
 }

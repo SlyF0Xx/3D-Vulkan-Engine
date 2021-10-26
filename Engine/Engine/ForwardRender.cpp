@@ -1,19 +1,15 @@
 #include "ForwardRender.h"
 #include "Engine.h"
-
 #include "VulkanTransformComponent.h"
 #include "VulkanMeshComponent.h"
-#include "Entity.h"
-#include "VulkanMeshComponentManager.h"
 #include "VulkanCameraComponent.h"
-
 #include "UnlitMaterial.h"
 #include "LitMaterial.h"
 
 #include "util.h"
 
 ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry& registry)
-    : diffusion::System({}), m_game(game), m_registry(registry)
+    : m_game(game), m_registry(registry)
 {
     m_sema = m_game.get_device().createSemaphore(vk::SemaphoreCreateInfo());
 
@@ -63,11 +59,6 @@ void ForwardRender::Draw()
 
     std::array results{ vk::Result() };
     m_game.get_queue().presentKHR(vk::PresentInfoKHR(wait_sems, m_game.get_swapchain(), next_image.value, results));
-}
-
-void ForwardRender::tick()
-{
-    Draw();
 }
 
 void ForwardRender::InitializePipelineLayout()
@@ -250,17 +241,11 @@ void ForwardRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
-
         const auto * main_camera_component = m_registry.try_ctx<diffusion::entt::MainCameraTag>();
         if (main_camera_component) {
             const auto& camera = m_registry.get<const diffusion::entt::VulkanCameraComponent>(main_camera_component->m_entity);
             m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, camera.m_descriptor_set, { {} });
         }
-
-#if 0
-        auto comps = diffusion::s_component_manager_instance.get_components_by_tags({ diffusion::VulkanCameraComponent::s_vulkan_camera_component, diffusion::CameraComponent::s_main_camera_component_tag });
-        static_cast<diffusion::VulkanCameraComponent&>(comps[0].get()).Draw(m_layout, m_swapchain_data[i].m_command_buffer); /*view_proj_binding*/
-#endif
 
         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, m_game.get_lights_descriptor_set(), {});
         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 4, m_swapchain_data[i].m_shadows_descriptor_set, {});

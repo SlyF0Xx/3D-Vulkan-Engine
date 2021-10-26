@@ -1,5 +1,5 @@
 #pragma once
-#include "System.h"
+
 #include "BoundingComponent.h"
 
 #include <entt/entt.hpp>
@@ -13,8 +13,7 @@ __declspec(align(2)) struct KitamoriLinkedTag
 
 }
 
-class KitamoriSystem /*:
-    public System */
+class KitamoriSystem
 {
 public:
     KitamoriSystem(::entt::registry& registry);
@@ -22,7 +21,6 @@ public:
 
 protected:
     ::entt::registry& m_registry;
-    //std::vector<BoundingComponent*> m_linked_components;
 };
 
 } // namespace diffusion {
