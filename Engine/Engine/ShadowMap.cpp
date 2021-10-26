@@ -7,6 +7,10 @@
 #include "VulkanTransformComponent.h"
 #include "Entity.h"
 
+#include "VulkanTransformComponent.h"
+#include "VulkanMeshComponent.h"
+
+
 ShadowMap::ShadowMap(
     Game& game,
     const glm::vec3& position,
@@ -166,6 +170,26 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
     command_buffer.setViewport(0, viewport);
     vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
     command_buffer.setScissor(0, scissor);
+
+
+
+    auto view = m_game.get_registry().view<
+        const diffusion::entt::VulkanTransformComponent,
+        const diffusion::entt::VulkanSubMesh,
+        const diffusion::entt::SubMesh>();
+
+    view.each([this, &command_buffer](
+        const diffusion::entt::VulkanTransformComponent& transform,
+        const diffusion::entt::VulkanSubMesh& vulkan_mesh,
+        const diffusion::entt::SubMesh& mesh) {
+        command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 1, transform.m_descriptor_set, { {} });
+
+        command_buffer.bindVertexBuffers(0, vulkan_mesh.m_vertex_buffer, { {0} });
+        command_buffer.bindIndexBuffer(vulkan_mesh.m_index_buffer, {}, vk::IndexType::eUint32);
+        command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
+    });
+
+
 
     for (auto& mesh_component : diffusion::s_component_manager_instance.get_components_by_tag(diffusion::VulkanMeshComponent::s_vulkan_mesh_component_tag)) {
         diffusion::Entity* parent = mesh_component.get().get_parrent();

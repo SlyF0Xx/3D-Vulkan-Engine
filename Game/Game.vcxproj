@@ -154,6 +154,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Archiver.h" />
+    <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="CubeEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
@@ -169,6 +171,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="CubeEntity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImportableEntity.cpp" />

@@ -15,6 +15,12 @@
 #include "CameraComponent.h"
 #include "InputSystem.h"
 #include "InputEvents.h"
+#include "PossessedComponent.h"
+#include "CameraSystem.h"
+#include "Archiver.h"
+#include "Relation.h"
+#include "LitMaterial.h"
+#include "UnlitMaterial.h"
 
 #include <Engine.h>
 
@@ -33,6 +39,7 @@
 #include <chrono>
 #include <iostream>
 #include <map>
+#include <fstream>
 
 #define MAX_LOADSTRING 100
 
@@ -98,9 +105,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     vulkan.SecondInitialize();
 
+    NJSONOutputArchive output;
+    entt::snapshot{vulkan.get_registry()}
+        .entities(output)
+        .component<diffusion::entt::BoundingComponent, diffusion::entt::CameraComponent, diffusion::entt::SubMesh, diffusion::entt::PossessedEntity,
+                   diffusion::entt::Relation, diffusion::entt::LitMaterialComponent, diffusion::entt::UnlitMaterialComponent, diffusion::entt::TransformComponent>(output);
+    output.Close();
+    std::string json_output = output.AsString();
+
+    std::ofstream fout("sample_sceme.json");
+    fout << json_output;
 
     // Systems Initialization
-
+    diffusion::CameraSystem camera_system(vulkan.get_registry());
+    diffusion::move_forward.append([&camera_system]() {camera_system.move_forward(0.1f); });
+    diffusion::move_backward.append([&camera_system]() {camera_system.move_backward(0.1f); });
+    diffusion::move_left.append([&camera_system]() {camera_system.move_left(0.1f); });
+    diffusion::move_right.append([&camera_system]() {camera_system.move_right(0.1f); });
+    diffusion::move_up.append([&camera_system]() {camera_system.move_up(0.1f); });
+    diffusion::move_down.append([&camera_system]() {camera_system.move_down(0.1f); });
+    /*
     diffusion::InputSystem input_system;
     diffusion::move_forward.append([&input_system]() {input_system.move_forward(); });
     diffusion::move_backward.append([&input_system]() {input_system.move_backward(); });
@@ -108,14 +132,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     diffusion::move_right.append([&input_system]() {input_system.move_right(); });
     diffusion::move_up.append([&input_system]() {input_system.move_up(); });
     diffusion::move_down.append([&input_system]() {input_system.move_down(); });
+    */
 
-
-    diffusion::KitamoriMovingSystem kitamori;
+    diffusion::KitamoriMovingSystem kitamori(vulkan.get_registry());
+    camera_system.callback_list.append([&kitamori](glm::vec3 direction) {
+        kitamori.update_position(direction);
+    });
+    /*
     static_cast<diffusion::CameraComponent&>(diffusion::s_component_manager_instance.get_components_by_tag(diffusion::CameraComponent::s_main_camera_component_tag)[0].get()).callback_list.append([&kitamori](glm::vec3 direction) {
         kitamori.update_position(direction);
     });
+    */
 
-    diffusion::RotateSystem rotate_system;
+    diffusion::RotateSystem rotate_system(vulkan.get_registry());
 
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
@@ -145,6 +174,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 void init_components()
 {
+    /*
     s_entity_manager.emplace(std::make_unique<diffusion::CatImportableEntity>(
         *g_vulkan,
         //"E:\\programming\\Graphics\\Game\\Game\\untitled.fbx",
@@ -152,6 +182,14 @@ void init_components()
         glm::vec3(0, 10, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(0.05, 0.05, 0.05)));
+    */
+    auto cat = diffusion::entt::import_entity(
+        g_vulkan->get_registry(),
+        std::filesystem::path("Models") / "CatWithAnim7.fbx",
+        glm::vec3(0, 10, -5),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0.0005, 0.0005, 0.0005));
+    g_vulkan->get_registry().set<diffusion::entt::RotateTag>(cat);
 
     /*
     * griffon
@@ -162,38 +200,70 @@ void init_components()
         glm::vec3(0.01, 0.01, 0.01));
     */
 
+
+    /*
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 1, -4),
         glm::vec3(0, 0, 0),
         glm::vec3(1, 1, 1)));
-
+    */
+    diffusion::entt::import_entity(
+        g_vulkan->get_registry(),
+        std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 1, -4),
+        glm::vec3(glm::pi<float>() / 2, 0, 0),
+        glm::vec3(0.01, 0.01, 0.01));
+    /*
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 5, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(2, 2, 2)));
-
+    */
+    diffusion::entt::import_entity(
+        g_vulkan->get_registry(),
+        std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
+        glm::vec3(4, 5, -5),
+        glm::vec3(glm::pi<float>() / 2, 0, 0),
+        glm::vec3(0.02, 0.02, 0.02));
+    /*
     s_entity_manager.emplace(std::make_unique<diffusion::ImportableEntity>(
         *g_vulkan,
         std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
         glm::vec3(-4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.1, 0.1, 0.1)));
+    */
+    diffusion::entt::import_entity(
+        g_vulkan->get_registry(),
+        std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
+        glm::vec3(-4, 5, -5),
+        glm::vec3(glm::pi<float>() / 2, 0, 0),
+        glm::vec3(0.1, 0.1, 0.1));
 
-    s_entity_manager.emplace(std::make_unique<diffusion::PlaneLitEntity>(*g_vulkan, glm::vec3{0, 0, -5}, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 }));
+    //s_entity_manager.emplace(std::make_unique<diffusion::PlaneLitEntity>(*g_vulkan, glm::vec3{0, 0, -5}, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 }));
+    diffusion::entt::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
 
-    s_entity_manager.emplace(std::make_unique<diffusion::CubePossesedEntity>(*g_vulkan, glm::vec3{ 0, 0, 0 }));
-    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 3.0, 0, 0 }));
-    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -3.0, 0, 0 }));
+    //s_entity_manager.emplace(std::make_unique<diffusion::CubePossesedEntity>(*g_vulkan, glm::vec3{ 0, 0, 0 }));
+    auto main_entity = diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry());
+    g_vulkan->get_registry().set<diffusion::entt::PossessedEntity>(main_entity);
+    g_vulkan->get_registry().set<diffusion::entt::MainCameraTag>(main_entity);
 
 
-    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
-    s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
+    //s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 3.0, 0, 0 }));
+    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    //s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -3.0, 0, 0 }));
+    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
+
+    //s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
+    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    //s_entity_manager.emplace(std::make_unique<diffusion::CubeEntity>(*g_vulkan, glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 }));
+    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
 }
 
 //

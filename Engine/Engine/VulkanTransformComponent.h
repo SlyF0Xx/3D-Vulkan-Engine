@@ -21,6 +21,7 @@ namespace diffusion {
 
 namespace entt {
 
+// generated in runtime - not persisted
 struct VulkanTransformComponent
 {
 	vk::Buffer m_world_matrix_buffer;

@@ -11,6 +11,7 @@ namespace diffusion {
 
 namespace entt {
 
+// generated in runtime - not persisted
 struct VulkanSubMesh
 {
     vk::Buffer m_vertex_buffer;

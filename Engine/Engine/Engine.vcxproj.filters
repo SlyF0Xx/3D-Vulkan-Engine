@@ -117,6 +117,21 @@
     <ClInclude Include="VulkanCameraComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UnlitMaterial.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Relation.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="LitMaterial.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="glm_printer.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -190,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="VulkanCameraComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanInitializer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

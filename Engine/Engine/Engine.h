@@ -3,15 +3,18 @@
 #include "IMaterial.h"
 #include "IRender.h"
 #include "Lights.h"
+#include "VulkanInitializer.h"
+#include "glm_printer.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 #include <vk_mem_alloc.hpp>
-
 #include <glm/glm.hpp>
-
 #include <entt/entt.hpp>
+#include <nlohmann/json.hpp>
+
+#include <windows.h>
 
 #include <optional>
 #include <memory>
@@ -24,6 +27,8 @@ struct PrimitiveColoredVertex
     //float colors[4];
     float tex_coords[2];
     float norm_coords[3];
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PrimitiveColoredVertex, x, y, z, tex_coords, norm_coords)
 };
 
 /*
@@ -60,6 +65,7 @@ public:
 
 private:
     entt::registry m_registry;
+    diffusion::VulkanInitializer m_initializer;
 
     vk::Instance m_instance;
     vk::Device m_device;
@@ -167,6 +173,11 @@ public:
     vma::Allocator& get_allocator()
     {
         return m_allocator;
+    }
+
+    entt::registry& get_registry()
+    {
+        return m_registry;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);

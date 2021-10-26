@@ -3,14 +3,24 @@
 #include "TransformComponent.h"
 
 #include "VulkanTransformComponent.h"
+#include "KitamoriSystem.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <entt/entt.hpp>
 
 namespace diffusion {
 
 void KitamoriMovingSystem::update_position(glm::vec3 direction)
 {
+    auto potential_linked_components = m_registry.view<const entt::KitamoriLinkedTag>();
+    potential_linked_components.each([this, &direction](const entt::KitamoriLinkedTag& tag) {
+        m_registry.patch<entt::TransformComponent>(::entt::to_entity(m_registry, tag), [&direction](entt::TransformComponent& transform) {
+            transform.m_world_matrix = glm::translate(transform.m_world_matrix, direction);
+        });
+    });
+
+    /*
     for (auto& linked_component : m_linked_components) {
         for (auto& inner_component : linked_component->get_parrent()->get_components()) {
             auto it = std::find(
@@ -24,6 +34,7 @@ void KitamoriMovingSystem::update_position(glm::vec3 direction)
             }
         }
     }
+    */
 
     update_components();
 }
