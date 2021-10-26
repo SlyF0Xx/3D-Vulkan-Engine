@@ -5,12 +5,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <entt/entt.hpp>
+#include <nlohmann/json.hpp>
 
 namespace diffusion {
 
 struct RotateTag
 {
     ::entt::entity m_entity;
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(RotateTag, m_entity)
 };
 
 class RotateSystem

@@ -56,6 +56,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 Game* g_vulkan;
 
 void generate_scene();
+void import_scene();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -81,6 +82,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     generate_scene();
+    //import_scene();
 
     for (int i = 0; i < 1; ++i) {
         vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
@@ -149,6 +151,8 @@ void generate_scene()
         glm::vec3(0, 0, 0),
         glm::vec3(0.0005, 0.0005, 0.0005));
     g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
+    // for serialization prposes only
+    g_vulkan->get_registry().emplace<diffusion::RotateTag>(cat, cat);
 
     /*
     * griffon
@@ -185,7 +189,9 @@ void generate_scene()
     auto main_entity = diffusion::create_cube_entity_unlit(g_vulkan->get_registry());
     g_vulkan->get_registry().set<diffusion::PossessedEntity>(main_entity);
     g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_entity);
-
+    // for serialization prposes only
+    g_vulkan->get_registry().emplace<diffusion::PossessedEntity>(main_entity, main_entity);
+    g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_entity, main_entity);
 
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
@@ -197,13 +203,36 @@ void generate_scene()
     entt::snapshot{ g_vulkan->get_registry() }
         .entities(output)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent>(output);
+                   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+                   diffusion::MainCameraTag, diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 
     // Scene is generated and exported in sample_scene.json
     std::ofstream fout("sample_scene.json");
     fout << json_output;
+}
+
+void import_scene()
+{
+    std::ifstream fin("sample_scene.json");
+    std::string str{ std::istreambuf_iterator<char>(fin),
+                     std::istreambuf_iterator<char>() };
+
+    NJSONInputArchive json_in(str);
+    entt::basic_snapshot_loader loader(g_vulkan->get_registry());
+    loader.entities(json_in)
+        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+                   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+                   diffusion::MainCameraTag, diffusion::RotateTag>(json_in);
+
+    // restore serialized tags
+    auto cat = g_vulkan->get_registry().view<diffusion::RotateTag>().front();
+    g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
+
+    auto main_entity = g_vulkan->get_registry().view<diffusion::PossessedEntity>().front();
+    g_vulkan->get_registry().set<diffusion::PossessedEntity>(main_entity);
+    g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_entity);
 }
 
 //
