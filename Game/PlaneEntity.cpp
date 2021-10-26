@@ -2,8 +2,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 ::entt::entity create_plane_entity(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {
     return create_primitive_entity_base(
@@ -26,7 +24,7 @@ namespace entt {
 ::entt::entity create_plane_entity_lit(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {
     auto plane_entity = create_plane_entity(registry, translation, rotation, scale);
-    diffusion::entt::add_default_lit_material_component(registry, plane_entity);
+    diffusion::add_default_lit_material_component(registry, plane_entity);
     return plane_entity;
 }
 
@@ -35,8 +33,6 @@ namespace entt {
     auto plane_entity = create_plane_entity(registry, translation, rotation, scale);
     add_default_unlit_material_component(registry, plane_entity);
     return plane_entity;
-}
-
 }
 
 } // namespace diffusion {

@@ -19,8 +19,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 // generated in runtime - not persisted
 struct VulkanTransformComponent
 {
@@ -31,7 +29,5 @@ struct VulkanTransformComponent
 	vk::DescriptorPool m_descriptor_pool;
 	vk::DescriptorSet m_descriptor_set;
 };
-
-}
 
 } // namespace diffusion {

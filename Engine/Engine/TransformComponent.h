@@ -8,8 +8,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct TransformComponent
 {
 	glm::mat4 m_world_matrix;
@@ -23,7 +21,5 @@ glm::mat4 create_matrix(
 	const glm::vec3& position,
 	const glm::vec3& rotation,
 	const glm::vec3& scale);
-
-}
 
 } // namespace diffusion {

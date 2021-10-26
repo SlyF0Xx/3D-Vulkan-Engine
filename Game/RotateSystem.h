@@ -8,14 +8,10 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct RotateTag
 {
     ::entt::entity m_entity;
 };
-
-}
 
 class RotateSystem
 {

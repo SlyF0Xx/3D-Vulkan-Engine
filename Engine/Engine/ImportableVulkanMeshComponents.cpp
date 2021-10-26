@@ -15,8 +15,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 namespace {
 
 void add_material(
@@ -44,10 +42,10 @@ void add_material(
     }
     */
     if (str.length == 0) {
-        registry.emplace<entt::UnlitMaterialComponent>(parent_entity, "default.png");
+        registry.emplace<UnlitMaterialComponent>(parent_entity, "default.png");
     }
     else {
-        registry.emplace<entt::LitMaterialComponent>(parent_entity, std::filesystem::path(str.C_Str()), std::filesystem::path(normal_str.C_Str()));
+        registry.emplace<LitMaterialComponent>(parent_entity, std::filesystem::path(str.C_Str()), std::filesystem::path(normal_str.C_Str()));
     }
 }
 
@@ -121,8 +119,6 @@ void import_mesh(const std::filesystem::path& path, ::entt::registry& registry, 
     const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
 
     fill_meshes(*scene->mRootNode, *scene, registry, parent_entity);
-}
-
 }
 
 } // namespace diffusion {

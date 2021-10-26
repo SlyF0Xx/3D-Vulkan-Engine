@@ -11,8 +11,8 @@ RotateSystem::RotateSystem(::entt::registry& registry)
 
 void RotateSystem::tick()
 {
-    auto& entity = m_registry.ctx<entt::RotateTag>().m_entity;
-    m_registry.patch<entt::TransformComponent>(entity, [this] (entt::TransformComponent & transform) {
+    auto& entity = m_registry.ctx<RotateTag>().m_entity;
+    m_registry.patch<TransformComponent>(entity, [this] (TransformComponent & transform) {
         rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
         transform.m_world_matrix = transform.m_world_matrix * rotation_matrix;
     });

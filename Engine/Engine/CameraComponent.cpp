@@ -1,7 +1,6 @@
 #include "CameraComponent.h"
 
 namespace diffusion {
-namespace entt {
 
 CameraComponent create_camera_component()
 {
@@ -21,8 +20,6 @@ CameraComponent create_camera_component()
     );
 
     return camera;
-}
-
 }
 
 } // namespace diffusion {

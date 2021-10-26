@@ -5,15 +5,11 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct Relation
 {
 	::entt::entity m_parent;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Relation, m_parent)
 };
-
-}
 
 }

@@ -7,8 +7,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 ::entt::entity create_cube_entity(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {
     return create_primitive_entity_base(
@@ -57,7 +55,7 @@ namespace entt {
 ::entt::entity create_cube_entity_lit(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {
     auto cube_entity = create_cube_entity(registry, translation, rotation, scale);
-    diffusion::entt::add_default_lit_material_component(registry, cube_entity);
+    diffusion::add_default_lit_material_component(registry, cube_entity);
     return cube_entity;
 }
 
@@ -69,8 +67,6 @@ namespace entt {
     registry.emplace<BoundingComponent>(cube_entity, glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f);
 
     return cube_entity;
-}
-
 }
 
 } // namespace diffusion {

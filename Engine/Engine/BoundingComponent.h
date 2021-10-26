@@ -9,8 +9,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct BoundingComponent {
     glm::vec3 m_center;
     float m_radius;
@@ -24,7 +22,5 @@ bool intersect(::entt::registry& registry,
     const BoundingComponent& rhv,
     const TransformComponent& lhv_transform,
     const TransformComponent& rhv_transform);
-
-}
 
 } // namespace diffusion {

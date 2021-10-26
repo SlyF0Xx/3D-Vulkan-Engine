@@ -9,8 +9,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct MainCameraTag
 {
 	::entt::entity m_entity;
@@ -38,7 +36,5 @@ struct CameraComponent
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, m_camera_position, m_camera_target, m_up_vector, m_camera_matrix, m_projection_matrix)
 };
-
-}
 
 } // namespace diffusion {

@@ -8,8 +8,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 ::entt::entity create_primitive_entity_base(
 	::entt::registry& registry,
 	const std::vector<PrimitiveColoredVertex>& verticies,
@@ -32,8 +30,6 @@ void add_default_unlit_material_component(::entt::registry& registry, ::entt::en
 void add_default_lit_material_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
 	registry.emplace<LitMaterialComponent>(parent_entity, "default.png", "red.png");
-}
-
 }
 
 } // namespace diffusion {

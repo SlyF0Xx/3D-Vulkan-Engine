@@ -5,8 +5,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 ::entt::entity import_entity(
 	::entt::registry& registry,
 	const std::filesystem::path& path,
@@ -18,8 +16,6 @@ namespace entt {
 	registry.emplace<TransformComponent>(entity, create_matrix(position, rotation, scale));
 	import_mesh(path, registry, entity);
 	return entity;
-}
-
 }
 
 } // namespace diffusion {

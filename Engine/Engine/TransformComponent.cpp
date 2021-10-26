@@ -7,8 +7,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 glm::mat4 calculate_global_world_matrix(::entt::registry& registry, const TransformComponent& component)
 {
 	auto * relation_component = registry.try_get<Relation>(::entt::to_entity(registry, component));
@@ -42,8 +40,6 @@ glm::mat4 create_matrix(
 
 	glm::mat4 scale_matrix = glm::scale(scale);
 	return translation_matrix * rotation_matrix * scale_matrix;
-}
-
 }
 
 } // namespace diffusion {

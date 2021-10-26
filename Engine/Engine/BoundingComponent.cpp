@@ -3,8 +3,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 bool intersect(::entt::registry& registry,
 	const BoundingComponent& lhv,
 	const BoundingComponent& rhv,
@@ -24,8 +22,6 @@ bool intersect(::entt::registry& registry,
 	const auto& lhv_transform = registry.get<const TransformComponent>(::entt::to_entity(registry, lhv));
 	const auto& rhv_transform = registry.get<const TransformComponent>(::entt::to_entity(registry, rhv));
 	return intersect(registry, lhv, rhv, lhv_transform, rhv_transform);
-}
-
 }
 
 }

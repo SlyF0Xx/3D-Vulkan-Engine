@@ -6,12 +6,8 @@
 
 namespace diffusion {
 
-namespace entt {
-
 __declspec(align(2)) struct KitamoriLinkedTag
 {};
-
-}
 
 class KitamoriSystem
 {

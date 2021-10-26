@@ -5,8 +5,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 // generated in runtime - not persisted
 struct VulkanCameraComponent
 {
@@ -17,7 +15,5 @@ struct VulkanCameraComponent
     vma::Allocation m_world_view_projection_matrix_memory;
     std::byte* m_world_view_projection_mapped_memory;
 };
-
-}
 
 } // namespace diffusion {

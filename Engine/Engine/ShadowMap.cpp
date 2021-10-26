@@ -170,14 +170,14 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
     command_buffer.setScissor(0, scissor);
 
     auto view = m_game.get_registry().view<
-        const diffusion::entt::VulkanTransformComponent,
-        const diffusion::entt::VulkanSubMesh,
-        const diffusion::entt::SubMesh>();
+        const diffusion::VulkanTransformComponent,
+        const diffusion::VulkanSubMesh,
+        const diffusion::SubMesh>();
 
     view.each([this, &command_buffer](
-        const diffusion::entt::VulkanTransformComponent& transform,
-        const diffusion::entt::VulkanSubMesh& vulkan_mesh,
-        const diffusion::entt::SubMesh& mesh) {
+        const diffusion::VulkanTransformComponent& transform,
+        const diffusion::VulkanSubMesh& vulkan_mesh,
+        const diffusion::SubMesh& mesh) {
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 1, transform.m_descriptor_set, { {} });
 
         command_buffer.bindVertexBuffers(0, vulkan_mesh.m_vertex_buffer, { {0} });

@@ -6,8 +6,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 struct SubMesh
 {
     std::vector<PrimitiveColoredVertex> m_verticies;
@@ -15,7 +13,5 @@ struct SubMesh
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(SubMesh, m_verticies, m_indexes)
 };
-
-}
 
 } // namespace diffusion {

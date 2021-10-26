@@ -55,7 +55,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 Game* g_vulkan;
 
-void init_components();
+void generate_scene();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -80,8 +80,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    init_components();
-
+    generate_scene();
 
     for (int i = 0; i < 1; ++i) {
         vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
@@ -97,17 +96,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     */
 
     vulkan.SecondInitialize();
-
-    NJSONOutputArchive output;
-    entt::snapshot{vulkan.get_registry()}
-        .entities(output)
-        .component<diffusion::entt::BoundingComponent, diffusion::entt::CameraComponent, diffusion::entt::SubMesh, diffusion::entt::PossessedEntity,
-                   diffusion::entt::Relation, diffusion::entt::LitMaterialComponent, diffusion::entt::UnlitMaterialComponent, diffusion::entt::TransformComponent>(output);
-    output.Close();
-    std::string json_output = output.AsString();
-
-    std::ofstream fout("sample_sceme.json");
-    fout << json_output;
 
     // Systems Initialization
     diffusion::CameraSystem camera_system(vulkan.get_registry());
@@ -152,15 +140,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
-void init_components()
+void generate_scene()
 {
-    auto cat = diffusion::entt::import_entity(
+    auto cat = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "CatWithAnim7.fbx",
         glm::vec3(0, 10, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(0.0005, 0.0005, 0.0005));
-    g_vulkan->get_registry().set<diffusion::entt::RotateTag>(cat);
+    g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
 
     /*
     * griffon
@@ -171,38 +159,51 @@ void init_components()
         glm::vec3(0.01, 0.01, 0.01));
     */
 
-    diffusion::entt::import_entity(
+    diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 1, -4),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
-    diffusion::entt::import_entity(
+    diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.02, 0.02, 0.02));
-    diffusion::entt::import_entity(
+    diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
         glm::vec3(-4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.1, 0.1, 0.1));
 
-    diffusion::entt::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
+    diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
 
-    auto main_entity = diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry());
-    g_vulkan->get_registry().set<diffusion::entt::PossessedEntity>(main_entity);
-    g_vulkan->get_registry().set<diffusion::entt::MainCameraTag>(main_entity);
+    auto main_entity = diffusion::create_cube_entity_unlit(g_vulkan->get_registry());
+    g_vulkan->get_registry().set<diffusion::PossessedEntity>(main_entity);
+    g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_entity);
 
 
-    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
-    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
-    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
-    diffusion::entt::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
+    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+
+
+    NJSONOutputArchive output;
+    entt::snapshot{ g_vulkan->get_registry() }
+        .entities(output)
+        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent>(output);
+    output.Close();
+    std::string json_output = output.AsString();
+
+    // Scene is generated and exported in sample_scene.json
+    std::ofstream fout("sample_scene.json");
+    fout << json_output;
 }
 
 //

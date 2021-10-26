@@ -241,9 +241,9 @@ void ForwardRender::InitCommandBuffer()
         m_swapchain_data[i].m_command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
         m_swapchain_data[i].m_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
-        const auto * main_camera_component = m_registry.try_ctx<diffusion::entt::MainCameraTag>();
+        const auto * main_camera_component = m_registry.try_ctx<diffusion::MainCameraTag>();
         if (main_camera_component) {
-            const auto& camera = m_registry.get<const diffusion::entt::VulkanCameraComponent>(main_camera_component->m_entity);
+            const auto& camera = m_registry.get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
             m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, camera.m_descriptor_set, { {} });
         }
 
@@ -261,22 +261,22 @@ void ForwardRender::InitCommandBuffer()
             m_swapchain_data[i].m_command_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 0);
             m_swapchain_data[i].m_command_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 0);
 
-            auto unlit_view = m_registry.view<const diffusion::entt::UnlitMaterialComponent,
-                const diffusion::entt::VulkanTransformComponent,
-                const diffusion::entt::VulkanSubMesh,
-                const diffusion::entt::SubMesh>();
+            auto unlit_view = m_registry.view<const diffusion::UnlitMaterialComponent,
+                const diffusion::VulkanTransformComponent,
+                const diffusion::VulkanSubMesh,
+                const diffusion::SubMesh>();
 
             ::entt::entity material_entity{ ::entt::null };
 
             unlit_view.each([this, i, &material_entity](
-                const diffusion::entt::UnlitMaterialComponent& unlit,
-                const diffusion::entt::VulkanTransformComponent& transform,
-                const diffusion::entt::VulkanSubMesh& vulkan_mesh,
-                const diffusion::entt::SubMesh& mesh) {
+                const diffusion::UnlitMaterialComponent& unlit,
+                const diffusion::VulkanTransformComponent& transform,
+                const diffusion::VulkanSubMesh& vulkan_mesh,
+                const diffusion::SubMesh& mesh) {
 
                     if (unlit.m_reference != material_entity) {
                         material_entity = unlit.m_reference;
-                        const auto& unlit_material = m_registry.get<const diffusion::entt::UnlitMaterial>(unlit.m_reference);
+                        const auto& unlit_material = m_registry.get<const diffusion::UnlitMaterial>(unlit.m_reference);
                         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 2, unlit_material.m_descriptor_set, { });
                     }
 
@@ -295,22 +295,22 @@ void ForwardRender::InitCommandBuffer()
             m_swapchain_data[i].m_command_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 1);
             m_swapchain_data[i].m_command_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 1);
 
-            auto lit_view = m_registry.view<const diffusion::entt::LitMaterialComponent,
-                const diffusion::entt::VulkanTransformComponent,
-                const diffusion::entt::VulkanSubMesh,
-                const diffusion::entt::SubMesh>();
+            auto lit_view = m_registry.view<const diffusion::LitMaterialComponent,
+                const diffusion::VulkanTransformComponent,
+                const diffusion::VulkanSubMesh,
+                const diffusion::SubMesh>();
 
             ::entt::entity material_entity = ::entt::null;
 
             lit_view.each([this, i, &material_entity](
-                const diffusion::entt::LitMaterialComponent& lit,
-                const diffusion::entt::VulkanTransformComponent& transform,
-                const diffusion::entt::VulkanSubMesh& vulkan_mesh,
-                const diffusion::entt::SubMesh& mesh) {
+                const diffusion::LitMaterialComponent& lit,
+                const diffusion::VulkanTransformComponent& transform,
+                const diffusion::VulkanSubMesh& vulkan_mesh,
+                const diffusion::SubMesh& mesh) {
 
                     if (lit.m_reference != material_entity) {
                         material_entity = lit.m_reference;
-                        const auto& lit_material = m_registry.get<const diffusion::entt::LitMaterial>(lit.m_reference);
+                        const auto& lit_material = m_registry.get<const diffusion::LitMaterial>(lit.m_reference);
                         m_swapchain_data[i].m_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 2, lit_material.m_descriptor_set, { });
                     }
 

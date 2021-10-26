@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-namespace diffusion::entt {
+namespace diffusion {
 
 // generated in runtime - not persisted
 struct LitMaterial
@@ -38,4 +38,4 @@ struct LitMaterialComponent
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(LitMaterialComponent, m_albedo_path, m_normal_path)
 };
 
-} // namespace diffusion::entt {
+} // namespace diffusion {

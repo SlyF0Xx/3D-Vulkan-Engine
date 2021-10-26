@@ -12,10 +12,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 void import_mesh(const std::filesystem::path& path, ::entt::registry& registry, ::entt::entity parent_entity);
-
-}
 
 } // namespace diffusion {

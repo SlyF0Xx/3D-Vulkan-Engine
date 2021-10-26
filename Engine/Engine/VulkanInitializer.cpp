@@ -18,18 +18,18 @@ namespace diffusion {
 VulkanInitializer::VulkanInitializer(Game& game)
     : m_game(game)
 {
-    m_game.get_registry().on_construct<entt::TransformComponent>().connect<&VulkanInitializer::add_vulkan_transform_component>(*this);
-    m_game.get_registry().on_update<entt::TransformComponent>().connect<&VulkanInitializer::transform_component_changed>(*this);
-    m_game.get_registry().on_construct<entt::SubMesh>().connect<&VulkanInitializer::add_vulkan_mesh_component>(*this);
-    m_game.get_registry().on_construct<entt::CameraComponent>().connect<&VulkanInitializer::add_vulkan_camera_component>(*this);
-    m_game.get_registry().on_update<entt::CameraComponent>().connect<&VulkanInitializer::camera_changed>(*this);
-    m_game.get_registry().on_construct<entt::UnlitMaterialComponent>().connect<&VulkanInitializer::search_for_unlit_material>(*this);
-    m_game.get_registry().on_construct<entt::LitMaterialComponent>().connect<&VulkanInitializer::search_for_lit_material>(*this);
+    m_game.get_registry().on_construct<TransformComponent>().connect<&VulkanInitializer::add_vulkan_transform_component>(*this);
+    m_game.get_registry().on_update<TransformComponent>().connect<&VulkanInitializer::transform_component_changed>(*this);
+    m_game.get_registry().on_construct<SubMesh>().connect<&VulkanInitializer::add_vulkan_mesh_component>(*this);
+    m_game.get_registry().on_construct<CameraComponent>().connect<&VulkanInitializer::add_vulkan_camera_component>(*this);
+    m_game.get_registry().on_update<CameraComponent>().connect<&VulkanInitializer::camera_changed>(*this);
+    m_game.get_registry().on_construct<UnlitMaterialComponent>().connect<&VulkanInitializer::search_for_unlit_material>(*this);
+    m_game.get_registry().on_construct<LitMaterialComponent>().connect<&VulkanInitializer::search_for_lit_material>(*this);
 }
 
 void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& transform = registry.get<entt::TransformComponent>(parent_entity);
+    auto& transform = registry.get<TransformComponent>(parent_entity);
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
 
@@ -43,15 +43,15 @@ void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registr
     std::array write_descriptors{ vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
     m_game.get_device().updateDescriptorSets(write_descriptors, {});
 
-    registry.emplace<entt::VulkanTransformComponent>(parent_entity, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory, descriptor_pool, descriptor_set);
+    registry.emplace<VulkanTransformComponent>(parent_entity, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory, descriptor_pool, descriptor_set);
 }
 
 void VulkanInitializer::transform_component_changed(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& transform = registry.get<entt::TransformComponent>(parent_entity);
+    auto& transform = registry.get<TransformComponent>(parent_entity);
 
     // Use patch instead of just editing memory to create on_update event
-    registry.patch<entt::VulkanTransformComponent>(parent_entity, [this, &transform, &registry](auto& vulkan_transform) {
+    registry.patch<VulkanTransformComponent>(parent_entity, [this, &transform, &registry](auto& vulkan_transform) {
         glm::mat4 world_matrix = calculate_global_world_matrix(registry, transform);
         std::memcpy(vulkan_transform.m_mapped_world_matrix_memory, &world_matrix, sizeof(glm::mat4));
     });
@@ -59,17 +59,17 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
 
 void VulkanInitializer::add_vulkan_mesh_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& mesh = registry.get<entt::SubMesh>(parent_entity);
+    auto& mesh = registry.get<SubMesh>(parent_entity);
 
     auto vertex_memory = sync_create_host_invisible_buffer(m_game, mesh.m_verticies, vk::BufferUsageFlagBits::eVertexBuffer, 0);
     auto index_memory = sync_create_host_invisible_buffer(m_game, mesh.m_indexes, vk::BufferUsageFlagBits::eIndexBuffer, 0);
 
-    registry.emplace<entt::VulkanSubMesh>(parent_entity, vertex_memory.m_buffer, vertex_memory.m_allocation, index_memory.m_buffer, index_memory.m_allocation);
+    registry.emplace<VulkanSubMesh>(parent_entity, vertex_memory.m_buffer, vertex_memory.m_allocation, index_memory.m_buffer, index_memory.m_allocation);
 }
 
 void VulkanInitializer::add_vulkan_camera_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& camera = registry.get<entt::CameraComponent>(parent_entity);
+    auto& camera = registry.get<CameraComponent>(parent_entity);
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
 
@@ -85,19 +85,19 @@ void VulkanInitializer::add_vulkan_camera_component(::entt::registry& registry, 
     std::array write_descriptors{ vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
     m_game.get_device().updateDescriptorSets(write_descriptors, {});
 
-    registry.emplace<entt::VulkanCameraComponent>(parent_entity, descriptor_pool, descriptor_set, view_projection_matrix, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory);
+    registry.emplace<VulkanCameraComponent>(parent_entity, descriptor_pool, descriptor_set, view_projection_matrix, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory);
 }
 
 void VulkanInitializer::camera_changed(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto camera_component = registry.get<entt::CameraComponent>(parent_entity);
+    auto camera_component = registry.get<CameraComponent>(parent_entity);
     camera_component.m_camera_matrix = glm::lookAt(
         camera_component.m_camera_position, // Позиция камеры в мировом пространстве
         camera_component.m_camera_target,   // Указывает куда вы смотрите в мировом пространстве
         camera_component.m_up_vector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
     );
 
-    auto vulkan_camera_component = registry.get<entt::VulkanCameraComponent>(parent_entity);
+    auto vulkan_camera_component = registry.get<VulkanCameraComponent>(parent_entity);
     vulkan_camera_component.m_view_projection_matrix = camera_component.m_projection_matrix * camera_component.m_camera_matrix;
 
     std::memcpy(vulkan_camera_component.m_world_view_projection_mapped_memory, &vulkan_camera_component.m_view_projection_matrix, sizeof(glm::mat4));
@@ -105,15 +105,15 @@ void VulkanInitializer::camera_changed(::entt::registry& registry, ::entt::entit
 
 void VulkanInitializer::search_for_unlit_material(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& unlit_material_component = registry.get<entt::UnlitMaterialComponent>(parent_entity);
+    auto& unlit_material_component = registry.get<UnlitMaterialComponent>(parent_entity);
     unlit_material_component.m_reference = ::entt::null;
 
     // search for entities with unlit materials
-    registry.view<entt::UnlitMaterial>().each([&registry, &parent_entity, &unlit_material_component](const entt::UnlitMaterial & unlit_material) {
+    registry.view<UnlitMaterial>().each([&registry, &parent_entity, &unlit_material_component](const UnlitMaterial & unlit_material) {
         // if there is a component with our textures
         if (unlit_material_component.m_albedo_path == unlit_material.m_albedo_path) {
             // set it's entity identifier to our component
-            registry.patch<entt::UnlitMaterialComponent>(parent_entity, [&unlit_material, &registry](entt::UnlitMaterialComponent& unlit_material_component) {
+            registry.patch<UnlitMaterialComponent>(parent_entity, [&unlit_material, &registry](UnlitMaterialComponent& unlit_material_component) {
                 unlit_material_component.m_reference = ::entt::to_entity(registry, unlit_material);
             });
         }
@@ -150,29 +150,29 @@ void VulkanInitializer::search_for_unlit_material(::entt::registry& registry, ::
         std::array descriptor_image_infos{ vk::DescriptorImageInfo(albedo_sampler, albedo_image_view, vk::ImageLayout::eShaderReadOnlyOptimal) };
         m_game.get_device().updateDescriptorSets(vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, descriptor_image_infos, {}, {}), {});
 
-        registry.emplace<entt::UnlitMaterial>(new_material_entity, albedo_image.m_image, albedo_image.m_memory, albedo_image_view, albedo_sampler, descriptor_pool, descriptor_set, unlit_material_component.m_albedo_path);
+        registry.emplace<UnlitMaterial>(new_material_entity, albedo_image.m_image, albedo_image.m_memory, albedo_image_view, albedo_sampler, descriptor_pool, descriptor_set, unlit_material_component.m_albedo_path);
 
         // and assign our reference to created entity
         unlit_material_component.m_reference = new_material_entity;
     }
 
-    registry.sort<entt::UnlitMaterialComponent>([](const entt::UnlitMaterialComponent& lhv, const entt::UnlitMaterialComponent& rhv) {
+    registry.sort<UnlitMaterialComponent>([](const UnlitMaterialComponent& lhv, const UnlitMaterialComponent& rhv) {
         return lhv.m_reference < rhv.m_reference;
     });
 }
 
 void VulkanInitializer::search_for_lit_material(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto& lit_material_component = registry.get<entt::LitMaterialComponent>(parent_entity);
+    auto& lit_material_component = registry.get<LitMaterialComponent>(parent_entity);
     lit_material_component.m_reference = ::entt::null;
 
     // search for entities with unlit materials
-    registry.view<entt::LitMaterial>().each([&registry, &parent_entity, &lit_material_component](const entt::LitMaterial& lit_material) {
+    registry.view<LitMaterial>().each([&registry, &parent_entity, &lit_material_component](const LitMaterial& lit_material) {
         // if there is a component with our textures
         if (lit_material_component.m_albedo_path == lit_material.m_albedo_path &&
             lit_material_component.m_normal_path == lit_material.m_normal_path) {
             // set it's entity identifier to our component
-            registry.patch<entt::LitMaterialComponent>(parent_entity, [&lit_material, &registry](entt::LitMaterialComponent& lit_material_component) {
+            registry.patch<LitMaterialComponent>(parent_entity, [&lit_material, &registry](LitMaterialComponent& lit_material_component) {
                 lit_material_component.m_reference = ::entt::to_entity(registry, lit_material);
             });
         }
@@ -219,7 +219,7 @@ void VulkanInitializer::search_for_lit_material(::entt::registry& registry, ::en
         m_game.get_device().updateDescriptorSets(vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, descriptor_image_infos, {}, {}), {});
 
 
-        registry.emplace<entt::LitMaterial>(new_material_entity,
+        registry.emplace<LitMaterial>(new_material_entity,
             albedo_image.m_image, albedo_image.m_memory, albedo_image_view, albedo_sampler,
             normals_image.m_image, normals_image.m_memory, normal_image_view, normal_sampler,
             descriptor_pool, descriptor_set, lit_material_component.m_albedo_path, lit_material_component.m_normal_path);
@@ -229,7 +229,7 @@ void VulkanInitializer::search_for_lit_material(::entt::registry& registry, ::en
         lit_material_component.m_reference = new_material_entity;
     }
 
-    registry.sort<entt::LitMaterialComponent>([] (const entt::LitMaterialComponent & lhv, const entt::LitMaterialComponent & rhv) {
+    registry.sort<LitMaterialComponent>([] (const LitMaterialComponent & lhv, const LitMaterialComponent & rhv) {
         return lhv.m_reference < rhv.m_reference;
     });
 }

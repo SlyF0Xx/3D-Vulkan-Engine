@@ -9,8 +9,6 @@
 
 namespace diffusion {
 
-namespace entt {
-
 // generated in runtime - not persisted
 struct VulkanSubMesh
 {
@@ -19,7 +17,5 @@ struct VulkanSubMesh
     vk::Buffer m_index_buffer;
     vma::Allocation m_index_memory;
 };
-
-}
 
 } // namespace diffusion {
