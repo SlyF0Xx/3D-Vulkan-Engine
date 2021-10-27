@@ -85,7 +85,10 @@
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="glm_printer.h">
-      <Filter>Header Files\BaseComponents</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentInitializer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +123,9 @@
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
     <ClCompile Include="VulkanInitializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentInitializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

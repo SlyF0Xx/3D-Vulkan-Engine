@@ -3,6 +3,7 @@
 #include "IRender.h"
 #include "Lights.h"
 #include "VulkanInitializer.h"
+#include "ComponentInitializer.h"
 #include "glm_printer.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -65,6 +66,7 @@ public:
 private:
     entt::registry m_registry;
     diffusion::VulkanInitializer m_initializer;
+    diffusion::ComponentInitializer m_component_initializer;
 
     vk::Instance m_instance;
     vk::Device m_device;

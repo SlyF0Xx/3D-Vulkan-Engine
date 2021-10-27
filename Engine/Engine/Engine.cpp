@@ -18,7 +18,8 @@
 
 // This is the constructor of a class that has been exported.
 Game::Game()
-    : m_initializer(*this)
+    : m_initializer(*this),
+      m_component_initializer(*this)
 {
 }
 

@@ -163,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="BoundingComponent.h" />
     <ClInclude Include="CameraComponent.h" />
+    <ClInclude Include="ComponentInitializer.h" />
     <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ForwardRender.h" />
@@ -186,6 +187,7 @@
   <ItemGroup>
     <ClCompile Include="BoundingComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="ComponentInitializer.cpp" />
     <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
