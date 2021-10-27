@@ -32,6 +32,12 @@ void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registr
 {
     auto& transform = registry.get<TransformComponent>(parent_entity);
 
+    const auto * mesh = registry.try_get<SubMesh>(parent_entity);
+    const auto* vulkan_transform = registry.try_get<VulkanTransformComponent>(parent_entity);
+    if (!mesh || vulkan_transform) {
+        return;
+    }
+
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
 
     vk::DescriptorPool descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
@@ -51,11 +57,14 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
 {
     auto& transform = registry.get<TransformComponent>(parent_entity);
 
-    // Use patch instead of just editing memory to create on_update event
-    registry.patch<VulkanTransformComponent>(parent_entity, [this, &transform, &registry](auto& vulkan_transform) {
-        glm::mat4 world_matrix = calculate_global_world_matrix(registry, transform);
-        std::memcpy(vulkan_transform.m_mapped_world_matrix_memory, &world_matrix, sizeof(glm::mat4));
-    });
+    const auto * vulkan_transform = registry.try_get<VulkanTransformComponent>(parent_entity);
+    if (vulkan_transform) {
+        // Use patch instead of just editing memory to create on_update event
+        registry.patch<VulkanTransformComponent>(parent_entity, [this, &transform, &registry](auto& vulkan_transform) {
+            glm::mat4 world_matrix = calculate_global_world_matrix(registry, transform);
+            std::memcpy(vulkan_transform.m_mapped_world_matrix_memory, &world_matrix, sizeof(glm::mat4));
+        });
+    }
 
     const auto * childs = registry.try_get<Childs>(parent_entity);
     if (childs) {
@@ -69,6 +78,12 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
 void VulkanInitializer::add_vulkan_mesh_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto& mesh = registry.get<SubMesh>(parent_entity);
+
+    const auto * transform = registry.try_get<TransformComponent>(parent_entity);
+    if (transform) {
+        add_vulkan_transform_component(registry, parent_entity);
+    }
+
 
     auto vertex_memory = sync_create_host_invisible_buffer(m_game, mesh.m_verticies, vk::BufferUsageFlagBits::eVertexBuffer, 0);
     auto index_memory = sync_create_host_invisible_buffer(m_game, mesh.m_indexes, vk::BufferUsageFlagBits::eIndexBuffer, 0);
