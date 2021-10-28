@@ -81,6 +81,8 @@ private:
     vk::SurfaceKHR m_surface;
     vk::SwapchainKHR m_swapchain;
 
+    size_t m_image_count = 2;
+    vk::ComponentMapping m_texture_component_mapping;
 
 
     vk::DescriptorPool m_descriptor_pool;
@@ -179,6 +181,11 @@ public:
     entt::registry& get_registry()
     {
         return m_registry;
+    }
+
+    vk::ComponentMapping get_texture_component_mapping()
+    {
+        return m_texture_component_mapping;
     }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);

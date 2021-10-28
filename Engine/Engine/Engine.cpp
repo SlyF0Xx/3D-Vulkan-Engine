@@ -34,10 +34,12 @@ void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR> & form
         {
         case vk::Format::eB8G8R8A8Unorm: {
             m_color_format = format.format;
+            m_texture_component_mapping = vk::ComponentMapping(vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
             break;
         }
         case vk::Format::eR8G8B8A8Unorm: {
             m_color_format = format.format;
+            m_texture_component_mapping = vk::ComponentMapping();
             break;
         }
 
@@ -131,9 +133,8 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
     m_width = capabilities.currentExtent.width;
     m_height = capabilities.currentExtent.height;
 
-    size_t image_count = 2;
     if (capabilities.maxImageCount > 2) {
-        image_count = 3;
+        m_image_count = 3;
     }
 
     if (!(capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
@@ -151,7 +152,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
     }  
 
     std::array<uint32_t, 1> queues{ 0 };
-    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(m_width, m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
+    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, m_image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(m_width, m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
 
     InitializePipelineLayout();
 
@@ -271,7 +272,7 @@ void Game::Update(int width, int height)
     m_height = height;
 
     std::array<uint32_t, 1> queues{ 0 };
-    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, 2, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(width, height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate, VK_TRUE, m_swapchain));
+    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, m_image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(width, height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate, VK_TRUE, m_swapchain));
 
     images = m_device.getSwapchainImagesKHR(m_swapchain);
     render->Update(images);

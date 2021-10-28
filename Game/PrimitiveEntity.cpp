@@ -29,7 +29,7 @@ void add_default_unlit_material_component(::entt::registry& registry, ::entt::en
 
 void add_default_lit_material_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
-	registry.emplace<LitMaterialComponent>(parent_entity, "default.png", "red.png");
+	registry.emplace<LitMaterialComponent>(parent_entity, "default.png", "blue.png");
 }
 
 } // namespace diffusion {
