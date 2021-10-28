@@ -68,6 +68,27 @@ void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR> & form
     }
 }
 
+vk::PhysicalDevice Game::select_physical_device()
+{
+    auto devices = m_instance.enumeratePhysicalDevices();
+
+    vk::PhysicalDevice selected_device = devices[0];
+    // Select GPU
+    {
+        // If a number >1 of GPUs got reported, find discrete GPU if present, or use first one available. This covers
+        // most common cases (multi-gpu/integrated+dedicated graphics). Handling more complicated setups (multiple
+        // dedicated GPUs) is out of scope of this sample.
+        for (auto& device : devices) {
+            auto device_properties = device.getProperties();
+            if (device_properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
+                selected_device = device;
+            }
+        }
+    }
+
+    return selected_device;
+}
+
 void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 {
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
@@ -110,26 +131,26 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     m_instance = vk::createInstance(vk::InstanceCreateInfo({}, &application_info, layers, extensions));
 
-    auto devices = m_instance.enumeratePhysicalDevices();
+    vk::PhysicalDevice selected_device = select_physical_device();
 
     std::array queue_priorities{ 1.0f };
     std::array queue_create_infos{ vk::DeviceQueueCreateInfo{{}, 0, queue_priorities} };
     std::array device_extensions{ "VK_KHR_swapchain" };
-    m_device = devices[0].createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
+    m_device = selected_device.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
     m_queue = m_device.getQueue(0, 0);
     m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
     m_surface = m_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hinstance, hwnd));
 
     //safe check
-    if (!devices[0].getSurfaceSupportKHR(0, m_surface)) {
+    if (!selected_device.getSurfaceSupportKHR(0, m_surface)) {
         throw std::exception("device doesn't support surface");
     }
 
     m_depth_format = vk::Format::eD32SfloatS8Uint;
-    InitializeColorFormats(devices[0].getSurfaceFormatsKHR(m_surface));
-    m_memory_props = devices[0].getMemoryProperties();
+    InitializeColorFormats(selected_device.getSurfaceFormatsKHR(m_surface));
+    m_memory_props = selected_device.getMemoryProperties();
 
-    auto capabilities = devices[0].getSurfaceCapabilitiesKHR(m_surface);
+    auto capabilities = selected_device.getSurfaceCapabilitiesKHR(m_surface);
     m_width = capabilities.currentExtent.width;
     m_height = capabilities.currentExtent.height;
 
@@ -145,7 +166,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
         throw std::exception("Supported Usage Flags is not supported");
     }
 
-    auto present_modes = devices[0].getSurfacePresentModesKHR(m_surface);
+    auto present_modes = selected_device.getSurfacePresentModesKHR(m_surface);
 
     if (auto it = std::find(present_modes.begin(), present_modes.end(), vk::PresentModeKHR::eImmediate); it == present_modes.end()) {
         throw std::exception("Present mode is not supported");
@@ -156,7 +177,7 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     InitializePipelineLayout();
 
-    vma::AllocatorCreateInfo allocator_info({}, devices[0], m_device);
+    vma::AllocatorCreateInfo allocator_info({}, selected_device, m_device);
     allocator_info.instance = m_instance;
     allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
     m_allocator = vma::createAllocator(allocator_info);

@@ -108,6 +108,7 @@ private:
 
     vma::Allocator m_allocator;
 
+    vk::PhysicalDevice select_physical_device();
     void InitializePipelineLayout();
     void InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats);
 
