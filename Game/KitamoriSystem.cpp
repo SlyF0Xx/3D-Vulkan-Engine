@@ -22,7 +22,7 @@ void KitamoriSystem::update_components()
         (const BoundingComponent & bounding_component, const TransformComponent & transform_component) {
 
         if (intersect(m_registry, possesed_bounding_component, bounding_component, possesed_transform_component, transform_component)) {
-            m_registry.emplace<KitamoriLinkedTag>(::entt::to_entity(m_registry, possesed_bounding_component));
+            m_registry.emplace<KitamoriLinkedTag>(::entt::to_entity(m_registry, bounding_component));
         }
     });
 }

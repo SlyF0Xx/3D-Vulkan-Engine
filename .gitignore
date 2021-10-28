@@ -370,3 +370,4 @@ FodyWeavers.xsd
 /Engine/Engine/ComponentManager.ixx
 /Engine/Engine/ComponentGuard.ixx
 /Engine/Engine/Component.ixx
+/Game/layers.txt
