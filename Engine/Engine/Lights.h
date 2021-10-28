@@ -52,6 +52,8 @@ public:
         const glm::vec3& cameraTarget,
         const glm::vec3& upVector);
 
+    void Update();
+
     std::vector<ShadowMap>& get_shadowed_light()
     {
         return m_lights;

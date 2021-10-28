@@ -33,6 +33,10 @@ void ForwardRender::Update(const std::vector<vk::Image>& swapchain_images)
     DestroyCommandBuffer();
     DestroyVariablePerImageResources();
 
+    for (int j = 0; j < m_game.get_shadpwed_lights().get_shadowed_light().size(); ++j) {
+        m_game.get_shadpwed_lights().Update();
+    }
+
     // TODO: release destroy variable resources
     InitializeVariablePerImage(swapchain_images);
     InitCommandBuffer();
