@@ -23,6 +23,7 @@
 
 #include "ContentBrowser.h"
 #include "BooleanStates.h"
+#include "LuaConsole.h"
 
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -470,6 +471,8 @@ int main() {
 	textEditor.SetPalette(textEditor.GetLightPalette());
 	textEditor.SetShowWhitespaces(false);
 
+	LuaConsole luaConsole = LuaConsole();
+
 	// Main loop
 	while (!glfwWindowShouldClose(window)) {
 		// Poll and handle events (inputs, window resize, etc.)
@@ -589,6 +592,9 @@ int main() {
 		ImGui::Begin("Right");
 		ImGui::Text("Hello, Right!");
 		ImGui::End();
+
+		luaConsole.Render();
+		//ImGui::ShowDemoWindow();
 
 		// Rendering
 		ImGui::Render();

@@ -1,6 +1,4 @@
 VK_LAYER_NV_optimus
-VK_LAYER_AMD_switchable_graphics
-VK_LAYER_bandicam_helper
 VK_LAYER_OBS_HOOK
 VK_LAYER_VALVE_steam_overlay
 VK_LAYER_VALVE_steam_fossilize
