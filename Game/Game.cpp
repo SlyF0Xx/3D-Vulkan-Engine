@@ -1,7 +1,9 @@
 // Game.cpp : Defines the entry point for the application.
 //
-#define VMA_IMPLEMENTATION
+
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <vk_mem_alloc.hpp>
+
 
 #include "framework.h"
 #include "Game.h"
@@ -28,11 +30,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.hpp>
-
-
 
 #include <chrono>
 #include <iostream>
@@ -282,7 +279,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd);
+   vulkan.InitializeSurface(vulkan.get_instance().createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hInstance, hWnd)));
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

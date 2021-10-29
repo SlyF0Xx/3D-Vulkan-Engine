@@ -47,8 +47,8 @@ public:
 	Game();
 	~Game();
 
+    void InitializeSurface(vk::SurfaceKHR surface);
 //#ifdef _WIN32
-	void Initialize(HINSTANCE hinstance, HWND hwnd);
 
     void SecondInitialize();
 //#endif // WIN_32
@@ -69,7 +69,9 @@ private:
     diffusion::ComponentInitializer m_component_initializer;
 
     vk::Instance m_instance;
+    vk::PhysicalDevice m_phys_device;
     vk::Device m_device;
+    uint32_t m_queue_family_index = -1;
     vk::Queue m_queue;
     vk::CommandPool m_command_pool;
 
@@ -109,6 +111,7 @@ private:
     vma::Allocator m_allocator;
 
     vk::PhysicalDevice select_physical_device();
+    void select_graphics_queue_family();
     void InitializePipelineLayout();
     void InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats);
 
@@ -120,6 +123,14 @@ public:
     const vk::Device& get_device()
     {
         return m_device;
+    }
+    const vk::PhysicalDevice& get_physical_device()
+    {
+        return m_phys_device;
+    }
+    uint32_t get_queue_family_index()
+    {
+        return m_queue_family_index;
     }
     const vk::Queue& get_queue()
     {

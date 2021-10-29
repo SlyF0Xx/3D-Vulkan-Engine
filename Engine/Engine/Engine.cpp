@@ -1,6 +1,9 @@
 // Engine.cpp : Defines the exported functions for the DLL.
 //
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.hpp>
+
 #include "Engine.h"
 #include "DeferredRender.h"
 #include "ForwardRender.h"
@@ -15,13 +18,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-// This is the constructor of a class that has been exported.
-Game::Game()
-    : m_initializer(*this),
-      m_component_initializer(*this)
-{
-}
 
 Game::~Game()
 {
@@ -89,7 +85,21 @@ vk::PhysicalDevice Game::select_physical_device()
     return selected_device;
 }
 
-void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
+void Game::select_graphics_queue_family()
+{
+    auto queue_families_properties = m_phys_device.getQueueFamilyProperties();
+    for (uint32_t i = 0; i < queue_families_properties.size(); i++) {
+        if (queue_families_properties[i].queueFlags & vk::QueueFlagBits::eGraphics) {
+            m_queue_family_index = i;
+            break;
+        }
+    }
+}
+
+// This is the constructor of a class that has been exported.
+Game::Game()
+    : m_initializer(*this),
+    m_component_initializer(*this)
 {
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
 
@@ -107,14 +117,14 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
         //"VK_LAYER_Galaxy_Overlay"
         "VK_LAYER_KHRONOS_validation",
         "VK_LAYER_LUNARG_api_dump",
-      //  "VK_LAYER_LUNARG_monitor",
+        //  "VK_LAYER_LUNARG_monitor",
 
-        //"VK_LAYER_RENDERDOC_Capture",
-#ifdef VK_TRACE
-        "VK_LAYER_LUNARG_vktrace",
-#endif
+          //"VK_LAYER_RENDERDOC_Capture",
+  #ifdef VK_TRACE
+          "VK_LAYER_LUNARG_vktrace",
+  #endif
     };
-           //std::array<const char* const, 0> layers = {};
+    //std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
         "VK_EXT_debug_utils",
@@ -130,27 +140,36 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
     //std::array<const char* const, 0> extensions = {};
 
     m_instance = vk::createInstance(vk::InstanceCreateInfo({}, &application_info, layers, extensions));
+    m_phys_device = select_physical_device();
 
-    vk::PhysicalDevice selected_device = select_physical_device();
+    select_graphics_queue_family();
+    if (m_queue_family_index == -1) {
+        throw std::exception("Vulkan queue family not found!");
+    }
 
     std::array queue_priorities{ 1.0f };
-    std::array queue_create_infos{ vk::DeviceQueueCreateInfo{{}, 0, queue_priorities} };
+    std::array queue_create_infos{ vk::DeviceQueueCreateInfo{{}, m_queue_family_index, queue_priorities} };
     std::array device_extensions{ "VK_KHR_swapchain" };
-    m_device = selected_device.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
-    m_queue = m_device.getQueue(0, 0);
+    m_device = m_phys_device.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
+
+    m_queue = m_device.getQueue(m_queue_family_index, 0);
     m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
-    m_surface = m_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hinstance, hwnd));
+}
+
+void Game::InitializeSurface(vk::SurfaceKHR surface)
+{
+    m_surface = surface;
 
     //safe check
-    if (!selected_device.getSurfaceSupportKHR(0, m_surface)) {
+    if (!m_phys_device.getSurfaceSupportKHR(0, m_surface)) {
         throw std::exception("device doesn't support surface");
     }
 
     m_depth_format = vk::Format::eD32SfloatS8Uint;
-    InitializeColorFormats(selected_device.getSurfaceFormatsKHR(m_surface));
-    m_memory_props = selected_device.getMemoryProperties();
+    InitializeColorFormats(m_phys_device.getSurfaceFormatsKHR(m_surface));
+    m_memory_props = m_phys_device.getMemoryProperties();
 
-    auto capabilities = selected_device.getSurfaceCapabilitiesKHR(m_surface);
+    auto capabilities = m_phys_device.getSurfaceCapabilitiesKHR(m_surface);
     m_width = capabilities.currentExtent.width;
     m_height = capabilities.currentExtent.height;
 
@@ -161,23 +180,23 @@ void Game::Initialize(HINSTANCE hinstance, HWND hwnd)
     if (!(capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
         throw std::exception("Supported Composite Alpha is not supported");
     }
-    
+
     if (!(capabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eColorAttachment)) {
         throw std::exception("Supported Usage Flags is not supported");
     }
 
-    auto present_modes = selected_device.getSurfacePresentModesKHR(m_surface);
+    auto present_modes = m_phys_device.getSurfacePresentModesKHR(m_surface);
 
     if (auto it = std::find(present_modes.begin(), present_modes.end(), vk::PresentModeKHR::eImmediate); it == present_modes.end()) {
         throw std::exception("Present mode is not supported");
-    }  
+    }
 
     std::array<uint32_t, 1> queues{ 0 };
     m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, m_image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(m_width, m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
 
     InitializePipelineLayout();
 
-    vma::AllocatorCreateInfo allocator_info({}, selected_device, m_device);
+    vma::AllocatorCreateInfo allocator_info({}, m_phys_device, m_device);
     allocator_info.instance = m_instance;
     allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
     m_allocator = vma::createAllocator(allocator_info);
