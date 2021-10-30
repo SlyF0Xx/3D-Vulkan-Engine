@@ -78,10 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-<<<<<<< HEAD
     <IncludePath>..\VulkanMemoryAllocator-Hpp-master;..\eventpp-master\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-=======
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -120,23 +117,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-<<<<<<< HEAD
       <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;..\Engine\Engine</AdditionalIncludeDirectories>
-=======
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets</AdditionalIncludeDirectories>
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-<<<<<<< HEAD
       <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-=======
-      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -162,10 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ContentBrowser.cpp" />
-<<<<<<< HEAD
-=======
     <ClCompile Include="LuaConsole.cpp" />
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_vulkan.cpp" />
@@ -180,10 +165,7 @@
     <ClInclude Include="BaseWidget.h" />
     <ClInclude Include="BooleanStates.h" />
     <ClInclude Include="ContentBrowser.h" />
-<<<<<<< HEAD
-=======
     <ClInclude Include="LuaConsole.h" />
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
@@ -194,14 +176,11 @@
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
     <ClInclude Include="vendor\imgui\widgets\TextEditor.h" />
   </ItemGroup>
-<<<<<<< HEAD
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">
       <Project>{d00a8ad5-d52f-412a-a67b-0eca2f5611c4}</Project>
     </ProjectReference>
   </ItemGroup>
-=======
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -14,7 +14,5 @@ public:
     //virtual void RecreateCommandBuffers() = 0;
 
     // Only after init objects
-    virtual void Initialize() = 0;
-
-    virtual void Draw() = 0;
+    virtual void Initialize(int i, const vk::CommandBuffer& command_buffer) = 0;
 };

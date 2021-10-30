@@ -27,20 +27,11 @@ class ForwardRender :
 
         vk::Framebuffer m_framebuffer;
 
-        vk::CommandBuffer m_command_buffer;
-
         vk::DescriptorSet m_shadows_descriptor_set;
-
-        // Constant per image value
-        vk::Fence m_fence;
-        vk::Semaphore m_sema;
     };
 
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
     vk::PipelineLayout m_layout;
-
-    vk::Semaphore m_sema;
-    std::vector<vk::CommandBuffer> m_command_buffers;
 
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
@@ -65,15 +56,13 @@ class ForwardRender :
     void InitializeConstantPerImage();
     // screen dependent
     // flexiable
-    void DestroyConstantPerImageResources();
     void InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images);
     void DestroyVariablePerImageResources();
 
     void InitializePipeline();
     void DestroyPipeline();
 
-    void InitCommandBuffer();
-    void DestroyCommandBuffer();
+    void InitCommandBuffer(int i, const vk::CommandBuffer& command_buffer);
 
     void DestroyResources();
 
@@ -84,8 +73,6 @@ public:
     void Update(const std::vector<vk::Image>& swapchain_images) override;
 
     // Only after init objects
-    void Initialize() override;
-
-    void Draw() override;
+    void Initialize(int i, const vk::CommandBuffer& command_buffer) override;
 };
 

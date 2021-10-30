@@ -154,6 +154,8 @@ Game::Game()
 
     m_queue = m_device.getQueue(m_queue_family_index, 0);
     m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
+
+    m_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
 }
 
 void Game::InitializeSurface(vk::SurfaceKHR surface)
@@ -239,11 +241,25 @@ void Game::InitializeSurface(vk::SurfaceKHR surface)
 
     //render = new DeferredRender(*this, images);
     render = new ForwardRender(*this, images, m_registry);
+
+    for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_swapchain_data[i].m_fence = m_device.createFence(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+        m_swapchain_data[i].m_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
+    }
 }
 
 void Game::SecondInitialize()
 {
-    render->Initialize();
+    m_swapchain_data.resize(images.size());
+    m_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, images.size()));
+    for (int i = 0; i < images.size(); ++i) {
+        m_swapchain_data[i].m_command_buffer = m_command_buffers[i];
+        m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+
+        render->Initialize(i, m_swapchain_data[i].m_command_buffer);
+
+        m_swapchain_data[i].m_command_buffer.end();
+    }
 
     m_initialized = true;
 }
@@ -315,7 +331,19 @@ void Game::Update(int width, int height)
     m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, m_image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(width, height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate, VK_TRUE, m_swapchain));
 
     images = m_device.getSwapchainImagesKHR(m_swapchain);
+
+
     render->Update(images);
+    m_device.freeCommandBuffers(m_command_pool, m_command_buffers);
+    m_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, images.size()));
+    for (int i = 0; i < images.size(); ++i) {
+        m_swapchain_data[i].m_command_buffer = m_command_buffers[i];
+        m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+
+        render->Initialize(i, m_swapchain_data[i].m_command_buffer);
+
+        m_swapchain_data[i].m_command_buffer.end();
+    }
 }
 
 vk::ShaderModule Game::loadSPIRVShader(std::string filename)
@@ -386,6 +414,13 @@ void Game::update_light(int index, const LightInfo & light)
 */
 void Game::Exit()
 {
+    m_device.freeCommandBuffers(m_command_pool, m_command_buffers);
+    for (int i = 0; i < m_swapchain_data.size(); ++i) {
+        m_device.destroyFence(m_swapchain_data[i].m_fence);
+        m_device.destroySemaphore(m_swapchain_data[i].m_sema);
+    }
+
+
     /*
     for (auto& swapchain_data : m_swapchain_data) {
         m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);
@@ -413,5 +448,18 @@ void Game::Exit()
 
 void Game::Draw()
 {
-    render->Draw();
+    auto next_image = m_device.acquireNextImageKHR(m_swapchain, UINT64_MAX, m_sema);
+
+    m_device.waitForFences(m_swapchain_data[next_image.value].m_fence, VK_TRUE, -1);
+    m_device.resetFences(m_swapchain_data[next_image.value].m_fence);
+
+    vk::PipelineStageFlags stage_flags = { vk::PipelineStageFlagBits::eBottomOfPipe };
+    std::array command_buffers{ m_swapchain_data[next_image.value].m_command_buffer };
+    std::array queue_submits{ vk::SubmitInfo(m_sema, stage_flags, command_buffers, m_swapchain_data[next_image.value].m_sema) };
+    m_queue.submit(queue_submits, m_swapchain_data[next_image.value].m_fence);
+
+    std::array wait_sems = { m_swapchain_data[next_image.value].m_sema };
+
+    std::array results{ vk::Result() };
+    m_queue.presentKHR(vk::PresentInfoKHR(wait_sems, m_swapchain, next_image.value, results));
 }

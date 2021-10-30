@@ -64,6 +64,19 @@ public:
     bool m_initialized = false;
 
 private:
+    struct PerSwapchainImageData
+    {
+        vk::CommandBuffer m_command_buffer;
+
+        // Constant per image value
+        vk::Fence m_fence;
+        vk::Semaphore m_sema;
+    };
+    vk::Semaphore m_sema;
+    std::vector<vk::CommandBuffer> m_command_buffers;
+
+    std::vector<PerSwapchainImageData> m_swapchain_data;
+
     entt::registry m_registry;
     diffusion::VulkanInitializer m_initializer;
     diffusion::ComponentInitializer m_component_initializer;

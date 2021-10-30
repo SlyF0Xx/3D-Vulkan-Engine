@@ -44,16 +44,9 @@ class DeferredRender :
         vk::Framebuffer m_deffered_framebuffer;
         vk::Framebuffer m_composite_framebuffer;
 
-        vk::CommandBuffer m_command_buffer;
-
-        vk::Fence m_fence;
-        vk::Semaphore m_sema;
-
         vk::DescriptorSet m_descriptor_set;
         vk::DescriptorSet m_depth_descriptor_set;
     };
-
-    vk::Semaphore m_sema;
 
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
@@ -88,7 +81,7 @@ class DeferredRender :
     void InitializeDeferredPipeline();
     void InitializeCompositePipeline();
 
-    void InitCommandBuffer();
+    void InitCommandBuffer(int i, const vk::CommandBuffer& command_buffer);
 
 public:
     DeferredRender(Game & game, const std::vector<vk::Image> & swapchain_images);
@@ -96,8 +89,6 @@ public:
     void Update(const std::vector<vk::Image>& swapchain_images) override;
 
     // Only after init objects
-    void Initialize() override;
-
-    void Draw() override;
+    void Initialize(int i, const vk::CommandBuffer& command_buffer) override;
 };
 

@@ -48,12 +48,9 @@
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-<<<<<<< HEAD
-=======
     <ClCompile Include="LuaConsole.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -92,11 +89,8 @@
     <ClInclude Include="BooleanStates.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-<<<<<<< HEAD
-=======
     <ClInclude Include="LuaConsole.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
   </ItemGroup>
 </Project>
