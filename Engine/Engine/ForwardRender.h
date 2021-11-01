@@ -17,14 +17,6 @@ class ForwardRender :
     struct PerSwapchainImageData
     {
         // Variable per image value
-        vk::Image m_color_image;
-
-        vk::Image m_depth_image;
-        vma::Allocation m_depth_memory;
-
-        vk::ImageView m_color_image_view;
-        vk::ImageView m_depth_image_view;
-
         vk::Framebuffer m_framebuffer;
 
         vk::DescriptorSet m_shadows_descriptor_set;
@@ -56,7 +48,7 @@ class ForwardRender :
     void InitializeConstantPerImage();
     // screen dependent
     // flexiable
-    void InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images);
+    void InitializeVariablePerImage();
     void DestroyVariablePerImageResources();
 
     void InitializePipeline();
@@ -67,10 +59,10 @@ class ForwardRender :
     void DestroyResources();
 
 public:
-    ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry & registry);
+    ForwardRender(Game& game, entt::registry & registry);
     ~ForwardRender();
 
-    void Update(const std::vector<vk::Image>& swapchain_images) override;
+    void Update() override;
 
     // Only after init objects
     void Initialize(int i, const vk::CommandBuffer& command_buffer) override;

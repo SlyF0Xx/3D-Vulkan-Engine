@@ -8,15 +8,15 @@
 
 #include "util.h"
 
-ForwardRender::ForwardRender(Game& game, const std::vector<vk::Image>& swapchain_images, entt::registry& registry)
+ForwardRender::ForwardRender(Game& game, entt::registry& registry)
     : m_game(game), m_registry(registry)
 {
     InitializePipelineLayout();
     InitializeRenderPass();
 
-    m_swapchain_data.resize(swapchain_images.size());
+    m_swapchain_data.resize(m_game.get_presentation_engine().m_image_count);
     InitializeConstantPerImage();
-    InitializeVariablePerImage(swapchain_images);
+    InitializeVariablePerImage();
 
     InitializePipeline();
 }
@@ -26,7 +26,7 @@ ForwardRender::~ForwardRender()
     DestroyResources();
 }
 
-void ForwardRender::Update(const std::vector<vk::Image>& swapchain_images)
+void ForwardRender::Update()
 {
     DestroyVariablePerImageResources();
 
@@ -35,7 +35,7 @@ void ForwardRender::Update(const std::vector<vk::Image>& swapchain_images)
     }
 
     // TODO: release destroy variable resources
-    InitializeVariablePerImage(swapchain_images);
+    InitializeVariablePerImage();
     //InitCommandBuffer();
 }
 
@@ -108,25 +108,14 @@ void ForwardRender::InitializeConstantPerImage()
     }
 }
 
-void ForwardRender::InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images)
+void ForwardRender::InitializeVariablePerImage()
 {
     std::array<uint32_t, 1> queues{ 0 };
 
     std::vector<vk::WriteDescriptorSet> write_descriptors;
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
-        m_swapchain_data[i].m_color_image = swapchain_images[i];
-
-        auto depth_allocation = m_game.get_allocator().createImage(
-            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
-            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
-        m_swapchain_data[i].m_depth_image = depth_allocation.first;
-        m_swapchain_data[i].m_depth_memory = depth_allocation.second;
-
-        m_swapchain_data[i].m_color_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
-        m_swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
-
-        std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
-        m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_game.m_width, m_game.m_height, 1));
+        std::array image_views{ m_game.get_presentation_engine().m_swapchain_data[i].m_color_image_view, m_game.get_presentation_engine().m_swapchain_data[i].m_depth_image_view };
+        m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
 
         std::array shadows_infos{ vk::DescriptorImageInfo(m_game.get_shadpwed_lights().get_depth_sampler(i), m_game.get_shadpwed_lights().get_depth_image_view(i), vk::ImageLayout::eDepthStencilReadOnlyOptimal) };
         write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
@@ -138,11 +127,6 @@ void ForwardRender::DestroyVariablePerImageResources()
 {
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         m_game.get_device().destroyFramebuffer(m_swapchain_data[i].m_framebuffer);
-
-        m_game.get_device().destroyImageView(m_swapchain_data[i].m_depth_image_view);
-        m_game.get_device().destroyImageView(m_swapchain_data[i].m_color_image_view);
-
-        m_game.get_allocator().destroyImage(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
     }
 }
 
@@ -163,8 +147,8 @@ void ForwardRender::InitializePipeline()
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 
-    std::array viewports{ vk::Viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f) };
-    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
+    std::array viewports{ vk::Viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f) };
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -197,15 +181,16 @@ void ForwardRender::DestroyPipeline()
 
 void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_buffer)
 {
-    std::array colors{ vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
-                       vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
+    std::array clear_values = {
+        vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{ 0.3f, 0.3f, 0.3f, 1.0f })),
+        vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
     for (int j = 0; j < m_game.get_shadpwed_lights().get_shadowed_light().size(); ++j) {
         m_game.get_shadpwed_lights().get_shadowed_light()[j].InitCommandBuffer(i, command_buffer);
     }
 
-    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
+    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), clear_values), vk::SubpassContents::eInline);
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
     const auto * main_camera_component = m_registry.try_ctx<diffusion::MainCameraTag>();
@@ -217,9 +202,9 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, m_game.get_lights_descriptor_set(), {});
     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 4, m_swapchain_data[i].m_shadows_descriptor_set, {});
 
-    vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
+    vk::Viewport viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f);
     command_buffer.setViewport(0, viewport);
-    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
+    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height));
     command_buffer.setScissor(0, scissor);
 
     {

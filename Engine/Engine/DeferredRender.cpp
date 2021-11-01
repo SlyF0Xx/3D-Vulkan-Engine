@@ -6,7 +6,7 @@
 #include "UnlitMaterial.h"
 #include "LitMaterial.h"
 
-DeferredRender::DeferredRender(Game& game, const std::vector<vk::Image>& swapchain_images)
+DeferredRender::DeferredRender(Game& game)
     : m_game(game), m_registry(m_game.get_registry())
 {
     InitializeDeferredPipelineLayout();
@@ -14,18 +14,18 @@ DeferredRender::DeferredRender(Game& game, const std::vector<vk::Image>& swapcha
     InitializeDeferredRenderPass();
     InitializeCompositeRenderPass();
 
-    m_swapchain_data.resize(swapchain_images.size());
+    m_swapchain_data.resize(m_game.get_presentation_engine().m_image_count);
     InitializeConstantPerImage();
-    InitializeVariablePerImage(swapchain_images);
+    InitializeVariablePerImage();
 
     InitializeDeferredPipeline();
     InitializeCompositePipeline();
 }
 
-void DeferredRender::Update(const std::vector<vk::Image>& swapchain_images)
+void DeferredRender::Update()
 {
     // TODO: release destroy variable resources
-    InitializeVariablePerImage(swapchain_images);
+    InitializeVariablePerImage();
     //InitCommandBuffer();
 }
 
@@ -148,42 +148,32 @@ void DeferredRender::InitializeConstantPerImage()
     }
 }
 
-void DeferredRender::InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images)
+void DeferredRender::InitializeVariablePerImage()
 {
     std::array<uint32_t, 1> queues{ 0 };
 
     std::vector<vk::WriteDescriptorSet> write_descriptors;
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
-        m_swapchain_data[i].m_color_image = swapchain_images[i];
-
         auto deffered_allocation = m_game.get_allocator().createImage(
-            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
             vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
         m_swapchain_data[i].m_deffered_depth_image = deffered_allocation.first;
         m_swapchain_data[i].m_deffered_depth_memory = deffered_allocation.second;
 
-        auto depth_allocation = m_game.get_allocator().createImage(
-            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
-            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
-        m_swapchain_data[i].m_depth_image = depth_allocation.first;
-        m_swapchain_data[i].m_depth_memory = depth_allocation.second;
-
         auto albedo_allocation = m_game.get_allocator().createImage(
-            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
             vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
         m_swapchain_data[i].m_albedo_image = albedo_allocation.first;
         m_swapchain_data[i].m_albedo_memory = albedo_allocation.second;
 
         auto normal_allocation = m_game.get_allocator().createImage(
-            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_color_format(), vk::Extent3D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
             vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
         m_swapchain_data[i].m_normal_image = normal_allocation.first;
         m_swapchain_data[i].m_normal_memory = normal_allocation.second;
 
         m_swapchain_data[i].m_albedo_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_albedo_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         m_swapchain_data[i].m_normal_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_normal_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
-        m_swapchain_data[i].m_color_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_game.get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
-        m_swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
         m_swapchain_data[i].m_deffered_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_swapchain_data[i].m_deffered_depth_image, vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
 
         m_swapchain_data[i].m_albedo_sampler = m_game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
@@ -208,10 +198,10 @@ void DeferredRender::InitializeVariablePerImage(const std::vector<vk::Image>& sw
         write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_descriptor_set, 3, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
 
         std::array deffered_views{ m_swapchain_data[i].m_albedo_image_view, m_swapchain_data[i].m_normal_image_view, m_swapchain_data[i].m_deffered_depth_image_view };
-        m_swapchain_data[i].m_deffered_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_deffered_render_pass, deffered_views, m_game.m_width, m_game.m_height, 1));
+        m_swapchain_data[i].m_deffered_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_deffered_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
 
-        std::array image_views{ m_swapchain_data[i].m_color_image_view, m_swapchain_data[i].m_depth_image_view };
-        m_swapchain_data[i].m_composite_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_composite_render_pass, image_views, m_game.m_width, m_game.m_height, 1));
+        std::array image_views{ m_game.get_presentation_engine().m_swapchain_data[i].m_color_image_view, m_game.get_presentation_engine().m_swapchain_data[i].m_depth_image_view };
+        m_swapchain_data[i].m_composite_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_composite_render_pass, image_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
     }
     m_game.get_device().updateDescriptorSets(write_descriptors, {});
 }
@@ -235,8 +225,8 @@ void DeferredRender::InitializeDeferredPipeline()
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 
-    std::array viewports{ vk::Viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f) };
-    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
+    std::array viewports{ vk::Viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f) };
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -274,8 +264,8 @@ void DeferredRender::InitializeCompositePipeline()
     vk::PipelineVertexInputStateCreateInfo vertex_input_info;
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 
-    std::array viewports{ vk::Viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f) };
-    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
+    std::array viewports{ vk::Viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f) };
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone /*eFront*/, vk::FrontFace::eClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -307,7 +297,7 @@ void DeferredRender::InitCommandBuffer(int i, const vk::CommandBuffer& command_b
         m_game.get_shadpwed_lights().get_shadowed_light()[j].InitCommandBuffer(i, command_buffer);
     }
 
-    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_deffered_render_pass, m_swapchain_data[i].m_deffered_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
+    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_deffered_render_pass, m_swapchain_data[i].m_deffered_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), colors), vk::SubpassContents::eInline);
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_deffered_pipeline);
 
     const auto* main_camera_component = m_registry.try_ctx<diffusion::MainCameraTag>();
@@ -316,9 +306,9 @@ void DeferredRender::InitCommandBuffer(int i, const vk::CommandBuffer& command_b
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_deferred_layout, 0, camera.m_descriptor_set, { {} });
     }
 
-    vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
+    vk::Viewport viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f);
     command_buffer.setViewport(0, viewport);
-    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
+    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height));
     command_buffer.setScissor(0, scissor);
 
 
@@ -391,7 +381,7 @@ void DeferredRender::InitCommandBuffer(int i, const vk::CommandBuffer& command_b
 
     command_buffer.endRenderPass();
 
-    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_composite_render_pass, m_swapchain_data[i].m_composite_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
+    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_composite_render_pass, m_swapchain_data[i].m_composite_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), colors), vk::SubpassContents::eInline);
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_composite_pipeline);
 
     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_composite_layout, 0, m_swapchain_data[i].m_descriptor_set, {});

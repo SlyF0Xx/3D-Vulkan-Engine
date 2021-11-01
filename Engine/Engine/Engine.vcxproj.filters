@@ -90,6 +90,12 @@
     <ClInclude Include="ComponentInitializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IMenuRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Game\Archiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">

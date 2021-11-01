@@ -154,7 +154,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Archiver.h" />
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="CubeEntity.h" />
     <ClInclude Include="framework.h" />

@@ -1,6 +1,7 @@
 // Engine.cpp : Defines the exported functions for the DLL.
 //
 
+#define VK_USE_PLATFORM_WIN32_KHR
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
 
@@ -21,47 +22,6 @@
 
 Game::~Game()
 {
-}
-
-void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR> & formats)
-{
-    for (auto& format : formats) {
-        switch (format.format)
-        {
-        case vk::Format::eB8G8R8A8Unorm: {
-            m_color_format = format.format;
-            m_texture_component_mapping = vk::ComponentMapping(vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
-            break;
-        }
-        case vk::Format::eR8G8B8A8Unorm: {
-            m_color_format = format.format;
-            m_texture_component_mapping = vk::ComponentMapping();
-            break;
-        }
-
-
-        case vk::Format::eD32SfloatS8Uint: {
-            m_depth_format = format.format;
-            break;
-        }
-        case vk::Format::eD16UnormS8Uint: {
-            m_depth_format = format.format;
-            break;
-        }
-        case vk::Format::eD24UnormS8Uint: {
-            m_depth_format = format.format;
-            break;
-        }
-        }
-    }
-
-    if (m_color_format == vk::Format::eUndefined) {
-        throw std::exception("Color format is not supported");
-    }
-
-    if (m_depth_format == vk::Format::eUndefined) {
-        throw std::exception("Depth format is not supported");
-    }
 }
 
 vk::PhysicalDevice Game::select_physical_device()
@@ -111,23 +71,23 @@ Game::Game()
     }
 
     std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
-    std::array layers = {
+//    std::array layers = {
         //"VK_LAYER_Galaxy_Overlay_DEBUG",
         //"VK_LAYER_Galaxy_Overlay_VERBOSE",
         //"VK_LAYER_Galaxy_Overlay"
-        "VK_LAYER_KHRONOS_validation",
-        "VK_LAYER_LUNARG_api_dump",
+//        "VK_LAYER_KHRONOS_validation",
+//        "VK_LAYER_LUNARG_api_dump",
         //  "VK_LAYER_LUNARG_monitor",
 
           //"VK_LAYER_RENDERDOC_Capture",
   #ifdef VK_TRACE
           "VK_LAYER_LUNARG_vktrace",
   #endif
-    };
-    //std::array<const char* const, 0> layers = {};
+//    };
+    std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
-        "VK_EXT_debug_utils",
+//        "VK_EXT_debug_utils",
         //"VK_KHR_external_memory_capabilities",
         //"VK_NV_external_memory_capabilities",
         "VK_EXT_swapchain_colorspace",
@@ -154,55 +114,25 @@ Game::Game()
 
     m_queue = m_device.getQueue(m_queue_family_index, 0);
     m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
-
-    m_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
-}
-
-void Game::InitializeSurface(vk::SurfaceKHR surface)
-{
-    m_surface = surface;
-
-    //safe check
-    if (!m_phys_device.getSurfaceSupportKHR(0, m_surface)) {
-        throw std::exception("device doesn't support surface");
-    }
-
-    m_depth_format = vk::Format::eD32SfloatS8Uint;
-    InitializeColorFormats(m_phys_device.getSurfaceFormatsKHR(m_surface));
-    m_memory_props = m_phys_device.getMemoryProperties();
-
-    auto capabilities = m_phys_device.getSurfaceCapabilitiesKHR(m_surface);
-    m_width = capabilities.currentExtent.width;
-    m_height = capabilities.currentExtent.height;
-
-    if (capabilities.maxImageCount > 2) {
-        m_image_count = 3;
-    }
-
-    if (!(capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
-        throw std::exception("Supported Composite Alpha is not supported");
-    }
-
-    if (!(capabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eColorAttachment)) {
-        throw std::exception("Supported Usage Flags is not supported");
-    }
-
-    auto present_modes = m_phys_device.getSurfacePresentModesKHR(m_surface);
-
-    if (auto it = std::find(present_modes.begin(), present_modes.end(), vk::PresentModeKHR::eImmediate); it == present_modes.end()) {
-        throw std::exception("Present mode is not supported");
-    }
-
-    std::array<uint32_t, 1> queues{ 0 };
-    m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, m_surface, m_image_count, m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(m_width, m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, vk::PresentModeKHR::eImmediate/*TODO*/, VK_TRUE));
-
-    InitializePipelineLayout();
+    //m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, 0));
 
     vma::AllocatorCreateInfo allocator_info({}, m_phys_device, m_device);
     allocator_info.instance = m_instance;
     allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
     m_allocator = vma::createAllocator(allocator_info);
+}
 
+void Game::InitializePresentationEngine(const PresentationEngine& presentation_engine)
+{
+    m_presentation_engine = presentation_engine;
+
+    // TODO: move in presentation engine
+    if (m_presentation_engine.m_color_format == vk::Format::eB8G8R8A8Unorm) {
+        m_texture_component_mapping = vk::ComponentMapping(vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
+    }
+
+
+    InitializePipelineLayout();
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
     m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
@@ -228,7 +158,8 @@ void Game::InitializeSurface(vk::SurfaceKHR surface)
                                          vk::WriteDescriptorSet(m_lights_descriptor_set, 1, 0, vk::DescriptorType::eUniformBuffer, {}, lights_count_buffer_infos, {}) };
     m_device.updateDescriptorSets(write_lights_descriptors, {});
 
-    images = m_device.getSwapchainImagesKHR(m_swapchain);
+
+
 
     glm::mat4 ProjectionMatrix = glm::perspective(
         static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
@@ -236,29 +167,24 @@ void Game::InitializeSurface(vk::SurfaceKHR surface)
         0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
         100.0f                                 // Дальняя плоскость отсечения.
     );
-    m_shadpwed_lights = std::make_unique<Lights>(*this, ProjectionMatrix, images);
+    m_shadpwed_lights = std::make_unique<Lights>(*this, ProjectionMatrix);
 
 
     //render = new DeferredRender(*this, images);
-    render = new ForwardRender(*this, images, m_registry);
-
-    for (int i = 0; i < m_swapchain_data.size(); ++i) {
-        m_swapchain_data[i].m_fence = m_device.createFence(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
-        m_swapchain_data[i].m_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
-    }
+    render = std::make_unique<ForwardRender>(*this, m_registry);
 }
 
 void Game::SecondInitialize()
 {
-    m_swapchain_data.resize(images.size());
-    m_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, images.size()));
-    for (int i = 0; i < images.size(); ++i) {
-        m_swapchain_data[i].m_command_buffer = m_command_buffers[i];
-        m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+        
+        if (m_menu_renderer) {
+            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        }
+        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
 
-        render->Initialize(i, m_swapchain_data[i].m_command_buffer);
-
-        m_swapchain_data[i].m_command_buffer.end();
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.end();
     }
 
     m_initialized = true;
@@ -300,6 +226,7 @@ void Game::InitializePipelineLayout()
     */
 }
 
+#if 0
 void Game::Update(int width, int height)
 {
     // Don't react to resize until after first initialization.
@@ -341,8 +268,43 @@ void Game::Update(int width, int height)
         m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
 
         render->Initialize(i, m_swapchain_data[i].m_command_buffer);
+        if (m_menu_renderer) {
+            m_menu_renderer->Render(m_swapchain_data[i].m_command_buffer);
+        }
 
         m_swapchain_data[i].m_command_buffer.end();
+    }
+}
+#endif
+
+void Game::Update()
+{
+    // Don't react to resize until after first initialization.
+    if (!m_initialized) {
+        return;
+    }
+
+    m_device.waitIdle();
+
+    render->Update();
+    // WIN version only
+    std::vector<vk::CommandBuffer> command_buffers;
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+    }
+    m_device.freeCommandBuffers(m_command_pool, command_buffers);
+
+    auto allocated_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, m_presentation_engine.m_image_count));
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer = allocated_command_buffers[i];
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+
+        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        if (m_menu_renderer) {
+            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        }
+
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.end();
     }
 }
 
@@ -380,7 +342,29 @@ vk::ShaderModule Game::loadSPIRVShader(std::string filename)
 int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)
 {
     m_shadpwed_lights->add_light(position, cameraTarget, upVector);
-    render->Update(images);
+    
+    
+
+    render->Update();
+    // WIN version only
+    std::vector<vk::CommandBuffer> command_buffers;
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+    }
+    m_device.freeCommandBuffers(m_command_pool, command_buffers);
+
+    auto allocated_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, m_presentation_engine.m_image_count));
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer = allocated_command_buffers[i];
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
+
+        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        if (m_menu_renderer) {
+            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        }
+
+        m_presentation_engine.m_swapchain_data[i].m_command_buffer.end();
+    }
 
     //m_lights.push_back(light);
     std::vector<LightShaderInfo> light = m_shadpwed_lights->get_light_shader_info();
@@ -398,6 +382,118 @@ int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, co
 
     return light.size() - 1;
 }
+
+void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats, PresentationEngine& presentation_engine)
+{
+    for (auto& format : formats) {
+        switch (format.format)
+        {
+        case vk::Format::eB8G8R8A8Unorm: {
+            presentation_engine.m_color_format = format.format;
+            m_texture_component_mapping = vk::ComponentMapping(vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
+            break;
+        }
+        case vk::Format::eR8G8B8A8Unorm: {
+            presentation_engine.m_color_format = format.format;
+            m_texture_component_mapping = vk::ComponentMapping();
+            break;
+        }
+
+
+        case vk::Format::eD32SfloatS8Uint: {
+            presentation_engine.m_depth_format = format.format;
+            break;
+        }
+        case vk::Format::eD16UnormS8Uint: {
+            presentation_engine.m_depth_format = format.format;
+            break;
+        }
+        case vk::Format::eD24UnormS8Uint: {
+            presentation_engine.m_depth_format = format.format;
+            break;
+        }
+        }
+    }
+
+    if (presentation_engine.m_color_format == vk::Format::eUndefined) {
+        throw std::exception("Color format is not supported");
+    }
+
+    if (presentation_engine.m_depth_format == vk::Format::eUndefined) {
+        throw std::exception("Depth format is not supported");
+    }
+}
+
+PresentationEngine Game::create_default_presentation_engine(HINSTANCE hinstance, HWND hwnd)
+{
+    PresentationEngine presentation_engine;
+
+    presentation_engine.m_surface = m_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hinstance, hwnd));
+
+    //safe check
+    if (!m_phys_device.getSurfaceSupportKHR(0, presentation_engine.m_surface)) {
+        throw std::exception("device doesn't support surface");
+    }
+
+    presentation_engine.m_depth_format = vk::Format::eD32SfloatS8Uint;
+    InitializeColorFormats(m_phys_device.getSurfaceFormatsKHR(presentation_engine.m_surface), presentation_engine);
+
+    auto capabilities = m_phys_device.getSurfaceCapabilitiesKHR(presentation_engine.m_surface);
+    presentation_engine.m_width = capabilities.currentExtent.width;
+    presentation_engine.m_height = capabilities.currentExtent.height;
+
+    if (capabilities.maxImageCount > 2) {
+        presentation_engine.m_image_count = 3;
+    }
+
+    if (!(capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
+        throw std::exception("Supported Composite Alpha is not supported");
+    }
+
+    if (!(capabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eColorAttachment)) {
+        throw std::exception("Supported Usage Flags is not supported");
+    }
+
+    auto present_modes = m_phys_device.getSurfacePresentModesKHR(presentation_engine.m_surface);
+
+    if (auto it = std::find(present_modes.begin(), present_modes.end(), vk::PresentModeKHR::eImmediate); it == present_modes.end()) {
+        throw std::exception("Present mode is not supported");
+    }
+    presentation_engine.m_presentation_mode = vk::PresentModeKHR::eImmediate/*TODO*/;
+
+    std::array<uint32_t, 1> queues{ 0 };
+    presentation_engine.m_swapchain = m_device.createSwapchainKHR(vk::SwapchainCreateInfoKHR({}, presentation_engine.m_surface, presentation_engine.m_image_count, presentation_engine.m_color_format, vk::ColorSpaceKHR::eSrgbNonlinear, vk::Extent2D(presentation_engine.m_width, presentation_engine.m_height), 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, queues, capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentation_engine.m_presentation_mode, VK_TRUE));
+
+    auto images = m_device.getSwapchainImagesKHR(presentation_engine.m_swapchain);
+
+    auto command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, images.size()));
+    presentation_engine.m_swapchain_data.resize(images.size());
+    for (int i = 0; i < images.size(); ++i) {
+        presentation_engine.m_swapchain_data[i].m_command_buffer = command_buffers[i];
+        presentation_engine.m_swapchain_data[i].m_color_image = images[i];
+
+        auto depth_allocation = m_allocator.createImage(
+            vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_depth_format, vk::Extent3D(presentation_engine.m_width, presentation_engine.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+            vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+        presentation_engine.m_swapchain_data[i].m_depth_image = depth_allocation.first;
+        presentation_engine.m_swapchain_data[i].m_depth_memory = depth_allocation.second;
+
+        presentation_engine.m_swapchain_data[i].m_color_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, presentation_engine.m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, presentation_engine.m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
+        presentation_engine.m_swapchain_data[i].m_depth_image_view = m_device.createImageView(vk::ImageViewCreateInfo({}, presentation_engine.m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, presentation_engine.m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+
+        presentation_engine.m_swapchain_data[i].m_fence = m_device.createFence(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+    }
+
+    presentation_engine.m_sema_data.resize(images.size());
+    for (int i = 0; i < presentation_engine.m_sema_data.size(); ++i) {
+        presentation_engine.m_sema_data[i].m_image_acquired_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
+        presentation_engine.m_sema_data[i].m_render_complete_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
+    }
+
+
+    return presentation_engine;
+}
+
 /*
 void Game::update_light(int index, const LightInfo & light)
 {
@@ -414,33 +510,29 @@ void Game::update_light(int index, const LightInfo & light)
 */
 void Game::Exit()
 {
-    m_device.freeCommandBuffers(m_command_pool, m_command_buffers);
-    for (int i = 0; i < m_swapchain_data.size(); ++i) {
-        m_device.destroyFence(m_swapchain_data[i].m_fence);
-        m_device.destroySemaphore(m_swapchain_data[i].m_sema);
+    // Destroy presentation engine
+    std::vector<vk::CommandBuffer> command_buffers;
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+        m_device.destroyFence(m_presentation_engine.m_swapchain_data[i].m_fence);
+
+        m_device.destroyImageView(m_presentation_engine.m_swapchain_data[i].m_depth_image_view);
+        m_device.destroyImageView(m_presentation_engine.m_swapchain_data[i].m_color_image_view);
+
+        m_allocator.destroyImage(m_presentation_engine.m_swapchain_data[i].m_depth_image, m_presentation_engine.m_swapchain_data[i].m_depth_memory);
+
+
+        m_device.destroySemaphore(m_presentation_engine.m_sema_data[i].m_image_acquired_sema);
+        m_device.destroySemaphore(m_presentation_engine.m_sema_data[i].m_render_complete_sema);
     }
+    m_device.freeCommandBuffers(m_command_pool, command_buffers);
 
 
-    /*
-    for (auto& swapchain_data : m_swapchain_data) {
-        m_device.destroyFramebuffer(swapchain_data.m_deffered_framebuffer);
-        m_device.destroyFramebuffer(swapchain_data.m_composite_framebuffer);
+    m_device.destroySwapchainKHR(m_presentation_engine.m_swapchain);
+    m_instance.destroySurfaceKHR(m_presentation_engine.m_surface);
 
-        m_device.destroyImageView(swapchain_data.m_color_image_view);
-        m_device.destroyImageView(swapchain_data.m_depth_image_view);
 
-        m_device.freeMemory(swapchain_data.m_depth_memory);
 
-        m_device.destroyImage(swapchain_data.m_depth_image);
-        // m_device.destroyImage(swapchain_data.m_color_image);
-    }
-
-    m_device.destroyRenderPass(m_deffered_render_pass);
-    m_device.destroyRenderPass(m_composite_render_pass);
-    */
-    m_device.destroySwapchainKHR(m_swapchain);
-
-    m_instance.destroySurfaceKHR(m_surface);
     m_device.destroyCommandPool(m_command_pool);
     m_device.destroy();
     m_instance.destroy();
@@ -448,18 +540,68 @@ void Game::Exit()
 
 void Game::Draw()
 {
-    auto next_image = m_device.acquireNextImageKHR(m_swapchain, UINT64_MAX, m_sema);
+    vk::Semaphore image_acquired_semaphore = m_presentation_engine.m_sema_data[m_presentation_engine.SemaphoreIndex].m_image_acquired_sema;
+    vk::Semaphore render_complete_semaphore = m_presentation_engine.m_sema_data[m_presentation_engine.SemaphoreIndex].m_render_complete_sema;
 
-    m_device.waitForFences(m_swapchain_data[next_image.value].m_fence, VK_TRUE, -1);
-    m_device.resetFences(m_swapchain_data[next_image.value].m_fence);
+    auto next_image = m_device.acquireNextImageKHR(m_presentation_engine.m_swapchain, UINT64_MAX, image_acquired_semaphore);
+
+    m_device.waitForFences(m_presentation_engine.m_swapchain_data[next_image.value].m_fence, VK_TRUE, -1);
+    m_device.resetFences(m_presentation_engine.m_swapchain_data[next_image.value].m_fence);
 
     vk::PipelineStageFlags stage_flags = { vk::PipelineStageFlagBits::eBottomOfPipe };
-    std::array command_buffers{ m_swapchain_data[next_image.value].m_command_buffer };
-    std::array queue_submits{ vk::SubmitInfo(m_sema, stage_flags, command_buffers, m_swapchain_data[next_image.value].m_sema) };
-    m_queue.submit(queue_submits, m_swapchain_data[next_image.value].m_fence);
+    std::array command_buffers{ m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer };
+    std::array queue_submits{ vk::SubmitInfo(image_acquired_semaphore, stage_flags, command_buffers, render_complete_semaphore) };
+    m_queue.submit(queue_submits, m_presentation_engine.m_swapchain_data[next_image.value].m_fence);
 
-    std::array wait_sems = { m_swapchain_data[next_image.value].m_sema };
+    std::array wait_sems = { render_complete_semaphore };
 
     std::array results{ vk::Result() };
-    m_queue.presentKHR(vk::PresentInfoKHR(wait_sems, m_swapchain, next_image.value, results));
+    m_queue.presentKHR(vk::PresentInfoKHR(wait_sems, m_presentation_engine.m_swapchain, next_image.value, results));
+    m_presentation_engine.SemaphoreIndex = (m_presentation_engine.SemaphoreIndex + 1) % m_presentation_engine.m_image_count; // Now we can use the next set of semaphores
+}
+
+void Game::DrawRestruct()
+{
+    vk::Semaphore image_acquired_semaphore = m_presentation_engine.m_sema_data[m_presentation_engine.SemaphoreIndex].m_image_acquired_sema;
+    vk::Semaphore render_complete_semaphore = m_presentation_engine.m_sema_data[m_presentation_engine.SemaphoreIndex].m_render_complete_sema;
+
+    auto next_image = m_device.acquireNextImageKHR(m_presentation_engine.m_swapchain, UINT64_MAX, image_acquired_semaphore);
+    m_presentation_engine.FrameIndex = next_image.value;
+    m_device.waitForFences(m_presentation_engine.m_swapchain_data[next_image.value].m_fence, VK_TRUE, -1);
+    m_device.resetFences(m_presentation_engine.m_swapchain_data[next_image.value].m_fence);
+
+    m_device.waitIdle();
+    /*
+    // WIN version only
+    std::vector<vk::CommandBuffer> freed_command_buffers;
+    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        freed_command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
+    }
+    m_device.freeCommandBuffers(m_command_pool, freed_command_buffers);
+    auto allocated_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, m_presentation_engine.m_image_count));
+    */
+    m_device.resetCommandPool(m_command_pool);
+
+    //for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
+        //m_presentation_engine.m_swapchain_data[i].m_command_buffer = allocated_command_buffers[i];
+        m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+        
+        if (m_menu_renderer) {
+            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
+        }
+        render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
+
+        m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.end();
+    //}
+
+    vk::PipelineStageFlags stage_flags = { vk::PipelineStageFlagBits::eBottomOfPipe };
+    std::array command_buffers{ m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer };
+    std::array queue_submits{ vk::SubmitInfo(image_acquired_semaphore, stage_flags, command_buffers, render_complete_semaphore) };
+    m_queue.submit(queue_submits, m_presentation_engine.m_swapchain_data[next_image.value].m_fence);
+
+    std::array wait_sems = { render_complete_semaphore };
+
+    std::array results{ vk::Result() };
+    m_queue.presentKHR(vk::PresentInfoKHR(wait_sems, m_presentation_engine.m_swapchain, next_image.value, results));
+    m_presentation_engine.SemaphoreIndex = (m_presentation_engine.SemaphoreIndex + 1) % m_presentation_engine.m_image_count; // Now we can use the next set of semaphores
 }

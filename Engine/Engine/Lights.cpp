@@ -4,16 +4,15 @@
 
 Lights::Lights(
 	Game& game,
-	const glm::mat4& ProjectionMatrix,
-	const std::vector<vk::Image>& swapchain_images)
+	const glm::mat4& ProjectionMatrix)
 	: m_game(game), m_ProjectionMatrix(ProjectionMatrix)
 {
-	m_swapchain_data.resize(swapchain_images.size());
+	m_swapchain_data.resize(game.get_presentation_engine().m_image_count);
 
 	std::array<uint32_t, 1> queues{ 0 };
 	for (int i = 0; i < m_swapchain_data.size(); ++i) {
 		auto depth_allocation = m_game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
 			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 		m_swapchain_data[i].m_depth_image = depth_allocation.first;
 		m_swapchain_data[i].m_depth_memory = depth_allocation.second;
@@ -34,7 +33,7 @@ void Lights::add_light(const glm::vec3& position, const glm::vec3& cameraTarget,
 		m_game.get_allocator().destroyImage(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
 
 		auto depth_allocation = m_game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
 			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 		m_swapchain_data[i].m_depth_image = depth_allocation.first;
 		m_swapchain_data[i].m_depth_memory = depth_allocation.second;
@@ -63,7 +62,7 @@ void Lights::Update()
 		m_game.get_allocator().destroyImage(m_swapchain_data[i].m_depth_image, m_swapchain_data[i].m_depth_memory);
 
 		auto depth_allocation = m_game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.m_width, m_game.m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_game.get_depth_format(), vk::Extent3D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1), 1, m_lights.size() + 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
 			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 		m_swapchain_data[i].m_depth_image = depth_allocation.first;
 		m_swapchain_data[i].m_depth_memory = depth_allocation.second;

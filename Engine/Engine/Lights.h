@@ -44,8 +44,7 @@ private:
 public:
     Lights(
         Game& game,
-        const glm::mat4& ProjectionMatrix,
-        const std::vector<vk::Image>& swapchain_images);
+        const glm::mat4& ProjectionMatrix);
 
     void add_light(
         const glm::vec3& position,

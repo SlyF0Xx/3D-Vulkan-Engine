@@ -115,7 +115,7 @@ void ShadowMap::InitializeVariablePerImage(int light_index, const std::vector<vk
         m_swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, swapchain_images[i], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, light_index, 1)));
 
         std::array deffered_views{ m_swapchain_data[i].m_depth_image_view };
-        m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, deffered_views, m_game.m_width, m_game.m_height, 1));
+        m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
     }
 }
 
@@ -136,8 +136,8 @@ void ShadowMap::InitializeDeferredPipeline()
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 
-    std::array viewports{ vk::Viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f) }; /* TODO: shadow map resolution */
-    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height)) };
+    std::array viewports{ vk::Viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f) }; /* TODO: shadow map resolution */
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -159,14 +159,14 @@ void ShadowMap::InitCommandBuffer(int index, const vk::CommandBuffer& command_bu
 {
     std::array colors{ vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0)) };
 
-    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[index].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.m_width, m_game.m_height)), colors), vk::SubpassContents::eInline);
+    command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[index].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), colors), vk::SubpassContents::eInline);
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, m_descriptor_set, { {} });
 
-    vk::Viewport viewport(0, 0, m_game.m_width, m_game.m_height, 0.0f, 1.0f);
+    vk::Viewport viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f);
     command_buffer.setViewport(0, viewport);
-    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.m_width, m_game.m_height));
+    vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height));
     command_buffer.setScissor(0, scissor);
 
     auto view = m_game.get_registry().view<

@@ -161,6 +161,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Game\Archiver.h" />
     <ClInclude Include="BoundingComponent.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ComponentInitializer.h" />
@@ -168,6 +169,7 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="glm_printer.h" />
+    <ClInclude Include="IMenuRenderer.h" />
     <ClInclude Include="ImportableVulkanMeshComponents.h" />
     <ClInclude Include="IRender.h" />
     <ClInclude Include="Lights.h" />

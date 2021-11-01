@@ -11,6 +11,18 @@
 #include "TextEditor.h"
 
 #include <Engine.h>
+#include "Archiver.h"
+
+#include "BoundingComponent.h"
+#include "CameraComponent.h"
+#include "MeshComponent.h"
+#include "Relation.h"
+#include "LitMaterial.h"
+#include "UnlitMaterial.h"
+#include "TransformComponent.h"
+#include "PossessedComponent.h"
+
+//#include "RotateTag>(json_in);
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -18,6 +30,7 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
+#include <fstream>
 
 #include <stdio.h>          // printf, fprintf
 #include <stdlib.h>         // abort
@@ -36,7 +49,8 @@ static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool         g_DescriptorPool = VK_NULL_HANDLE;
 
 static ImGui_ImplVulkanH_Window g_MainWindowData;
-static int                      g_MinImageCount = 2;
+//static int                      g_MinImageCount = 2;
+static int                      g_MinImageCount = 3;
 static bool                     g_SwapChainRebuild = false;
 
 static void check_vk_result(VkResult err) {
@@ -130,6 +144,45 @@ static void CleanupVulkan(const vk::Instance& instance, const vk::Device & devic
 static void CleanupVulkanWindow(const vk::Instance & instance, const vk::Device & device) {
 	ImGui_ImplVulkanH_DestroyWindow(instance, device, &g_MainWindowData, g_Allocator);
 }
+
+class MenuRenderer : public IMenuRenderer
+{
+public:
+	MenuRenderer(Game & vulkan, ImGui_ImplVulkanH_Window* wd)
+		: m_vulkan(vulkan), m_wd(wd)
+	{}
+
+	void Render(const vk::CommandBuffer& command_buffer)
+	{
+		ImDrawData* draw_data = ImGui::GetDrawData();
+		if (!draw_data) {
+			//not initialized yet
+			return;
+		}
+		ImGui_ImplVulkanH_Frame* fd = &m_wd->Frames[m_vulkan.get_presentation_engine().FrameIndex];
+		{
+			VkRenderPassBeginInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			info.renderPass = m_wd->RenderPass;
+			info.framebuffer = fd->Framebuffer;
+			info.renderArea.extent.width = m_wd->Width;
+			info.renderArea.extent.height = m_wd->Height;
+			info.clearValueCount = 1;
+			info.pClearValues = &m_wd->ClearValue;
+			vkCmdBeginRenderPass(command_buffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+		}
+
+		// Record dear imgui primitives into command buffer
+		ImGui_ImplVulkan_RenderDrawData(draw_data, command_buffer);
+
+		// Submit command buffer
+		vkCmdEndRenderPass(command_buffer);
+	}
+
+private:
+	Game& m_vulkan;
+	ImGui_ImplVulkanH_Window* m_wd;
+};
 
 static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data, const vk::Device & device, const vk::Queue & queue) {
 	VkResult err;
@@ -235,6 +288,69 @@ void exit(GLFWwindow* window, const vk::Instance& instance, const vk::Device & d
 	glfwTerminate();
 }
 
+PresentationEngine generate_presentation_engine_from_imgui(Game & game, ImGui_ImplVulkanH_Window * wd)
+{
+	PresentationEngine presentation_engine;
+	
+	//presentation_engine.m_width = wd->Width;
+	//presentation_engine.m_height = wd->Height;
+
+	presentation_engine.m_width = 500;
+	presentation_engine.m_height = 500;
+	presentation_engine.m_surface = wd->Surface;
+	presentation_engine.m_swapchain = wd->Swapchain;
+	//presentation_engine.m_color_format = vk::Format(wd->SurfaceFormat.format);
+	
+	presentation_engine.m_color_format = vk::Format(wd->SurfaceFormat.format);
+	presentation_engine.m_depth_format = vk::Format::eD32SfloatS8Uint;
+	presentation_engine.m_presentation_mode = vk::PresentModeKHR(wd->PresentMode);
+	presentation_engine.m_image_count = wd->ImageCount;
+
+	std::array<uint32_t, 1> queues{ 0 };
+
+	auto command_buffers = game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(game.get_command_pool(), vk::CommandBufferLevel::ePrimary, presentation_engine.m_image_count));
+	presentation_engine.m_swapchain_data.resize(presentation_engine.m_image_count);
+	for (int i = 0; i < presentation_engine.m_image_count; ++i) {
+		presentation_engine.m_swapchain_data[i].m_color_image = wd->Frames[i].Backbuffer;
+		presentation_engine.m_swapchain_data[i].m_color_image_view = wd->Frames[i].BackbufferView;
+		//presentation_engine.m_swapchain_data[i].m_command_buffer = wd->Frames[i].CommandBuffer;
+		presentation_engine.m_swapchain_data[i].m_command_buffer = command_buffers[i];
+		presentation_engine.m_swapchain_data[i].m_fence = wd->Frames[i].Fence;
+
+		auto depth_allocation = game.get_allocator().createImage(
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_depth_format, vk::Extent3D(presentation_engine.m_width, presentation_engine.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+		presentation_engine.m_swapchain_data[i].m_depth_image = depth_allocation.first;
+		presentation_engine.m_swapchain_data[i].m_depth_memory = depth_allocation.second;
+		presentation_engine.m_swapchain_data[i].m_depth_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, presentation_engine.m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, presentation_engine.m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
+	}
+
+	presentation_engine.m_sema_data.resize(presentation_engine.m_image_count);
+	for (int i = 0; i < presentation_engine.m_image_count; ++i) {
+		presentation_engine.m_sema_data[i].m_image_acquired_sema = wd->FrameSemaphores[i].ImageAcquiredSemaphore;
+		presentation_engine.m_sema_data[i].m_render_complete_sema = wd->FrameSemaphores[i].RenderCompleteSemaphore;
+	}
+
+	return presentation_engine;
+}
+
+void import_scene(Game & vulkan)
+{
+	std::ifstream fin("sample_scene.json");
+	std::string str{ std::istreambuf_iterator<char>(fin),
+					 std::istreambuf_iterator<char>() };
+
+	NJSONInputArchive json_in(str);
+	entt::basic_snapshot_loader loader(vulkan.get_registry());
+	loader.entities(json_in)
+		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+		diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+		diffusion::MainCameraTag>(json_in);
+
+	auto main_entity = vulkan.get_registry().view<diffusion::PossessedEntity>().front();
+	vulkan.get_registry().set<diffusion::PossessedEntity>(main_entity);
+	vulkan.get_registry().set<diffusion::MainCameraTag>(main_entity);
+}
 
 int main() {
 	glfwSetErrorCallback(glfwErrorCallback);
@@ -276,13 +392,26 @@ int main() {
 	VkResult err = glfwCreateWindowSurface(vulkan.get_instance(), window, g_Allocator, &surface);
 	check_vk_result(err);
 
-	//  vulkan.InitializeSurface(surface);
-
 	// Create Framebuffers
 	int w, h;
 	glfwGetFramebufferSize(window, &w, &h);
 	ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
+
 	SetupVulkanWindow(wd, surface, w, h, vulkan.get_instance(), vulkan.get_device(), vulkan.get_physical_device(), vulkan.get_queue_family_index());
+
+	vulkan.InitializePresentationEngine(generate_presentation_engine_from_imgui(vulkan, wd));
+
+
+
+	import_scene(vulkan);
+	for (int i = 0; i < 1; ++i) {
+		vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	}
+
+	vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
+
+
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -347,6 +476,10 @@ int main() {
 		check_vk_result(err);
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
+
+	vulkan.register_menu_renderer(std::make_unique<MenuRenderer>(vulkan, wd));
+	vulkan.SecondInitialize();
+
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
@@ -494,8 +627,15 @@ int main() {
 			wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
 			wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
 			wd->ClearValue.color.float32[3] = clear_color.w;
-			FrameRender(wd, draw_data, vulkan.get_device(), vulkan.get_queue());
-			FramePresent(wd, vulkan.get_queue());
+			//FrameRender(wd, draw_data, vulkan.get_device(), vulkan.get_queue());
+			//FramePresent(wd, vulkan.get_queue());
+
+			//vulkan.get_device().resetCommandPool();
+			//vkResetCommandPool(device, fd->CommandPool, 0);
+			//vulkan.Update();
+			//vulkan.Draw();
+
+			vulkan.DrawRestruct();
 		}
 	}
 

@@ -279,7 +279,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.InitializeSurface(vulkan.get_instance().createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR({}, hInstance, hWnd)));
+   vulkan.InitializePresentationEngine(vulkan.create_default_presentation_engine(hInstance, hWnd));
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -338,7 +338,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             auto width = lParam & 0xffff;
             auto height = (lParam & 0xffff0000) >> 16;
 
-            g_vulkan->Update(width, height);
+            //g_vulkan->Update(width, height);
         }
         break;
     }
