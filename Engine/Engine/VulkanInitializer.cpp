@@ -9,6 +9,8 @@
 #include "UnlitMaterial.h"
 #include "LitMaterial.h"
 #include "Relation.h"
+#include "DirectionalLightComponent.h"
+#include "VulkanDirectionalLightComponent.h"
 
 #include "util.h"
 
@@ -26,6 +28,9 @@ VulkanInitializer::VulkanInitializer(Game& game)
     m_game.get_registry().on_update<CameraComponent>().connect<&VulkanInitializer::camera_changed>(*this);
     m_game.get_registry().on_construct<UnlitMaterialComponent>().connect<&VulkanInitializer::search_for_unlit_material>(*this);
     m_game.get_registry().on_construct<LitMaterialComponent>().connect<&VulkanInitializer::search_for_lit_material>(*this);
+
+
+    m_game.get_registry().on_construct<DirectionalLightComponent>().connect<&VulkanInitializer::add_directional_light>(*this);
 }
 
 void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity)
@@ -100,16 +105,14 @@ void VulkanInitializer::add_vulkan_camera_component(::entt::registry& registry, 
     vk::DescriptorPool descriptor_pool = m_game.get_device().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
     vk::DescriptorSet descriptor_set = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, m_game.get_descriptor_set_layouts()[0]))[0];
 
-    glm::mat4 view_projection_matrix = camera.m_projection_matrix * camera.m_camera_matrix;
-
-    std::vector matrixes{ view_projection_matrix };
+    std::vector matrixes{ camera.m_view_projection_matrix };
     auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
     std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(out2.m_buffer, {}, VK_WHOLE_SIZE) };
 
     std::array write_descriptors{ vk::WriteDescriptorSet(descriptor_set, 0, 0, vk::DescriptorType::eUniformBufferDynamic, {}, descriptor_buffer_infos, {}) };
     m_game.get_device().updateDescriptorSets(write_descriptors, {});
 
-    registry.emplace<VulkanCameraComponent>(parent_entity, descriptor_pool, descriptor_set, view_projection_matrix, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory);
+    registry.emplace<VulkanCameraComponent>(parent_entity, descriptor_pool, descriptor_set, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory);
 }
 
 void VulkanInitializer::camera_changed(::entt::registry& registry, ::entt::entity parent_entity)
@@ -121,10 +124,10 @@ void VulkanInitializer::camera_changed(::entt::registry& registry, ::entt::entit
         camera_component.m_up_vector        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
     );
 
-    auto vulkan_camera_component = registry.get<VulkanCameraComponent>(parent_entity);
-    vulkan_camera_component.m_view_projection_matrix = camera_component.m_projection_matrix * camera_component.m_camera_matrix;
+    camera_component.m_view_projection_matrix = camera_component.m_projection_matrix * camera_component.m_camera_matrix;
 
-    std::memcpy(vulkan_camera_component.m_world_view_projection_mapped_memory, &vulkan_camera_component.m_view_projection_matrix, sizeof(glm::mat4));
+    auto vulkan_camera_component = registry.get<VulkanCameraComponent>(parent_entity);
+    std::memcpy(vulkan_camera_component.m_world_view_projection_mapped_memory, &camera_component.m_view_projection_matrix, sizeof(glm::mat4));
 }
 
 void VulkanInitializer::search_for_unlit_material(::entt::registry& registry, ::entt::entity parent_entity)
@@ -315,5 +318,251 @@ ImageData VulkanInitializer::prepare_image_for_copy(const vk::CommandBuffer& com
     return { image, image_memory };
 }
 
+vk::RenderPass VulkanInitializer::initialize_render_pass()
+{
+    std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_game.get_depth_format(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilReadOnlyOptimal} };
+
+    vk::AttachmentReference depth_attachment(0, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+    /*
+    std::array subpass_description{ vk::SubpassDescription({}, vk::PipelineBindPoint::eGraphics,
+                                                           {},
+                                                           {},
+                                                           {},
+                                                           &depth_attachment) };
+    */
+    vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics);
+    subpass.colorAttachmentCount = 0;
+    subpass.pDepthStencilAttachment = &depth_attachment;
+
+    std::array dependencies{ vk::SubpassDependency(VK_SUBPASS_EXTERNAL, 0,
+                                               vk::PipelineStageFlagBits::eFragmentShader,
+                                               vk::PipelineStageFlagBits::eEarlyFragmentTests,
+                                               vk::AccessFlagBits::eShaderRead,
+                                               vk::AccessFlagBits::eDepthStencilAttachmentWrite/*,
+                                               vk::DependencyFlagBits::eByRegion*/),
+                         vk::SubpassDependency(0, VK_SUBPASS_EXTERNAL,
+                                               vk::PipelineStageFlagBits::eLateFragmentTests,
+                                               vk::PipelineStageFlagBits::eFragmentShader,
+                                               vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                                               vk::AccessFlagBits::eShaderRead/*,
+                                               vk::DependencyFlagBits::eByRegion*/)
+    };
+
+    return m_game.get_device().createRenderPass(vk::RenderPassCreateInfo({}, attachment_descriptions, subpass, dependencies));
+}
+
+namespace {
+
+auto initialize_depth_data(Game& game, size_t new_light_entities_size)
+{
+    // TODO: Shadow Map own resolution
+    std::array<uint32_t, 1> queues{ 0 };
+    auto depth_allocation = game.get_allocator().createImage(
+        vk::ImageCreateInfo({}, vk::ImageType::e2D, game.get_depth_format(), vk::Extent3D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 1), 1, new_light_entities_size, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
+        vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+
+    auto depth_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, depth_allocation.first, vk::ImageViewType::e2DArray, game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, new_light_entities_size)));
+    auto depth_sampler = game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+
+    return std::make_tuple(depth_allocation, depth_image_view, depth_sampler);
+}
+
+auto initialize_render_pipeline(Game& game, const vk::PipelineLayout & layout, const vk::RenderPass & render_pass)
+{
+    // TODO: Shadow Map own resolution
+    vk::ShaderModule vertex_shader = game.loadSPIRVShader("ShadowMap.vert.spv");
+
+    std::array stages{ vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, vertex_shader, "main")
+    };
+
+    std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
+    std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
+                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)),
+                                        vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, 5 * sizeof(float)) };
+
+    vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
+    vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+
+    std::array viewports{ vk::Viewport(0, 0, game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 0.0f, 1.0f) }; /* TODO: shadow map resolution */
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height)) };
+    vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
+
+    vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
+    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+
+    vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
+    vk::PipelineColorBlendStateCreateInfo blend_state({}, VK_FALSE, vk::LogicOp::eClear, {});
+
+    vk::PipelineCache cache = game.get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
+
+    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+    vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
+
+    auto pipeline_result = game.get_device().createGraphicsPipeline(cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, layout, render_pass));
+    vk::Pipeline pipeline = pipeline_result.value;
+
+    return std::make_tuple(vertex_shader, cache, pipeline);
+}
+
+} // unnamed namespace
+
+void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt::entity parent_entity)
+{
+    // TODO: Shadow Map own resolution
+    auto * lights_ptr = registry.try_ctx<VulkanDirectionalLights>();
+    std::vector<vk::Image> images;
+    if (!lights_ptr) {
+        std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
+            m_game.get_descriptor_set_layouts()[0],
+            m_game.get_descriptor_set_layouts()[1]
+        };
+
+        vk::PipelineLayout layout = m_game.get_device().createPipelineLayout(vk::PipelineLayoutCreateInfo({}, descriptor_set_layouts, {}));
+        vk::RenderPass render_pass = initialize_render_pass();
+
+        std::vector<VulkanDirectionalLights::PerSwapchainImageData> swapchain_data(m_game.get_presentation_engine().m_image_count);
+        for (int i = 0; i < swapchain_data.size(); ++i) {
+            auto depth_data = initialize_depth_data(m_game, 1);
+            swapchain_data[i].m_depth_image = std::get<0>(depth_data).first;
+            swapchain_data[i].m_depth_memory = std::get<0>(depth_data).second;
+            swapchain_data[i].m_depth_image_view = std::get<1>(depth_data);
+            swapchain_data[i].m_depth_sampler = std::get<2>(depth_data);
+            images.push_back(std::get<0>(depth_data).first);
+        }
+
+        auto pipeline = initialize_render_pipeline(m_game, layout, render_pass);
+
+
+        auto sets = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_game.get_descriptor_pool(), m_game.get_descriptor_set_layouts()[3]));
+
+        auto m_lights_buffer_memory = sync_create_empty_host_invisible_buffer(m_game, 10 * sizeof(LightShaderInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+        std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer_memory.m_buffer, {}, VK_WHOLE_SIZE) };
+
+        auto m_lights_count_buffer_memory = sync_create_empty_host_invisible_buffer(m_game, sizeof(uint32_t), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+        std::array lights_count_buffer_infos{ vk::DescriptorBufferInfo(m_lights_count_buffer_memory.m_buffer, {}, VK_WHOLE_SIZE) };
+
+        std::array write_lights_descriptors{ vk::WriteDescriptorSet(sets[0], 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}),
+                                             vk::WriteDescriptorSet(sets[0], 1, 0, vk::DescriptorType::eUniformBuffer, {}, lights_count_buffer_infos, {}) };
+        m_game.get_device().updateDescriptorSets(write_lights_descriptors, {});
+
+        lights_ptr = &registry.set<VulkanDirectionalLights>(
+            std::move(swapchain_data),
+            std::move(descriptor_set_layouts),
+            layout,
+            render_pass,
+            std::get<0>(pipeline),
+            std::get<1>(pipeline),
+            std::get<2>(pipeline),
+            std::vector<entt::entity>{},
+            sets[0],
+            m_lights_buffer_memory.m_buffer,
+            m_lights_buffer_memory.m_allocation,
+            m_lights_count_buffer_memory.m_buffer,
+            m_lights_count_buffer_memory.m_allocation);
+    }
+    else {
+        VulkanDirectionalLights& lights = *lights_ptr;
+
+        std::array<uint32_t, 1> queues{ 0 };
+        //TODO: registry.patch(); on VulkanDirectionalLights
+        for (int i = 0; i < lights.m_swapchain_data.size(); ++i) {
+            m_game.get_device().destroySampler(lights.m_swapchain_data[i].m_depth_sampler);
+            m_game.get_device().destroyImageView(lights.m_swapchain_data[i].m_depth_image_view);
+
+            m_game.get_allocator().destroyImage(lights.m_swapchain_data[i].m_depth_image, lights.m_swapchain_data[i].m_depth_memory);
+
+            auto depth_data = initialize_depth_data(m_game, lights.m_light_entities.size() + 1);
+            lights.m_swapchain_data[i].m_depth_image = std::get<0>(depth_data).first;
+            lights.m_swapchain_data[i].m_depth_memory = std::get<0>(depth_data).second;
+            lights.m_swapchain_data[i].m_depth_image_view = std::get<1>(depth_data);
+            lights.m_swapchain_data[i].m_depth_sampler = std::get<2>(depth_data);
+
+            images.push_back(std::get<0>(depth_data).first);
+        }
+
+        for (int i = 0; i < lights.m_light_entities.size(); ++i) {
+            auto& vulkan_light = registry.get<VulkanDirectionalLightComponent>(lights.m_light_entities[i]);
+
+            for (int i = 0; i < images.size(); ++i) {
+                m_game.get_device().destroyImageView(vulkan_light.m_swapchain_data[i].m_depth_image_view);
+                m_game.get_device().destroyFramebuffer(vulkan_light.m_swapchain_data[i].m_framebuffer);
+            }
+
+            for (int j = 0; j < vulkan_light.m_swapchain_data.size(); ++j) {
+                vulkan_light.m_swapchain_data[j].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[j], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, i, 1)));
+
+                std::array deffered_views{ vulkan_light.m_swapchain_data[j].m_depth_image_view };
+                vulkan_light.m_swapchain_data[j].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights.m_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
+            }
+        }
+    }
+
+    std::vector<VulkanDirectionalLightComponent::PerSwapchainImageData> swapchain_data(images.size());
+    std::array<uint32_t, 1> queues{ 0 };
+
+    for (int i = 0; i < swapchain_data.size(); ++i) {
+        swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[i], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, lights_ptr->m_light_entities.size(), 1)));
+
+        std::array deffered_views{ swapchain_data[i].m_depth_image_view };
+        swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights_ptr->m_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
+    }
+
+    registry.emplace<VulkanDirectionalLightComponent>(parent_entity, std::move(swapchain_data));
+    lights_ptr->m_light_entities.push_back(parent_entity);
+
+    m_game.Update();
+
+    std::vector<LightShaderInfo> light_shader_info;
+    for (auto& light_entity : lights_ptr->m_light_entities) {
+        auto light_camera = registry.get<CameraComponent>(light_entity);
+        light_shader_info.emplace_back(light_camera.m_camera_target - light_camera.m_camera_position, light_camera.m_view_projection_matrix);
+    }
+
+    std::vector<std::byte> lights_memory_to_transfer(reinterpret_cast<std::byte*>(light_shader_info.begin()._Ptr), reinterpret_cast<std::byte*>(light_shader_info.end()._Ptr));
+    update_buffer(m_game, lights_memory_to_transfer.size(), lights_memory_to_transfer.data(), lights_ptr->m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+
+    uint32_t size = static_cast<uint32_t>(light_shader_info.size());
+    std::vector<std::byte> lights_count_memory_to_transfer(reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
+    update_buffer(m_game, lights_count_memory_to_transfer.size(), lights_count_memory_to_transfer.data(), lights_ptr->m_lights_count_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+}
+
+void VulkanInitializer::init_command_buffer(Game& game, diffusion::VulkanDirectionalLights & light, int i, const vk::CommandBuffer& command_buffer)
+{
+    for (auto& entity : light.m_light_entities) {
+        std::array colors{ vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0)) };
+
+        diffusion::VulkanDirectionalLightComponent& vulkan_light = game.get_registry().get<diffusion::VulkanDirectionalLightComponent>(entity);
+
+        command_buffer.beginRenderPass(vk::RenderPassBeginInfo(light.m_render_pass, vulkan_light.m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height)), colors), vk::SubpassContents::eInline);
+        command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, light.m_pipeline);
+
+        diffusion::VulkanCameraComponent& vulkan_camera = game.get_registry().get<diffusion::VulkanCameraComponent>(entity);
+        command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, light.m_layout, 0, vulkan_camera.m_descriptor_set, { {} });
+
+        vk::Viewport viewport(0, 0, game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 0.0f, 1.0f);
+        command_buffer.setViewport(0, viewport);
+        vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height));
+        command_buffer.setScissor(0, scissor);
+
+        auto view = game.get_registry().view<
+            const diffusion::VulkanTransformComponent,
+            const diffusion::VulkanSubMesh,
+            const diffusion::SubMesh>();
+
+        view.each([&light, &command_buffer](
+            const diffusion::VulkanTransformComponent& transform,
+            const diffusion::VulkanSubMesh& vulkan_mesh,
+            const diffusion::SubMesh& mesh) {
+                command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, light.m_layout, 1, transform.m_descriptor_set, { {} });
+
+                command_buffer.bindVertexBuffers(0, vulkan_mesh.m_vertex_buffer, { {0} });
+                command_buffer.bindIndexBuffer(vulkan_mesh.m_index_buffer, {}, vk::IndexType::eUint32);
+                command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
+            });
+
+        command_buffer.endRenderPass();
+    }
+}
 
 } // namespace diffusion {

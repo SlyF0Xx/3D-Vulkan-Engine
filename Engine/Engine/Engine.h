@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IRender.h"
-#include "Lights.h"
 #include "VulkanInitializer.h"
 #include "ComponentInitializer.h"
 #include "glm_printer.h"
@@ -101,7 +100,6 @@ public:
     //void Update(int width, int height);
     void Update();
 
-
 	void Exit();
 	void Draw();
     void DrawRestruct();
@@ -138,20 +136,6 @@ private:
     std::unique_ptr<IMenuRenderer> m_menu_renderer;
 
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
-    //vk::PipelineLayout m_layout;
-
-
-    vk::DescriptorSet m_lights_descriptor_set;
-    //std::vector<LightInfo> m_lights;
-    vk::Buffer m_lights_buffer;
-    vma::Allocation m_lights_memory;
-    std::vector<std::byte> m_lights_memory_to_transfer;
-
-    std::unique_ptr<Lights> m_shadpwed_lights;
-
-    vk::Buffer m_lights_count_buffer;
-    vma::Allocation m_lights_count_memory;
-    std::vector<std::byte> m_lights_count_memory_to_transfer;
 
     vk::PhysicalDevice select_physical_device();
     void select_graphics_queue_family();
@@ -230,19 +214,14 @@ public:
     {
         return m_descriptor_set_layouts;
     }
-    const vk::DescriptorSet& get_lights_descriptor_set()
+    vk::DescriptorPool get_descriptor_pool()
     {
-        return m_lights_descriptor_set;
-    }
-    Lights& get_shadpwed_lights()
-    {
-        return *m_shadpwed_lights;
+        return m_descriptor_pool;
     }
 
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
 
-    int add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector);
     //void update_light(int index, const LightInfo&);
 
     PresentationEngine create_default_presentation_engine(HINSTANCE hinstance, HWND hwnd);

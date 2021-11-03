@@ -5,6 +5,8 @@
 #include "VulkanCameraComponent.h"
 #include "UnlitMaterial.h"
 #include "LitMaterial.h"
+#include "VulkanDirectionalLightComponent.h"
+#include "VulkanInitializer.h"
 
 #include "util.h"
 
@@ -30,13 +32,8 @@ void ForwardRender::Update()
 {
     DestroyVariablePerImageResources();
 
-    for (int j = 0; j < m_game.get_shadpwed_lights().get_shadowed_light().size(); ++j) {
-        m_game.get_shadpwed_lights().Update();
-    }
-
     // TODO: release destroy variable resources
     InitializeVariablePerImage();
-    //InitCommandBuffer();
 }
 
 void ForwardRender::Initialize(int i, const vk::CommandBuffer& command_buffer)
@@ -117,8 +114,11 @@ void ForwardRender::InitializeVariablePerImage()
         std::array image_views{ m_game.get_presentation_engine().m_swapchain_data[i].m_color_image_view, m_game.get_presentation_engine().m_swapchain_data[i].m_depth_image_view };
         m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
 
-        std::array shadows_infos{ vk::DescriptorImageInfo(m_game.get_shadpwed_lights().get_depth_sampler(i), m_game.get_shadpwed_lights().get_depth_image_view(i), vk::ImageLayout::eDepthStencilReadOnlyOptimal) };
-        write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
+        diffusion::VulkanDirectionalLights* light = m_game.get_registry().try_ctx<diffusion::VulkanDirectionalLights>();
+        if (light) {
+            std::array shadows_infos{ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_depth_sampler, light->m_swapchain_data[i].m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) };
+            write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
+        }
     }
     m_game.get_device().updateDescriptorSets(write_descriptors, {});
 }
@@ -186,8 +186,9 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
         vk::ClearValue(vk::ClearDepthStencilValue(1.0f,0))
     };
 
-    for (int j = 0; j < m_game.get_shadpwed_lights().get_shadowed_light().size(); ++j) {
-        m_game.get_shadpwed_lights().get_shadowed_light()[j].InitCommandBuffer(i, command_buffer);
+    diffusion::VulkanDirectionalLights* light = m_game.get_registry().try_ctx<diffusion::VulkanDirectionalLights>();
+    if (light) {
+        diffusion::VulkanInitializer::init_command_buffer(m_game, *light, i, command_buffer);
     }
 
     command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), clear_values), vk::SubpassContents::eInline);
@@ -199,7 +200,9 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, camera.m_descriptor_set, { {} });
     }
 
-    command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, m_game.get_lights_descriptor_set(), {});
+    if (light) {
+        command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 3, light->m_lights_descriptor_set, {});
+    }
     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 4, m_swapchain_data[i].m_shadows_descriptor_set, {});
 
     vk::Viewport viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f);
