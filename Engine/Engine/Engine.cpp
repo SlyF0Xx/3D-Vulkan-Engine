@@ -145,11 +145,11 @@ void Game::SecondInitialize()
     render->Update();
     for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
         m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
-        
+
+        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
         if (m_menu_renderer) {
             m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
         }
-        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
 
         m_presentation_engine.m_swapchain_data[i].m_command_buffer.end();
     }
@@ -499,11 +499,11 @@ void Game::DrawRestruct()
     m_device.resetCommandPool(m_command_pool);
 
     m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-        
+
+    render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
     if (m_menu_renderer) {
         m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
     }
-    render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
 
     m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.end();
 

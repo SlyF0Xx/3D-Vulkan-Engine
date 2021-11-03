@@ -310,8 +310,15 @@ PresentationEngine generate_presentation_engine_from_imgui(Game& game, ImGui_Imp
 	auto command_buffers = game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(game.get_command_pool(), vk::CommandBufferLevel::ePrimary, presentation_engine.m_image_count));
 	presentation_engine.m_swapchain_data.resize(presentation_engine.m_image_count);
 	for (int i = 0; i < presentation_engine.m_image_count; ++i) {
-		presentation_engine.m_swapchain_data[i].m_color_image = wd->Frames[i].Backbuffer;
-		presentation_engine.m_swapchain_data[i].m_color_image_view = wd->Frames[i].BackbufferView;
+		//presentation_engine.m_swapchain_data[i].m_color_image = wd->Frames[i].Backbuffer;
+		//presentation_engine.m_swapchain_data[i].m_color_image_view = wd->Frames[i].BackbufferView;
+		auto color_allocation = game.get_allocator().createImage(
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_color_format, vk::Extent3D(500, 500, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
+		presentation_engine.m_swapchain_data[i].m_color_image = color_allocation.first;
+		presentation_engine.m_swapchain_data[i].m_color_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, presentation_engine.m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, presentation_engine.m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
+
+
 		//presentation_engine.m_swapchain_data[i].m_command_buffer = wd->Frames[i].CommandBuffer;
 		presentation_engine.m_swapchain_data[i].m_command_buffer = command_buffers[i];
 		presentation_engine.m_swapchain_data[i].m_fence = wd->Frames[i].Fence;
@@ -397,8 +404,8 @@ int main() {
 
 	SetupVulkanWindow(wd, surface, w, h, vulkan->get_instance(), vulkan->get_device(), vulkan->get_physical_device(), vulkan->get_queue_family_index());
 
-	vulkan->InitializePresentationEngine(generate_presentation_engine_from_imgui(*vulkan.get(), wd));
-
+	auto presentation_engine = generate_presentation_engine_from_imgui(*vulkan.get(), wd);
+	vulkan->InitializePresentationEngine(presentation_engine);
 
 
 	import_scene(*vulkan.get());
@@ -471,6 +478,11 @@ int main() {
 	vulkan->register_menu_renderer(std::make_unique<MenuRenderer>(*vulkan.get(), wd));
 	vulkan->SecondInitialize();
 
+	std::vector<ImTextureID> tex_ids;
+	for (auto& swapchain_data : presentation_engine.m_swapchain_data) {
+		vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+		tex_ids.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
+	}
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
@@ -603,6 +615,7 @@ int main() {
 		ImGui::End();
 
 		ImGui::Begin("Right");
+		ImGui::Image(tex_ids[vulkan->get_presentation_engine().FrameIndex], ImVec2(500, 500));
 		ImGui::Text("Hello, Right!");
 		ImGui::End();
 
@@ -618,13 +631,13 @@ int main() {
 			wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
 			wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
 			wd->ClearValue.color.float32[3] = clear_color.w;
-			FrameRender(wd, draw_data, vulkan->get_device(), vulkan->get_queue());
-			FramePresent(wd, vulkan->get_queue());
+			//FrameRender(wd, draw_data, vulkan->get_device(), vulkan->get_queue());
+			//FramePresent(wd, vulkan->get_queue());
 
 			//vulkan.get_device().resetCommandPool();
 			//vkResetCommandPool(device, fd->CommandPool, 0);
 
-			//vulkan->DrawRestruct();
+			vulkan->DrawRestruct();
 		}
 	}
 
