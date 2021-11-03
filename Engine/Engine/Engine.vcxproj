@@ -165,6 +165,7 @@
     <ClInclude Include="BoundingComponent.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ComponentInitializer.h" />
+    <ClInclude Include="Core\Base.h" />
     <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="DirectionalLightComponent.h" />
     <ClInclude Include="Engine.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="PossessedComponent.h" />
     <ClInclude Include="Relation.h" />
+    <ClInclude Include="TagComponent.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="UnlitMaterial.h" />
     <ClInclude Include="util.h" />

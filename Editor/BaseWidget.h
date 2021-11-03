@@ -8,7 +8,7 @@ namespace Editor {
 	public:
 		static inline constexpr const char* TITLE = "BaseWidget";
 
-		virtual void Render() = 0;
+		void Render();
 		virtual void Render(bool* p_open, ImGuiWindowFlags flags) = 0;
 	};
 
