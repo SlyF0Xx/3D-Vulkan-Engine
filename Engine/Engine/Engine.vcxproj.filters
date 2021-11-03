@@ -19,6 +19,9 @@
     <Filter Include="Source Files\BaseComponents">
       <UniqueIdentifier>{edd70691-a432-49c2-964c-adfb7183c8a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{a10aeb09-4711-43d8-b8cf-d7d4ab314671}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -95,6 +98,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Game\Archiver.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Base.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TagComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

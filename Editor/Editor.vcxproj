@@ -151,8 +151,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseWidget.cpp" />
     <ClCompile Include="ContentBrowser.cpp" />
     <ClCompile Include="LuaConsole.cpp" />
+    <ClCompile Include="SceneHierarchy.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_vulkan.cpp" />
@@ -168,6 +170,7 @@
     <ClInclude Include="BooleanStates.h" />
     <ClInclude Include="ContentBrowser.h" />
     <ClInclude Include="LuaConsole.h" />
+    <ClInclude Include="SceneHierarchy.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
