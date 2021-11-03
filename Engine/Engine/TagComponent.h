@@ -5,13 +5,10 @@
 
 namespace diffusion {
 
-	struct TagComponent {
-		std::string m_Tag;
+struct TagComponent {
+	std::string m_Tag;
 
-		TagComponent() = default;
-		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string & tag)
-			: m_Tag(tag) {}
-	};
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(TagComponent, m_Tag)
+};
 
 }

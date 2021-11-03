@@ -23,6 +23,7 @@
 #include "MeshComponent.h"
 #include "DirectionalLightEntity.h"
 #include "DirectionalLightComponent.h"
+#include "TagComponent.h"
 
 #include <Engine.h>
 
@@ -80,8 +81,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    //generate_scene();
-    import_scene();
+    generate_scene();
+    //import_scene();
 
 
     vulkan.SecondInitialize();
@@ -137,6 +138,7 @@ void generate_scene()
         glm::vec3(0, 10, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(0.0005, 0.0005, 0.0005));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(cat, "SLAVA cat");
     g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
     // for serialization prposes only
     g_vulkan->get_registry().emplace<diffusion::RotateTag>(cat, cat);
@@ -150,24 +152,27 @@ void generate_scene()
         glm::vec3(0.01, 0.01, 0.01));
     */
 
-    diffusion::import_entity(
+    auto tv_1 = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 1, -4),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
-    diffusion::import_entity(
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_1, "tv 1 - small");
+    auto tv_2 = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.02, 0.02, 0.02));
-    diffusion::import_entity(
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_2, "tv 2 - big");
+    auto stool = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
         glm::vec3(-4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.1, 0.1, 0.1));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(stool, "stool");
 
     diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
@@ -193,7 +198,7 @@ void generate_scene()
         .entities(output)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::RotateTag>(output);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 
@@ -213,7 +218,7 @@ void import_scene()
     loader.entities(json_in)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::RotateTag>(json_in);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(json_in);
 
     // restore serialized tags
     auto cat = g_vulkan->get_registry().view<diffusion::RotateTag>().front();

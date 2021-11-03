@@ -343,7 +343,7 @@ void import_scene(Game& vulkan) {
 	loader.entities(json_in)
 		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
 				   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-				   diffusion::MainCameraTag, diffusion::DirectionalLightComponent>(json_in);
+				   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent>(json_in);
 
 	auto main_entity = vulkan.get_registry().view<diffusion::PossessedEntity>().front();
 	vulkan.get_registry().set<diffusion::PossessedEntity>(main_entity);
@@ -624,7 +624,7 @@ int main() {
 			//vulkan.get_device().resetCommandPool();
 			//vkResetCommandPool(device, fd->CommandPool, 0);
 
-			//vulkan.DrawRestruct();
+			//vulkan->DrawRestruct();
 		}
 	}
 
