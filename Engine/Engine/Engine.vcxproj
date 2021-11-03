@@ -129,7 +129,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;VK_USE_PLATFORM_WIN32_KHR;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -166,22 +166,22 @@
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ComponentInitializer.h" />
     <ClInclude Include="DeferredRender.h" />
+    <ClInclude Include="DirectionalLightComponent.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="glm_printer.h" />
     <ClInclude Include="IMenuRenderer.h" />
     <ClInclude Include="ImportableVulkanMeshComponents.h" />
     <ClInclude Include="IRender.h" />
-    <ClInclude Include="Lights.h" />
     <ClInclude Include="LitMaterial.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="PossessedComponent.h" />
     <ClInclude Include="Relation.h" />
-    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="UnlitMaterial.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VulkanCameraComponent.h" />
+    <ClInclude Include="VulkanDirectionalLightComponent.h" />
     <ClInclude Include="VulkanInitializer.h" />
     <ClInclude Include="VulkanMeshComponent.h" />
     <ClInclude Include="VulkanTransformComponent.h" />
@@ -194,8 +194,6 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="ImportableVulkanMeshComponents.cpp" />
-    <ClCompile Include="Lights.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />

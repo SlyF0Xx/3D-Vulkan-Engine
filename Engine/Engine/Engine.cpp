@@ -131,44 +131,10 @@ void Game::InitializePresentationEngine(const PresentationEngine& presentation_e
         m_texture_component_mapping = vk::ComponentMapping(vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
     }
 
-
     InitializePipelineLayout();
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
     m_descriptor_pool = m_device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_size));
-
-
-
-    auto sets = m_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_descriptor_pool, m_descriptor_set_layouts[3]));
-    m_lights_descriptor_set = sets[0];
-
-    auto out3 = sync_create_empty_host_invisible_buffer(*this, 10 * sizeof(LightShaderInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
-    m_lights_buffer = out3.m_buffer;
-    m_lights_memory = out3.m_allocation;
-
-    std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer, {}, VK_WHOLE_SIZE) };
-
-    auto out4 = sync_create_empty_host_invisible_buffer(*this, sizeof(uint32_t), vk::BufferUsageFlagBits::eUniformBuffer, 0);
-    m_lights_count_buffer = out4.m_buffer;
-    m_lights_count_memory = out4.m_allocation;
-
-    std::array lights_count_buffer_infos{ vk::DescriptorBufferInfo(m_lights_count_buffer, {}, VK_WHOLE_SIZE) };
-
-    std::array write_lights_descriptors{ vk::WriteDescriptorSet(m_lights_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}),
-                                         vk::WriteDescriptorSet(m_lights_descriptor_set, 1, 0, vk::DescriptorType::eUniformBuffer, {}, lights_count_buffer_infos, {}) };
-    m_device.updateDescriptorSets(write_lights_descriptors, {});
-
-
-
-
-    glm::mat4 ProjectionMatrix = glm::perspective(
-        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
-        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
-        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
-        100.0f                                 // Дальняя плоскость отсечения.
-    );
-    m_shadpwed_lights = std::make_unique<Lights>(*this, ProjectionMatrix);
-
 
     //render = new DeferredRender(*this, images);
     render = std::make_unique<ForwardRender>(*this, m_registry);
@@ -176,6 +142,7 @@ void Game::InitializePresentationEngine(const PresentationEngine& presentation_e
 
 void Game::SecondInitialize()
 {
+    render->Update();
     for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
         m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
         
@@ -339,49 +306,20 @@ vk::ShaderModule Game::loadSPIRVShader(std::string filename)
     }
 }
 
-int Game::add_light(const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)
+/*
+void Game::update_light(int index, const LightInfo & light)
 {
-    m_shadpwed_lights->add_light(position, cameraTarget, upVector);
-    
-    
-
-    render->Update();
-    // WIN version only
-    std::vector<vk::CommandBuffer> command_buffers;
-    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
-        command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
-    }
-    m_device.freeCommandBuffers(m_command_pool, command_buffers);
-
-    auto allocated_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, m_presentation_engine.m_image_count));
-    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
-        m_presentation_engine.m_swapchain_data[i].m_command_buffer = allocated_command_buffers[i];
-        m_presentation_engine.m_swapchain_data[i].m_command_buffer.begin(vk::CommandBufferBeginInfo());
-
-        render->Initialize(i, m_presentation_engine.m_swapchain_data[i].m_command_buffer);
-        if (m_menu_renderer) {
-            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
-        }
-
-        m_presentation_engine.m_swapchain_data[i].m_command_buffer.end();
-    }
-
-    //m_lights.push_back(light);
-    std::vector<LightShaderInfo> light = m_shadpwed_lights->get_light_shader_info();
+    m_lights[index] = light;
 
     m_lights_memory_to_transfer.clear();
-    m_lights_memory_to_transfer.reserve(light.size() * sizeof(LightShaderInfo));
-    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(light.begin()._Ptr), reinterpret_cast<std::byte*>(light.end()._Ptr));
-    update_buffer(*this, m_lights_memory_to_transfer.size(), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+    m_lights_memory_to_transfer.reserve(sizeof(uint32_t) + m_lights.size() * sizeof(LightInfo));
 
-    uint32_t size = static_cast<uint32_t>(light.size());
-    m_lights_count_memory_to_transfer.clear();
-    m_lights_count_memory_to_transfer.reserve(sizeof(size));
-    m_lights_count_memory_to_transfer.insert(m_lights_count_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
-    update_buffer(*this, m_lights_count_memory_to_transfer.size(), m_lights_count_memory_to_transfer.data(), m_lights_count_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-
-    return light.size() - 1;
+    uint32_t size = static_cast<uint32_t>(m_lights.size());
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
+    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(m_lights.begin()._Ptr), reinterpret_cast<std::byte*>(m_lights.end()._Ptr));
+    update_buffer(*this, m_lights_memory_to_transfer.size() * sizeof(std::byte), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
 }
+*/
 
 void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats, PresentationEngine& presentation_engine)
 {
@@ -494,20 +432,6 @@ PresentationEngine Game::create_default_presentation_engine(HINSTANCE hinstance,
     return presentation_engine;
 }
 
-/*
-void Game::update_light(int index, const LightInfo & light)
-{
-    m_lights[index] = light;
-
-    m_lights_memory_to_transfer.clear();
-    m_lights_memory_to_transfer.reserve(sizeof(uint32_t) + m_lights.size() * sizeof(LightInfo));
-
-    uint32_t size = static_cast<uint32_t>(m_lights.size());
-    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
-    m_lights_memory_to_transfer.insert(m_lights_memory_to_transfer.end(), reinterpret_cast<std::byte*>(m_lights.begin()._Ptr), reinterpret_cast<std::byte*>(m_lights.end()._Ptr));
-    update_buffer(*this, m_lights_memory_to_transfer.size() * sizeof(std::byte), m_lights_memory_to_transfer.data(), m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-}
-*/
 void Game::Exit()
 {
     // Destroy presentation engine
@@ -571,28 +495,17 @@ void Game::DrawRestruct()
     m_device.resetFences(m_presentation_engine.m_swapchain_data[next_image.value].m_fence);
 
     m_device.waitIdle();
-    /*
-    // WIN version only
-    std::vector<vk::CommandBuffer> freed_command_buffers;
-    for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
-        freed_command_buffers.push_back(m_presentation_engine.m_swapchain_data[i].m_command_buffer);
-    }
-    m_device.freeCommandBuffers(m_command_pool, freed_command_buffers);
-    auto allocated_command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, m_presentation_engine.m_image_count));
-    */
+
     m_device.resetCommandPool(m_command_pool);
 
-    //for (int i = 0; i < m_presentation_engine.m_image_count; ++i) {
-        //m_presentation_engine.m_swapchain_data[i].m_command_buffer = allocated_command_buffers[i];
-        m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+    m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
         
-        if (m_menu_renderer) {
-            m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
-        }
-        render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
+    if (m_menu_renderer) {
+        m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
+    }
+    render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
 
-        m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.end();
-    //}
+    m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.end();
 
     vk::PipelineStageFlags stage_flags = { vk::PipelineStageFlagBits::eBottomOfPipe };
     std::array command_buffers{ m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer };

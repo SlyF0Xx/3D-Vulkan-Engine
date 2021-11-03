@@ -21,8 +21,7 @@
 #include "UnlitMaterial.h"
 #include "TransformComponent.h"
 #include "PossessedComponent.h"
-
-//#include "RotateTag>(json_in);
+#include "DirectionalLightComponent.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -344,8 +343,8 @@ void import_scene(Game & vulkan)
 	entt::basic_snapshot_loader loader(vulkan.get_registry());
 	loader.entities(json_in)
 		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-		diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-		diffusion::MainCameraTag>(json_in);
+				   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+				   diffusion::MainCameraTag, diffusion::DirectionalLightComponent>(json_in);
 
 	auto main_entity = vulkan.get_registry().view<diffusion::PossessedEntity>().front();
 	vulkan.get_registry().set<diffusion::PossessedEntity>(main_entity);
@@ -404,13 +403,6 @@ int main() {
 
 
 	import_scene(vulkan);
-	for (int i = 0; i < 1; ++i) {
-		vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-	}
-
-	vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-
-
 
 
 	// Setup Dear ImGui context
@@ -632,8 +624,6 @@ int main() {
 
 			//vulkan.get_device().resetCommandPool();
 			//vkResetCommandPool(device, fd->CommandPool, 0);
-			//vulkan.Update();
-			//vulkan.Draw();
 
 			vulkan.DrawRestruct();
 		}

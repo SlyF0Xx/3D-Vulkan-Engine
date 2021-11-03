@@ -21,6 +21,8 @@
 #include "LitMaterial.h"
 #include "UnlitMaterial.h"
 #include "MeshComponent.h"
+#include "DirectionalLightEntity.h"
+#include "DirectionalLightComponent.h"
 
 #include <Engine.h>
 
@@ -78,21 +80,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    generate_scene();
-    //import_scene();
+    //generate_scene();
+    import_scene();
 
-    for (int i = 0; i < 1; ++i) {
-        vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    }
-
-    vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-
-    /*
-    vulkan.add_light(glm::vec3(2.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(6.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(6.0f, 5.0f, 5.0f), glm::vec3(4.0f, 5.0f, 5.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    */
 
     vulkan.SecondInitialize();
 
@@ -195,13 +185,15 @@ void generate_scene()
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
 
+    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
     NJSONOutputArchive output;
     entt::snapshot{ g_vulkan->get_registry() }
         .entities(output)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::RotateTag>(output);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 
@@ -221,7 +213,7 @@ void import_scene()
     loader.entities(json_in)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::RotateTag>(json_in);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::RotateTag>(json_in);
 
     // restore serialized tags
     auto cat = g_vulkan->get_registry().view<diffusion::RotateTag>().front();
