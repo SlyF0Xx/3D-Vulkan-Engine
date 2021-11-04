@@ -305,6 +305,9 @@ PresentationEngine generate_presentation_engine_from_imgui(Game& game, ImGui_Imp
 	presentation_engine.m_presentation_mode = vk::PresentModeKHR(wd->PresentMode);
 	presentation_engine.m_image_count = wd->ImageCount;
 
+	presentation_engine.m_final_layout = vk::ImageLayout::eGeneral;
+
+
 	std::array<uint32_t, 1> queues {0};
 
 	auto command_buffers = game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(game.get_command_pool(), vk::CommandBufferLevel::ePrimary, presentation_engine.m_image_count));

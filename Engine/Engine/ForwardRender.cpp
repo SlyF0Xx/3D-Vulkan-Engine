@@ -59,7 +59,7 @@ void ForwardRender::InitializePipelineLayout()
 
 void ForwardRender::InitializeRenderPass()
 {
-    std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_game.get_color_format(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR},
+    std::array attachment_descriptions{ vk::AttachmentDescription{{}, m_game.get_color_format(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, m_game.get_presentation_engine().m_final_layout},
                                         vk::AttachmentDescription{{}, m_game.get_depth_format(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal} };
 
 
@@ -110,14 +110,15 @@ void ForwardRender::InitializeVariablePerImage()
     std::array<uint32_t, 1> queues{ 0 };
 
     std::vector<vk::WriteDescriptorSet> write_descriptors;
+    std::vector<std::vector<vk::DescriptorImageInfo>> shadows_infos;
     for (int i = 0; i < m_swapchain_data.size(); ++i) {
         std::array image_views{ m_game.get_presentation_engine().m_swapchain_data[i].m_color_image_view, m_game.get_presentation_engine().m_swapchain_data[i].m_depth_image_view };
         m_swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, m_render_pass, image_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
 
         diffusion::VulkanDirectionalLights* light = m_game.get_registry().try_ctx<diffusion::VulkanDirectionalLights>();
         if (light) {
-            std::array shadows_infos{ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_depth_sampler, light->m_swapchain_data[i].m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) };
-            write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
+            shadows_infos.push_back({ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_depth_sampler, light->m_swapchain_data[i].m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) });
+            write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos[i], {}, {}));
         }
     }
     m_game.get_device().updateDescriptorSets(write_descriptors, {});

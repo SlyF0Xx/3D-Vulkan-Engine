@@ -76,6 +76,7 @@ struct PresentationEngine
     vk::Format m_depth_format;
 
     vk::PresentModeKHR m_presentation_mode; // TODO: is it really needed?
+    vk::ImageLayout m_final_layout;
 
     uint32_t            FrameIndex = 0;         // Current frame being rendered to (0 <= FrameIndex < FrameInFlightCount)
     uint32_t            m_image_count = 2;      // Number of simultaneous in-flight frames (returned by vkGetSwapchainImagesKHR, usually derived from min_image_count)

@@ -71,23 +71,23 @@ Game::Game()
     }
 
     std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
-//    std::array layers = {
+    std::array layers = {
         //"VK_LAYER_Galaxy_Overlay_DEBUG",
         //"VK_LAYER_Galaxy_Overlay_VERBOSE",
         //"VK_LAYER_Galaxy_Overlay"
-//        "VK_LAYER_KHRONOS_validation",
-//        "VK_LAYER_LUNARG_api_dump",
+        "VK_LAYER_KHRONOS_validation",
+        "VK_LAYER_LUNARG_api_dump",
         //  "VK_LAYER_LUNARG_monitor",
 
           //"VK_LAYER_RENDERDOC_Capture",
   #ifdef VK_TRACE
           "VK_LAYER_LUNARG_vktrace",
   #endif
-//    };
-    std::array<const char* const, 0> layers = {};
+    };
+    //std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
-//        "VK_EXT_debug_utils",
+        "VK_EXT_debug_utils",
         //"VK_KHR_external_memory_capabilities",
         //"VK_NV_external_memory_capabilities",
         "VK_EXT_swapchain_colorspace",
@@ -427,7 +427,7 @@ PresentationEngine Game::create_default_presentation_engine(HINSTANCE hinstance,
         presentation_engine.m_sema_data[i].m_image_acquired_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
         presentation_engine.m_sema_data[i].m_render_complete_sema = m_device.createSemaphore(vk::SemaphoreCreateInfo());
     }
-
+    presentation_engine.m_final_layout = vk::ImageLayout::ePresentSrcKHR;
 
     return presentation_engine;
 }
