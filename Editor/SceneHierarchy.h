@@ -22,6 +22,7 @@ namespace Editor {
 		virtual void Render(bool* p_open, ImGuiWindowFlags flags);
 
 		void DrawEntityNode(ENTT_ID_TYPE entity);
+
 	public:
 		static inline constexpr const char* TITLE = "Hierarchy";
 

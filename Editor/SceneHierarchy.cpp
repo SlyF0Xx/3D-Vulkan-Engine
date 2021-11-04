@@ -40,8 +40,17 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem()) {
-		if (ImGui::MenuItem("Delete Entity"))
+		ImGui::Text("Actions");
+		ImGui::Separator();
+		if (ImGui::MenuItem("Rename Entity")) {
+
+		}
+
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, .2f, .2f, 1.f));
+		if (ImGui::MenuItem("Delete")) {
 			entityDeleted = true;
+		}
+		ImGui::PopStyleColor();
 
 		ImGui::EndPopup();
 	}
@@ -53,6 +62,6 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	if (entityDeleted) {
 		// TODO: delete entity from scene.
 		if (m_SelectionContext == entity)
-			m_SelectionContext = {};
+			m_SelectionContext = ENTT_ID_TYPE(-1);
 	}
 }
