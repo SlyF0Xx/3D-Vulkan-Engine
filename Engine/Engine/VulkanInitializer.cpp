@@ -356,10 +356,9 @@ namespace {
 
 auto initialize_depth_data(Game& game, size_t new_light_entities_size)
 {
-    // TODO: Shadow Map own resolution
     std::array<uint32_t, 1> queues{ 0 };
     auto depth_allocation = game.get_allocator().createImage(
-        vk::ImageCreateInfo({}, vk::ImageType::e2D, game.get_depth_format(), vk::Extent3D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 1), 1, new_light_entities_size, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
+        vk::ImageCreateInfo({}, vk::ImageType::e2D, game.get_depth_format(), vk::Extent3D(game.m_shadow_width, game.m_shadow_height, 1), 1, new_light_entities_size, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined),
         vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 
     auto depth_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, depth_allocation.first, vk::ImageViewType::e2DArray, game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, new_light_entities_size)));
@@ -370,7 +369,6 @@ auto initialize_depth_data(Game& game, size_t new_light_entities_size)
 
 auto initialize_render_pipeline(Game& game, const vk::PipelineLayout & layout, const vk::RenderPass & render_pass)
 {
-    // TODO: Shadow Map own resolution
     vk::ShaderModule vertex_shader = game.loadSPIRVShader("ShadowMap.vert.spv");
 
     std::array stages{ vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, vertex_shader, "main")
@@ -384,8 +382,8 @@ auto initialize_render_pipeline(Game& game, const vk::PipelineLayout & layout, c
     vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
     vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 
-    std::array viewports{ vk::Viewport(0, 0, game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 0.0f, 1.0f) }; /* TODO: shadow map resolution */
-    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height)) };
+    std::array viewports{ vk::Viewport(0, 0, game.m_shadow_width, game.m_shadow_height, 0.0f, 1.0f) }; /* TODO: shadow map resolution */
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(game.m_shadow_width, game.m_shadow_height)) };
     vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
 
     vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -409,7 +407,6 @@ auto initialize_render_pipeline(Game& game, const vk::PipelineLayout & layout, c
 
 void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    // TODO: Shadow Map own resolution
     auto * lights_ptr = registry.try_ctx<VulkanDirectionalLights>();
     std::vector<vk::Image> images;
     if (!lights_ptr) {
@@ -493,7 +490,7 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
                 vulkan_light.m_swapchain_data[j].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[j], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, i, 1)));
 
                 std::array deffered_views{ vulkan_light.m_swapchain_data[j].m_depth_image_view };
-                vulkan_light.m_swapchain_data[j].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights.m_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
+                vulkan_light.m_swapchain_data[j].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights.m_render_pass, deffered_views, m_game.m_shadow_width, m_game.m_shadow_height, 1));
             }
         }
     }
@@ -505,7 +502,7 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
         swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[i], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, lights_ptr->m_light_entities.size(), 1)));
 
         std::array deffered_views{ swapchain_data[i].m_depth_image_view };
-        swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights_ptr->m_render_pass, deffered_views, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 1));
+        swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights_ptr->m_render_pass, deffered_views, m_game.m_shadow_width, m_game.m_shadow_height, 1));
     }
 
     registry.emplace<VulkanDirectionalLightComponent>(parent_entity, std::move(swapchain_data));
@@ -534,15 +531,15 @@ void VulkanInitializer::init_command_buffer(Game& game, diffusion::VulkanDirecti
 
         diffusion::VulkanDirectionalLightComponent& vulkan_light = game.get_registry().get<diffusion::VulkanDirectionalLightComponent>(entity);
 
-        command_buffer.beginRenderPass(vk::RenderPassBeginInfo(light.m_render_pass, vulkan_light.m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height)), colors), vk::SubpassContents::eInline);
+        command_buffer.beginRenderPass(vk::RenderPassBeginInfo(light.m_render_pass, vulkan_light.m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(game.m_shadow_width, game.m_shadow_height)), colors), vk::SubpassContents::eInline);
         command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, light.m_pipeline);
 
         diffusion::VulkanCameraComponent& vulkan_camera = game.get_registry().get<diffusion::VulkanCameraComponent>(entity);
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, light.m_layout, 0, vulkan_camera.m_descriptor_set, { {} });
 
-        vk::Viewport viewport(0, 0, game.get_presentation_engine().m_width, game.get_presentation_engine().m_height, 0.0f, 1.0f);
+        vk::Viewport viewport(0, 0, game.m_shadow_width, game.m_shadow_height, 0.0f, 1.0f);
         command_buffer.setViewport(0, viewport);
-        vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(game.get_presentation_engine().m_width, game.get_presentation_engine().m_height));
+        vk::Rect2D scissor(vk::Offset2D(), vk::Extent2D(game.m_shadow_width, game.m_shadow_height));
         command_buffer.setScissor(0, scissor);
 
         auto view = game.get_registry().view<

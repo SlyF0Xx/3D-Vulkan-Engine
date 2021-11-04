@@ -107,6 +107,8 @@ public:
 
     bool m_initialized = false;
 
+    int                 m_shadow_width = 1024;
+    int                 m_shadow_height = 1024;
 private:
     // Vulkan Common Data
     vk::Instance m_instance;

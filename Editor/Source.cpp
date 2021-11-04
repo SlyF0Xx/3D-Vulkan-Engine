@@ -288,14 +288,14 @@ void exit(GLFWwindow* window, const vk::Instance& instance, const vk::Device& de
 	glfwTerminate();
 }
 
-PresentationEngine generate_presentation_engine_from_imgui(Game& game, ImGui_ImplVulkanH_Window* wd) {
+PresentationEngine generate_presentation_engine_from_imgui(Game& game, ImGui_ImplVulkanH_Window* wd, int width, int height) {
 	PresentationEngine presentation_engine;
 
 	//presentation_engine.m_width = wd->Width;
 	//presentation_engine.m_height = wd->Height;
 
-	presentation_engine.m_width = 500;
-	presentation_engine.m_height = 500;
+	presentation_engine.m_width = width;
+	presentation_engine.m_height = height;
 	presentation_engine.m_surface = wd->Surface;
 	presentation_engine.m_swapchain = wd->Swapchain;
 	//presentation_engine.m_color_format = vk::Format(wd->SurfaceFormat.format);
@@ -316,7 +316,7 @@ PresentationEngine generate_presentation_engine_from_imgui(Game& game, ImGui_Imp
 		//presentation_engine.m_swapchain_data[i].m_color_image = wd->Frames[i].Backbuffer;
 		//presentation_engine.m_swapchain_data[i].m_color_image_view = wd->Frames[i].BackbufferView;
 		auto color_allocation = game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_color_format, vk::Extent3D(500, 500, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_color_format, vk::Extent3D(width, height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
 			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 		presentation_engine.m_swapchain_data[i].m_color_image = color_allocation.first;
 		presentation_engine.m_swapchain_data[i].m_color_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, presentation_engine.m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, presentation_engine.m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
@@ -407,10 +407,8 @@ int main() {
 
 	SetupVulkanWindow(wd, surface, w, h, vulkan->get_instance(), vulkan->get_device(), vulkan->get_physical_device(), vulkan->get_queue_family_index());
 
-	auto presentation_engine = generate_presentation_engine_from_imgui(*vulkan.get(), wd);
+	auto presentation_engine = generate_presentation_engine_from_imgui(*vulkan.get(), wd, 100, 100);
 	vulkan->InitializePresentationEngine(presentation_engine);
-
-
 	import_scene(*vulkan.get());
 
 
@@ -479,13 +477,9 @@ int main() {
 	}
 
 	vulkan->register_menu_renderer(std::make_unique<MenuRenderer>(*vulkan.get(), wd));
-	vulkan->SecondInitialize();
 
+	ImVec2 scene_size;
 	std::vector<ImTextureID> tex_ids;
-	for (auto& swapchain_data : presentation_engine.m_swapchain_data) {
-		vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
-		tex_ids.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
-	}
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
@@ -520,6 +514,17 @@ int main() {
 				ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
 				ImGui_ImplVulkanH_CreateOrResizeWindow(vulkan->get_instance(), vulkan->get_physical_device(), vulkan->get_device(), &g_MainWindowData, vulkan->get_queue_family_index(), g_Allocator, width, height, g_MinImageCount);
 				g_MainWindowData.FrameIndex = 0;
+
+				// TODO: recalculate size
+				auto presentation_engine = generate_presentation_engine_from_imgui(*vulkan.get(), wd, scene_size.x, scene_size.y);
+				vulkan->InitializePresentationEngine(presentation_engine);
+				vulkan->SecondInitialize();
+				tex_ids.clear();
+				for (auto& swapchain_data : presentation_engine.m_swapchain_data) {
+					vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+					tex_ids.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
+				}
+
 				g_SwapChainRebuild = false;
 			}
 		}
@@ -618,7 +623,23 @@ int main() {
 		ImGui::End();
 
 		ImGui::Begin("Right");
-		ImGui::Image(tex_ids[vulkan->get_presentation_engine().FrameIndex], ImVec2(500, 500));
+
+		ImVec2 current_size = ImGui::GetWindowSize();
+		if (current_size.x != scene_size.x || current_size.y != scene_size.y) {
+			scene_size = current_size;
+
+			auto presentation_engine = generate_presentation_engine_from_imgui(*vulkan.get(), wd, scene_size.x, scene_size.y);
+			vulkan->InitializePresentationEngine(presentation_engine);
+			vulkan->SecondInitialize();
+
+			tex_ids.clear();
+			for (auto& swapchain_data : presentation_engine.m_swapchain_data) {
+				vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+				tex_ids.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
+			}
+		}	
+
+		ImGui::Image(tex_ids[vulkan->get_presentation_engine().FrameIndex], current_size);
 		ImGui::Text("Hello, Right!");
 		ImGui::End();
 
@@ -639,8 +660,13 @@ int main() {
 
 			//vulkan.get_device().resetCommandPool();
 			//vkResetCommandPool(device, fd->CommandPool, 0);
-
-			vulkan->DrawRestruct();
+			try {
+				vulkan->DrawRestruct();
+			}
+			catch (vk::OutOfDateKHRError& out_of_date)
+			{
+				g_SwapChainRebuild = true;
+			}
 		}
 	}
 
