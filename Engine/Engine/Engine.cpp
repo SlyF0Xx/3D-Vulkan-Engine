@@ -71,6 +71,7 @@ Game::Game()
     }
 
     std::vector<vk::ExtensionProperties> ext = vk::enumerateInstanceExtensionProperties();
+    /*
     std::array layers = {
         //"VK_LAYER_Galaxy_Overlay_DEBUG",
         //"VK_LAYER_Galaxy_Overlay_VERBOSE",
@@ -84,10 +85,11 @@ Game::Game()
           "VK_LAYER_LUNARG_vktrace",
   #endif
     };
-    //std::array<const char* const, 0> layers = {};
+    */
+    std::array<const char* const, 0> layers = {};
 
     std::array extensions = {
-        "VK_EXT_debug_utils",
+          //"VK_EXT_debug_utils",
         //"VK_KHR_external_memory_capabilities",
         //"VK_NV_external_memory_capabilities",
         "VK_EXT_swapchain_colorspace",
