@@ -214,7 +214,12 @@ void Editor::EditorWindow::Destroy() {
 }
 
 void Editor::EditorWindow::SetLayout(Ref<EditorLayout>& layout) {
+	if (m_Layout != nullptr) {
+		m_Layout->m_Parent = nullptr;
+	}
+
 	m_Layout = layout;
+	m_Layout->m_Parent = this;
 }
 
 void Editor::EditorWindow::SetContext(Ref<Game>& context) {

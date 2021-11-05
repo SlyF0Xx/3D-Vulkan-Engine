@@ -21,15 +21,13 @@ void import_scene(Game& vulkan) {
 }
 
 int main() {
-	diffusion::Ref <Editor::EditorWindow> container = diffusion::CreateRef<Editor::MainWindow>();
-
 	diffusion::Ref<Game> vulkan = diffusion::CreateRef<Game>();
 
 	diffusion::Ref<Editor::EditorLayout> layout =
-		diffusion::CreateRef<Editor::MainLayout>(vulkan, container);
+		diffusion::CreateRef<Editor::MainLayout>(vulkan);
 
-	container->SetContext(vulkan);
-	container->SetLayout(layout);
+	diffusion::Ref <Editor::EditorWindow> container = 
+		diffusion::CreateRef<Editor::MainWindow>(layout, vulkan);
 
 	if (!container->Create()) {
 		return 1;

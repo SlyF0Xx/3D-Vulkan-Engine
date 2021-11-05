@@ -5,6 +5,8 @@
 
 #include "imgui_internal.h"
 
+#include <vector>
+
 #pragma region Widgets
 #include "ContentBrowser.h"
 #include "LuaConsole.h"
@@ -37,7 +39,7 @@ namespace Editor {
 
 	class MainLayout : public EditorLayout {
 	public:
-		MainLayout(diffusion::Ref<Game>& vulkan, diffusion::Ref<EditorWindow>& parent) : EditorLayout(parent) {
+		MainLayout(diffusion::Ref<Game>& vulkan) {
 			m_ContentBrowser = Editor::ContentBrowser();
 
 			m_TextEditor = TextEditor();
@@ -49,10 +51,12 @@ namespace Editor {
 			m_LuaConsole = LuaConsole();
 
 			m_SceneHierarchy = SceneHierarchy(vulkan);
-		};
+		}
 
 		RENDER_STATUS Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
+		ImVec2 GetSceneSize() const;
 
 	private:
 		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -67,6 +71,9 @@ namespace Editor {
 		TextEditor m_TextEditor;
 
 		bool m_IsDockspaceInitialized = false;
+
+		ImVec2 m_SceneSize;
+		std::vector<ImTextureID> m_TexIDs;
 		
 	};
 
