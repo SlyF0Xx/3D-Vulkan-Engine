@@ -34,6 +34,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			m_IsRenameInputFocused = true;
 		}
 
+		ImGui::PushItemWidth(-1);
 		if (ImGui::InputText("Title", m_RenameBuf, RENAME_BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (strlen(m_RenameBuf) > 0) {
 				m_Context->get_registry()
@@ -41,6 +42,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			}
 			StopRenaming();
 		}
+		ImGui::PopItemWidth();
 
 		if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape))) {
 			StopRenaming();
