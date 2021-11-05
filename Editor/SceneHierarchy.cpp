@@ -39,8 +39,10 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		}
 
 		if (ImGui::InputText("Title", m_RenameBuf, RENAME_BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			m_Context->get_registry()
-				.emplace_or_replace<TagComponent, std::string>((entt::entity) m_SelectionContext, std::string(m_RenameBuf));
+			if (strlen(m_RenameBuf) > 0) {
+				m_Context->get_registry()
+					.emplace_or_replace<TagComponent, std::string>((entt::entity) m_SelectionContext, std::string(m_RenameBuf));
+			}
 			StopRenaming();
 		}
 
