@@ -502,7 +502,7 @@ void Game::DrawRestruct()
 
     m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
-    render->Initialize(next_image.value, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
+    render->Initialize(m_presentation_engine.use_frame_index_to_render ? m_presentation_engine.FrameIndex : m_presentation_engine.SemaphoreIndex, m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
     if (m_menu_renderer) {
         m_menu_renderer->Render(m_presentation_engine.m_swapchain_data[next_image.value].m_command_buffer);
     }

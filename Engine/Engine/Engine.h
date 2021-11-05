@@ -84,6 +84,8 @@ struct PresentationEngine
 
     std::vector<PerSwapchainImageData> m_swapchain_data;
     std::vector<SemaData> m_sema_data;
+
+    bool use_frame_index_to_render = true;;
 };
 
 // This class is exported from the dll

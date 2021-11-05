@@ -73,7 +73,7 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 		OnResize(vulkan, engine);
 	}
 
-	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().FrameIndex], current_size);
+	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().SemaphoreIndex], current_size);
 	ImGui::End();
 
 

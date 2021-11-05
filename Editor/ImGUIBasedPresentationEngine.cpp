@@ -30,6 +30,7 @@ void ImGUIBasedPresentationEngine::generate_presentation_engine_from_imgui(int w
 
 	presentation_engine.m_width = width;
 	presentation_engine.m_height = height;
+	presentation_engine.use_frame_index_to_render = false;
 	presentation_engine.m_surface = m_wd->Surface;
 	presentation_engine.m_swapchain = m_wd->Swapchain;
 	//presentation_engine.m_color_format = vk::Format(wd->SurfaceFormat.format);
