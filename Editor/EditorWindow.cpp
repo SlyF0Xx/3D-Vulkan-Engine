@@ -48,8 +48,8 @@ bool Editor::EditorWindow::Create() {
 	ImGui_ImplVulkanH_Window* wd = &m_MainWindowData;
 	SetupVulkanWindow(wd, surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
 
-	GeneratePresentationEngine(*m_Context, wd, 100, 100);
-	m_Context->InitializePresentationEngine(*m_PresentationEngine);
+	m_PresentationEngine = std::make_shared<ImGUIBasedPresentationEngine>(*m_Context, wd, 100, 100);
+	m_Context->InitializePresentationEngine(m_PresentationEngine->get_presentation_engine());
 
 	SetupImGuiContext();
 	UploadFonts();
@@ -151,73 +151,6 @@ void Editor::EditorWindow::SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSur
 	ImGui_ImplVulkanH_CreateOrResizeWindow(instance, phys_device, device, wd, queue_index, m_Allocator, m_Width, m_Height, m_MinImageCount);
 }
 
-PresentationEngine Editor::EditorWindow::GeneratePresentationEngine(Game& game, ImGui_ImplVulkanH_Window* wd, int w, int h) {
-	int width = w <= 0 ? m_Width : w;
-	int height = h <= 0 ? m_Height : h;
-
-	if (m_PresentationEngine == nullptr) {
-		m_PresentationEngine = CreateRef<PresentationEngine>();
-	}
-
-	//PresentationEngine presentation_engine;
-
-	//m_PresentationEngine->m_width = wd->Width;
-	//m_PresentationEngine->m_height = wd->Height;
-
-	m_PresentationEngine->m_width = width;
-	m_PresentationEngine->m_height = height;
-	m_PresentationEngine->m_surface = wd->Surface;
-	m_PresentationEngine->m_swapchain = wd->Swapchain;
-	//m_PresentationEngine->m_color_format = vk::Format(wd->SurfaceFormat.format);
-
-	m_PresentationEngine->m_color_format = vk::Format(wd->SurfaceFormat.format);
-	m_PresentationEngine->m_depth_format = vk::Format::eD32SfloatS8Uint;
-	m_PresentationEngine->m_presentation_mode = vk::PresentModeKHR(wd->PresentMode);
-	m_PresentationEngine->m_image_count = wd->ImageCount;
-
-	m_PresentationEngine->m_final_layout = vk::ImageLayout::eGeneral;
-
-
-	std::array<uint32_t, 1> queues {0};
-
-	auto command_buffers = game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(game.get_command_pool(), vk::CommandBufferLevel::ePrimary, m_PresentationEngine->m_image_count));
-	m_PresentationEngine->m_swapchain_data.resize(m_PresentationEngine->m_image_count);
-
-	for (int i = 0; i < m_PresentationEngine->m_image_count; ++i) {
-		//m_PresentationEngine->m_swapchain_data[i].m_color_image = wd->Frames[i].Backbuffer;
-		//m_PresentationEngine->m_swapchain_data[i].m_color_image_view = wd->Frames[i].BackbufferView;
-		auto color_allocation = game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_PresentationEngine->m_color_format, vk::Extent3D(width, height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
-			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
-		m_PresentationEngine->m_swapchain_data[i].m_color_image = color_allocation.first;
-		m_PresentationEngine->m_swapchain_data[i].m_color_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_PresentationEngine->m_swapchain_data[i].m_color_image, vk::ImageViewType::e2D, m_PresentationEngine->m_color_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
-
-		m_LatestAllocations.push_back(&color_allocation);
-
-
-		//m_PresentationEngine->m_swapchain_data[i].m_command_buffer = wd->Frames[i].CommandBuffer;
-		m_PresentationEngine->m_swapchain_data[i].m_command_buffer = command_buffers[i];
-		m_PresentationEngine->m_swapchain_data[i].m_fence = wd->Frames[i].Fence;
-
-		auto depth_allocation = game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, m_PresentationEngine->m_depth_format, vk::Extent3D(m_PresentationEngine->m_width, m_PresentationEngine->m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
-			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
-		m_PresentationEngine->m_swapchain_data[i].m_depth_image = depth_allocation.first;
-		m_PresentationEngine->m_swapchain_data[i].m_depth_memory = depth_allocation.second;
-		m_PresentationEngine->m_swapchain_data[i].m_depth_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, m_PresentationEngine->m_swapchain_data[i].m_depth_image, vk::ImageViewType::e2D, m_PresentationEngine->m_depth_format, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1)));
-
-		m_LatestAllocations.push_back(&depth_allocation);
-	}
-
-	m_PresentationEngine->m_sema_data.resize(m_PresentationEngine->m_image_count);
-	for (int i = 0; i < m_PresentationEngine->m_image_count; ++i) {
-		m_PresentationEngine->m_sema_data[i].m_image_acquired_sema = wd->FrameSemaphores[i].ImageAcquiredSemaphore;
-		m_PresentationEngine->m_sema_data[i].m_render_complete_sema = wd->FrameSemaphores[i].RenderCompleteSemaphore;
-	}
-
-	return *m_PresentationEngine;
-}
-
 void Editor::EditorWindow::SetupImGuiContext() {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -304,11 +237,7 @@ void Editor::EditorWindow::StartMainLoop() {
 				);
 				m_MainWindowData.FrameIndex = 0;
 
-				ImVec2 sceneSize = m_Layout->GetSceneSize();
-				GeneratePresentationEngine(*m_Context, &m_MainWindowData, sceneSize.x, sceneSize.y);
-				m_Context->InitializePresentationEngine(*m_PresentationEngine);
-				m_Context->SecondInitialize();
-
+				// TODO: recalculate size
 				m_Layout->OnResize(*m_Context, *m_PresentationEngine);
 
 				m_SwapChainRebuild = false;
@@ -319,12 +248,6 @@ void Editor::EditorWindow::StartMainLoop() {
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		ImVec2 sceneSize = m_Layout->GetSceneSize();
-
-		GeneratePresentationEngine(*m_Context, &m_MainWindowData, sceneSize.x, sceneSize.y);
-		m_Context->InitializePresentationEngine(*m_PresentationEngine);
-		m_Context->SecondInitialize();
 
 		m_Layout->Render(*m_Context, *m_PresentationEngine);
 
@@ -339,11 +262,6 @@ void Editor::EditorWindow::StartMainLoop() {
 
 			try {
 				m_Context->DrawRestruct();
-
-				for (auto vmai : m_LatestAllocations) {
-					m_Context->get_allocator().destroyImage(vmai->first, vmai->second);
-				}
-				m_LatestAllocations.clear();
 			} catch (vk::OutOfDateKHRError& out_of_date) {
 				m_SwapChainRebuild = true;
 			}

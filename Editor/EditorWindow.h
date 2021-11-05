@@ -38,6 +38,7 @@
 
 #include "MenuRender.h"
 #include "EditorLayout.h"
+#include "ImGUIBasedPresentationEngine.h"
 
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -84,7 +85,6 @@ namespace Editor {
 			const vk::Device& device,
 			const vk::PhysicalDevice& phys_device,
 			uint32_t queue_index);
-		PresentationEngine GeneratePresentationEngine(Game& game, ImGui_ImplVulkanH_Window* wd, int w, int h);
 		void SetupImGuiContext();
 		void UploadFonts();
 
@@ -110,8 +110,7 @@ namespace Editor {
 		GLFWwindow* m_Window;
 		Ref<Game> m_Context;
 		Ref<EditorLayout> m_Layout;
-		Ref<PresentationEngine> m_PresentationEngine;
-		std::vector<std::pair<vk::Image, vma::Allocation>*> m_LatestAllocations;
+		Ref<ImGUIBasedPresentationEngine> m_PresentationEngine;
 	};
 
 	static void GLFWErrorCallback(int error, const char* description) {

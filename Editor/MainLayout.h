@@ -23,7 +23,7 @@ namespace Editor {
 	class MainLayout : public EditorLayout {
 	public:
 		MainLayout(diffusion::Ref<Game>& vulkan);
-		void Render(Game& vulkan, PresentationEngine& engine) override;
+		void Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 
 	private:
 		WindowStates m_WindowStates = {};

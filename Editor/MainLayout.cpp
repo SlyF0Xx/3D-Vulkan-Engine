@@ -14,7 +14,7 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) {
 	m_SceneHierarchy = SceneHierarchy(vulkan);
 }
 
-void Editor::MainLayout::Render(Game& vulkan, PresentationEngine& engine) {
+void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
@@ -109,11 +109,7 @@ void Editor::MainLayout::Render(Game& vulkan, PresentationEngine& engine) {
 	if (current_size.x != m_SceneSize.x || current_size.y != m_SceneSize.y) {
 		m_SceneSize = current_size;
 
-		m_TexIDs.clear();
-		for (auto& swapchain_data : engine.m_swapchain_data) {
-			vk::Sampler color_sampler = vulkan.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
-			m_TexIDs.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
-		}
+		OnResize(vulkan, engine);
 	}
 
 	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().FrameIndex], current_size);

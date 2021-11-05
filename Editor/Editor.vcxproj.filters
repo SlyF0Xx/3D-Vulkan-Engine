@@ -78,6 +78,9 @@
     <ClCompile Include="MainLayout.cpp">
       <Filter>Исходные файлы\Layouts</Filter>
     </ClCompile>
+    <ClCompile Include="ImGUIBasedPresentationEngine.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -129,6 +132,9 @@
       <Filter>Файлы заголовков\Layouts</Filter>
     </ClInclude>
     <ClInclude Include="MenuRender.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUIBasedPresentationEngine.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

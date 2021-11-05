@@ -7,6 +7,7 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 
+#include "ImGUIBasedPresentationEngine.h"
 //#include "Engine.h"
 
 namespace Editor {
@@ -16,8 +17,8 @@ namespace Editor {
 	class EditorLayout {
 	public:
 		EditorLayout() {};
-		virtual void Render(Game& vulkan, PresentationEngine& engine) = 0;
-		void OnResize(Game& vulkan, PresentationEngine& engine);
+		virtual void Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
+		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine);
 		ImVec2 GetSceneSize() const;
 		
 	protected:
