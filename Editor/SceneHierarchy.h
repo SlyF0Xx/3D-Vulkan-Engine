@@ -5,6 +5,7 @@
 #include "BaseWidget.h"
 #include "Engine.h"
 #include "Core/Base.h"
+#include "Relation.h"
 #include "TagComponent.h"
 
 namespace Editor {

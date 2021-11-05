@@ -16,21 +16,17 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::Begin(TITLE, p_open, flags);
 
 	m_Context->get_registry().each([&](auto entity) {
-		DrawEntityNode((ENTT_ID_TYPE) entity);
+		const auto& relation = m_Context->get_registry().try_get<Relation>(entity);
+		if (relation == nullptr) {
+			// Only parents or independent objects.
+			DrawEntityNode((ENTT_ID_TYPE) entity);
+		}
 	});
 
 	ImGui::End();
 }
 
 void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
-	auto tagComponent = this->m_Context->get_registry().try_get<TagComponent>((entt::entity) entity);
-	std::string tag;
-	if (tagComponent == nullptr) {
-		tag = "Object# " + std::to_string(entity);
-	} else {
-		tag = ((TagComponent*) tagComponent)->m_Tag;
-	}
-
 	// Renaming entity.
 	if (m_IsRenaming && m_SelectionContext == entity) {
 		if (!m_IsRenameInputFocused) {
@@ -53,9 +49,25 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		return;
 	} // Renaming entity.
 
-	ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-	flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-	bool isOpened = ImGui::TreeNodeEx((void*) (uint64_t) (uint32_t) entity, flags, tag.c_str());
+	auto tagComponent = m_Context->get_registry().try_get<TagComponent>((entt::entity) entity);
+	std::string tag;
+	if (tagComponent == nullptr) {
+		tag = "Object# " + std::to_string(entity);
+	} else {
+		tag = ((TagComponent*) tagComponent)->m_Tag;
+	}
+
+	ImGuiTreeNodeFlags treeNodeFlags = (m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0;
+	treeNodeFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
+	auto* children = m_Context->get_registry().try_get<Childs>((entt::entity) entity);
+	if (children) {
+		treeNodeFlags |= ImGuiTreeNodeFlags_OpenOnArrow;
+	} else {
+		treeNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+	}
+
+	bool isOpened = ImGui::TreeNodeEx((void*) (uint64_t) (uint32_t) entity, treeNodeFlags, tag.c_str());
 
 	if (ImGui::IsItemClicked()) {
 		StopRenaming();
@@ -84,7 +96,13 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	}
 
 	if (isOpened) {
-		ImGui::TreePop();
+		if (children) {
+			for (const auto& child : children->m_childs) {
+				DrawEntityNode((ENTT_ID_TYPE) child);
+			}
+
+			ImGui::TreePop();
+		}
 	}
 
 	if (isEntityDeleted) {
