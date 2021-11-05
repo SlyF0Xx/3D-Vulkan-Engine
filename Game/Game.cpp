@@ -1,7 +1,9 @@
 // Game.cpp : Defines the entry point for the application.
 //
-#define VMA_IMPLEMENTATION
+
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <vk_mem_alloc.hpp>
+
 
 #include "framework.h"
 #include "Game.h"
@@ -19,6 +21,9 @@
 #include "LitMaterial.h"
 #include "UnlitMaterial.h"
 #include "MeshComponent.h"
+#include "DirectionalLightEntity.h"
+#include "DirectionalLightComponent.h"
+#include "TagComponent.h"
 
 #include <Engine.h>
 
@@ -28,11 +33,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.hpp>
-
-
 
 #include <chrono>
 #include <iostream>
@@ -84,18 +84,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     generate_scene();
     //import_scene();
 
-    for (int i = 0; i < 1; ++i) {
-        vulkan.add_light(glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    }
-
-    vulkan.add_light(glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-
-    /*
-    vulkan.add_light(glm::vec3(2.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(6.0f, 5.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(6.0f, 5.0f, 5.0f), glm::vec3(4.0f, 5.0f, 5.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    vulkan.add_light(glm::vec3(2.0f, 7.0f, 0.0f), glm::vec3(4.0f, 5.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    */
 
     vulkan.SecondInitialize();
 
@@ -150,6 +138,7 @@ void generate_scene()
         glm::vec3(0, 10, -5),
         glm::vec3(0, 0, 0),
         glm::vec3(0.0005, 0.0005, 0.0005));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(cat, "SLAVA cat");
     g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
     // for serialization prposes only
     g_vulkan->get_registry().emplace<diffusion::RotateTag>(cat, cat);
@@ -163,24 +152,27 @@ void generate_scene()
         glm::vec3(0.01, 0.01, 0.01));
     */
 
-    diffusion::import_entity(
+    auto tv_1 = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 1, -4),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
-    diffusion::import_entity(
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_1, "tv 1 - small");
+    auto tv_2 = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
         glm::vec3(4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.02, 0.02, 0.02));
-    diffusion::import_entity(
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_2, "tv 2 - big");
+    auto stool = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
         glm::vec3(-4, 5, -5),
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.1, 0.1, 0.1));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(stool, "stool");
 
     diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
@@ -198,13 +190,15 @@ void generate_scene()
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
 
+    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
     NJSONOutputArchive output;
     entt::snapshot{ g_vulkan->get_registry() }
         .entities(output)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::RotateTag>(output);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 
@@ -224,7 +218,7 @@ void import_scene()
     loader.entities(json_in)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::RotateTag>(json_in);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(json_in);
 
     // restore serialized tags
     auto cat = g_vulkan->get_registry().view<diffusion::RotateTag>().front();
@@ -282,7 +276,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, Game & vulkan)
    {
       return FALSE;
    }
-   vulkan.Initialize(hInstance, hWnd);
+   vulkan.InitializePresentationEngine(vulkan.create_default_presentation_engine(hInstance, hWnd));
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -341,7 +335,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             auto width = lParam & 0xffff;
             auto height = (lParam & 0xffff0000) >> 16;
 
-            g_vulkan->Update(width, height);
+            //g_vulkan->Update(width, height);
         }
         break;
     }

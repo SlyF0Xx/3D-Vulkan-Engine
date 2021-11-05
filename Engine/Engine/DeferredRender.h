@@ -16,13 +16,8 @@ class DeferredRender :
 {
     struct PerSwapchainImageData
     {
-        vk::Image m_color_image;
-
         vk::Image m_deffered_depth_image;
         vma::Allocation m_deffered_depth_memory;
-
-        vk::Image m_depth_image;
-        vma::Allocation m_depth_memory;
 
         vk::Image m_albedo_image;
         vma::Allocation m_albedo_memory;
@@ -30,9 +25,7 @@ class DeferredRender :
         vk::Image m_normal_image;
         vma::Allocation m_normal_memory;
 
-        vk::ImageView m_color_image_view;
         vk::ImageView m_deffered_depth_image_view;
-        vk::ImageView m_depth_image_view;
         vk::ImageView m_albedo_image_view;
         vk::ImageView m_normal_image_view;
 
@@ -44,16 +37,9 @@ class DeferredRender :
         vk::Framebuffer m_deffered_framebuffer;
         vk::Framebuffer m_composite_framebuffer;
 
-        vk::CommandBuffer m_command_buffer;
-
-        vk::Fence m_fence;
-        vk::Semaphore m_sema;
-
         vk::DescriptorSet m_descriptor_set;
         vk::DescriptorSet m_depth_descriptor_set;
     };
-
-    vk::Semaphore m_sema;
 
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
@@ -83,21 +69,19 @@ class DeferredRender :
     void InitializeCompositeRenderPass();
 
     void InitializeConstantPerImage();
-    void InitializeVariablePerImage(const std::vector<vk::Image>& swapchain_images);
+    void InitializeVariablePerImage();
 
     void InitializeDeferredPipeline();
     void InitializeCompositePipeline();
 
-    void InitCommandBuffer();
+    void InitCommandBuffer(int i, const vk::CommandBuffer& command_buffer);
 
 public:
-    DeferredRender(Game & game, const std::vector<vk::Image> & swapchain_images);
+    DeferredRender(Game & game);
 
-    void Update(const std::vector<vk::Image>& swapchain_images) override;
+    void Update() override;
 
     // Only after init objects
-    void Initialize() override;
-
-    void Draw() override;
+    void Initialize(int i, const vk::CommandBuffer& command_buffer) override;
 };
 

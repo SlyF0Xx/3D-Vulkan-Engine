@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VulkanDirectionalLightComponent.h"
+
 #include <entt/entt.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
@@ -27,6 +29,9 @@ public:
     void camera_changed(::entt::registry& registry, ::entt::entity parent_entity);
     void search_for_unlit_material(::entt::registry& registry, ::entt::entity parent_entity);
     void search_for_lit_material(::entt::registry& registry, ::entt::entity parent_entity);
+    vk::RenderPass initialize_render_pass();
+    void add_directional_light(::entt::registry& registry, ::entt::entity parent_entity);
+    static void init_command_buffer(Game& game, diffusion::VulkanDirectionalLights& light, int i, const vk::CommandBuffer& command_buffer);
 
 private:
     ImageData prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath);

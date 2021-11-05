@@ -1,0 +1,19 @@
+VK_LAYER_NV_optimus
+<<<<<<< HEAD
+VK_LAYER_AMD_switchable_graphics
+VK_LAYER_bandicam_helper
+=======
+>>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
+VK_LAYER_OBS_HOOK
+VK_LAYER_VALVE_steam_overlay
+VK_LAYER_VALVE_steam_fossilize
+VK_LAYER_EOS_Overlay
+VK_LAYER_EOS_Overlay
+VK_LAYER_LUNARG_override
+VK_LAYER_LUNARG_api_dump
+VK_LAYER_LUNARG_device_simulation
+VK_LAYER_LUNARG_gfxreconstruct
+VK_LAYER_KHRONOS_synchronization2
+VK_LAYER_KHRONOS_validation
+VK_LAYER_LUNARG_monitor
+VK_LAYER_LUNARG_screenshot

@@ -66,8 +66,8 @@
     <ClInclude Include="CameraSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Archiver.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="DirectionalLightEntity.h">
+      <Filter>Header Files\Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +97,9 @@
     </ClCompile>
     <ClCompile Include="CameraSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalLightEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

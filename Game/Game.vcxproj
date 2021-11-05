@@ -154,9 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Archiver.h" />
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="CubeEntity.h" />
+    <ClInclude Include="DirectionalLightEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ImportableEntity.h" />
@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="CubeEntity.cpp" />
+    <ClCompile Include="DirectionalLightEntity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImportableEntity.cpp" />
     <ClCompile Include="KitamoriMovingSystem.cpp" />

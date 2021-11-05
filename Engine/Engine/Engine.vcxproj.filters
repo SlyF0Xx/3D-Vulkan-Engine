@@ -19,6 +19,12 @@
     <Filter Include="Source Files\BaseComponents">
       <UniqueIdentifier>{edd70691-a432-49c2-964c-adfb7183c8a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{a10aeb09-4711-43d8-b8cf-d7d4ab314671}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BaseComponents\VulkanComponents">
+      <UniqueIdentifier>{bb9cdbda-d1d9-423d-b6e9-7886066dc2a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -36,28 +42,13 @@
     <ClInclude Include="ForwardRender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lights.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TransformComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanTransformComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
     <ClInclude Include="MeshComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanMeshComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="ImportableVulkanMeshComponents.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="BoundingComponent.h">
@@ -67,9 +58,6 @@
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanCameraComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="VulkanInitializer.h">
@@ -90,6 +78,36 @@
     <ClInclude Include="ComponentInitializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IMenuRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Game\Archiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Base.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TagComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanCameraComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanMeshComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanTransformComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportableVulkanMeshComponents.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalLightComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanDirectionalLightComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -102,12 +120,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Lights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
