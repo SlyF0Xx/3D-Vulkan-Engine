@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace diffusion {
 
 	template<typename T>

@@ -16,6 +16,18 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{bea548f5-9fad-4750-bf89-ae500b330a7a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\Widgets">
+      <UniqueIdentifier>{1d5f4def-fce2-469d-9a4f-f438866a3aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Widgets">
+      <UniqueIdentifier>{9f036f6c-e7e4-448a-9052-56ea7f11388a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\Layouts">
+      <UniqueIdentifier>{7f72ea4c-0640-4ff1-a838-ad561cba691f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Layouts">
+      <UniqueIdentifier>{63544a6a-2c4d-4ed1-9f45-70c1d76722fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -42,20 +54,29 @@
     <ClCompile Include="vendor\imgui\backends\imgui_impl_vulkan.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="ContentBrowser.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="BaseWidget.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ContentBrowser.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="LuaConsole.cpp">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Исходные файлы\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="SceneHierarchy.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorWindow.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="BaseWidget.cpp">
+    <ClCompile Include="EditorLayout.cpp">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="MainLayout.cpp">
+      <Filter>Исходные файлы\Layouts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -83,22 +104,31 @@
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="ContentBrowser.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseWidget.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\imgui\widgets\TextEditor.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="BooleanStates.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="BaseWidget.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ContentBrowser.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="LuaConsole.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="SceneHierarchy.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorWindow.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorLayout.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="MainLayout.h">
+      <Filter>Файлы заголовков\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuRender.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
