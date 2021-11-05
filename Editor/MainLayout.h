@@ -17,7 +17,16 @@
 
 namespace Editor {
 
+	struct LayoutDock {
+		ImGuiID MainDock;
+		ImGuiID TopDock;
+		ImGuiID LeftDock;
+		ImGuiID DownDock;
+		ImGuiID RightDock;
+	};
+
 	struct WindowStates {
+		bool isDocksSpaceOpen = true;
 		bool isContentBrowserOpen = true;
 	};
 
@@ -25,14 +34,21 @@ namespace Editor {
 	public:
 		MainLayout(diffusion::Ref<Game>& vulkan);
 		void Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void InitDockspace();
 
 	private:
+		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
+		ImGuiWindowFlags m_WindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
 		WindowStates m_WindowStates = {};
+		LayoutDock m_DockIDs = {};
 
 		ContentBrowser m_ContentBrowser;
 		LuaConsole m_LuaConsole;
 		SceneHierarchy m_SceneHierarchy;
 		TextEditor m_TextEditor;
+
+		bool m_IsDockspaceInitialized = false;
 		
 	};
 

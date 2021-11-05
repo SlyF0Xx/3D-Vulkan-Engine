@@ -15,58 +15,16 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) {
 }
 
 void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize(viewport->Size);
-	ImGui::SetNextWindowViewport(viewport->ID);
-
-	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 	// all active windows docked into it will lose their parent and become undocked.
 	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
 	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-	bool ds = true;
-	ImGui::Begin("DockSpace", &ds, window_flags);
+	ImGui::Begin("DockSpace", &m_WindowStates.isDocksSpaceOpen, m_WindowFlags);
+	m_DockIDs.MainDock = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(m_DockIDs.MainDock, ImVec2(0.0f, 0.0f), m_DockspaceFlags);
 
-	// DockSpace
-	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-
-	static auto first_time = true;
-	if (first_time) {
-		first_time = false;
-
-		ImGui::DockBuilderRemoveNode(dockspace_id); // clear any previous layout
-		ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
-
-		// Order important!
-		ImGuiID dock_main_id = dockspace_id;
-		ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
-		ImGuiID dock_down_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.2f, nullptr, &dock_main_id);
-		ImGuiID dock_up_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
-		ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.2f, nullptr, &dock_main_id);
-		ImGuiID dock_down_right_id = ImGui::DockBuilderSplitNode(dock_down_id, ImGuiDir_Right, 0.6f, nullptr, &dock_down_id);
-
-		ImGui::DockBuilderDockWindow("Actions", dock_up_id);
-		ImGui::DockBuilderDockWindow(Editor::SceneHierarchy::TITLE, dock_left_id);
-		ImGui::DockBuilderDockWindow("Right", dock_right_id);
-		ImGui::DockBuilderDockWindow(Editor::ContentBrowser::TITLE, dock_down_id);
-		ImGui::DockBuilderDockWindow("Project", dock_down_right_id);
-		ImGui::DockBuilderDockWindow("Top2", dock_main_id);
-		ImGui::DockBuilderFinish(dockspace_id);
-	}
-
+	InitDockspace();
 	ImGui::End();
 
 	if (ImGui::BeginMainMenuBar()) {
@@ -93,18 +51,21 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 
 	m_SceneHierarchy.Render();
 
+	ImGui::SetNextWindowDockID(m_DockIDs.DownDock, ImGuiCond_Once);
+	m_LuaConsole.Render();
+
 	if (m_WindowStates.isContentBrowserOpen) {
 		m_ContentBrowser.Render(&m_WindowStates.isContentBrowserOpen, 0);
 	}
 
-	ImGui::Begin("Top2");
+	ImGui::SetNextWindowDockID(m_DockIDs.MainDock, ImGuiCond_Once);
+	ImGui::Begin("Code editor");
 	ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::LUA_EDITOR_PRIMARY));
 	m_TextEditor.Render("Editor", ImVec2(0, 0), true);
 	ImGui::PopFont();
 	ImGui::End();
 
-	ImGui::Begin("Right");
-
+	ImGui::Begin("Viewport");
 	ImVec2 current_size = ImGui::GetWindowSize();
 	if (current_size.x != m_SceneSize.x || current_size.y != m_SceneSize.y) {
 		m_SceneSize = current_size;
@@ -115,7 +76,47 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().FrameIndex], current_size);
 	ImGui::End();
 
-	ImGui::ShowDemoWindow();
 
-	m_LuaConsole.Render();
+	ImGui::Begin("Inspector");
+
+
+	ImGui::End();
+}
+
+void Editor::MainLayout::InitDockspace() {
+	if (m_IsDockspaceInitialized) {
+		return;
+	}
+
+	m_WindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	m_WindowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (m_DockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
+		m_WindowFlags |= ImGuiWindowFlags_NoBackground;
+
+	// Docks building.
+	ImGui::DockBuilderRemoveNode(m_DockIDs.MainDock); // clear any previous layout
+	ImGui::DockBuilderAddNode(m_DockIDs.MainDock, m_DockspaceFlags | ImGuiDockNodeFlags_DockSpace);
+	ImGui::DockBuilderSetNodeSize(m_DockIDs.MainDock, viewport->Size);
+
+	// Order important!
+	m_DockIDs.RightDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Right, 0.2f, nullptr, &m_DockIDs.MainDock);
+	m_DockIDs.DownDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Down, 0.2f, nullptr, &m_DockIDs.MainDock);
+	m_DockIDs.TopDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Up, 0.05f, nullptr, &m_DockIDs.MainDock);
+	m_DockIDs.LeftDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Left, 0.2f, nullptr, &m_DockIDs.MainDock);
+
+	ImGui::DockBuilderDockWindow("Actions", m_DockIDs.TopDock);
+	ImGui::DockBuilderDockWindow(Editor::SceneHierarchy::TITLE, m_DockIDs.LeftDock);
+	ImGui::DockBuilderDockWindow("Inspector", m_DockIDs.RightDock);
+	ImGui::DockBuilderDockWindow(Editor::ContentBrowser::TITLE, m_DockIDs.DownDock);
+	ImGui::DockBuilderDockWindow("Viewport", m_DockIDs.MainDock);
+	ImGui::DockBuilderFinish(m_DockIDs.MainDock);
+
+	m_IsDockspaceInitialized = true;
 }
