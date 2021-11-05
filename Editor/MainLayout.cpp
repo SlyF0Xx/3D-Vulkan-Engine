@@ -115,5 +115,7 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().FrameIndex], current_size);
 	ImGui::End();
 
+	ImGui::ShowDemoWindow();
+
 	m_LuaConsole.Render();
 }
