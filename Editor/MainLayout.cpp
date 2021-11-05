@@ -98,9 +98,9 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 	}
 
 	ImGui::Begin("Top2");
-	//ImGui::PushFont(fontCodeEditor);
+	ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::LUA_EDITOR_PRIMARY));
 	m_TextEditor.Render("Editor", ImVec2(0, 0), true);
-	//ImGui::PopFont();
+	ImGui::PopFont();
 	ImGui::End();
 
 	ImGui::Begin("Right");
@@ -113,7 +113,6 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 	}
 
 	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().FrameIndex], current_size);
-	ImGui::Text("Hello, Right!");
 	ImGui::End();
 
 	m_LuaConsole.Render();

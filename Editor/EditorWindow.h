@@ -36,6 +36,7 @@
 #include <stdlib.h>         // abort
 #include <stb_image.h>
 
+#include "FontUtils.h"
 #include "MenuRender.h"
 #include "EditorLayout.h"
 #include "ImGUIBasedPresentationEngine.h"
@@ -55,12 +56,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, 
 using namespace diffusion;
 
 namespace Editor {
-	
-	enum class FONT_TYPE {
-		PRIMARY_TEXT,
-		SUBHEADER_TEXT,
-		LUA_EDITOR_PRIMARY
-	};
 
 	class EditorWindow {
 	public:
@@ -74,10 +69,6 @@ namespace Editor {
 		void SetLayout(Ref<EditorLayout>& layout);
 		void SetContext(Ref<Game>& context);
 		void SetupStyle();
-
-		static void LoadFonts();
-
-		static ImFont* GetFont(Editor::FONT_TYPE type);
 	private: 
 		bool GLFWInit();
 		void SetupVulkan();
@@ -90,8 +81,6 @@ namespace Editor {
 
 	private:
 		static inline constexpr const char* FAVICON_PATH = "./misc/icons/toolbar_icon.png";
-
-		static std::map<FONT_TYPE, ImFont*> s_Fonts;
 
 		int m_Width = 0;
 		int m_Height = 0;

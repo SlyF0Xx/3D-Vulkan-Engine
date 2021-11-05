@@ -1,8 +1,5 @@
 #include "EditorWindow.h"
 
-// LNK2001.
-std::map<Editor::FONT_TYPE, ImFont*> Editor::EditorWindow::s_Fonts;
-
 Editor::EditorWindow::EditorWindow(Ref<EditorLayout>& layout, Ref<Game>& context) {
 	SetLayout(layout);
 	SetContext(context);
@@ -178,7 +175,7 @@ void Editor::EditorWindow::SetupImGuiContext() {
 }
 
 void Editor::EditorWindow::UploadFonts() {
-	LoadFonts();
+	FontUtils::LoadFonts();
 
 	// Use any command queue
 	VkCommandPool command_pool = m_MainWindowData.Frames[m_MainWindowData.FrameIndex].CommandPool;
@@ -281,29 +278,4 @@ void Editor::EditorWindow::SetupStyle() {
 	ImGui::StyleColorsLight();
 	ImGui::GetStyle().FrameRounding = 4.f;
 	ImGui::GetStyle().FrameBorderSize = 1;
-}
-
-void Editor::EditorWindow::LoadFonts() {
-	ImGuiIO& io = ImGui::GetIO();
-	if (GetFont(FONT_TYPE::PRIMARY_TEXT) == NULL) {
-		s_Fonts[FONT_TYPE::PRIMARY_TEXT] = io.Fonts->AddFontFromFileTTF("./misc/fonts/Roboto-Medium.ttf", 16.0f);
-		IM_ASSERT(GetFont(FONT_TYPE::PRIMARY_TEXT) != NULL);
-	}
-
-	if (GetFont(FONT_TYPE::SUBHEADER_TEXT) == NULL) {
-		s_Fonts[FONT_TYPE::SUBHEADER_TEXT] = io.Fonts->AddFontFromFileTTF("./misc/fonts/Roboto-Medium.ttf", 12.0f);
-		IM_ASSERT(GetFont(FONT_TYPE::SUBHEADER_TEXT) != NULL);
-	}
-
-	if (GetFont(FONT_TYPE::LUA_EDITOR_PRIMARY) == NULL) {
-		s_Fonts[FONT_TYPE::LUA_EDITOR_PRIMARY] = io.Fonts->AddFontFromFileTTF("./misc/fonts/Droid-Sans-Mono.ttf", 24.0f);
-		IM_ASSERT(GetFont(FONT_TYPE::LUA_EDITOR_PRIMARY) != NULL);
-	}
-}
-
-ImFont* Editor::EditorWindow::GetFont(Editor::FONT_TYPE type) {
-	if (s_Fonts.count(type) > 0) {
-		return s_Fonts[type];
-	}
-	return nullptr;
 }

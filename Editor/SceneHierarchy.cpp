@@ -40,7 +40,9 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem()) {
+		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Actions");
+		ImGui::PopFont();
 		ImGui::Separator();
 		if (ImGui::MenuItem("Rename Entity")) {
 

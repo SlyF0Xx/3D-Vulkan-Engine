@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "FontUtils.h"
+
 namespace Editor {
 
 	class Widget {

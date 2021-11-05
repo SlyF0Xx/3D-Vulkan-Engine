@@ -12,6 +12,7 @@
 #include "widgets/TextEditor.h"
 #pragma endregion
 
+#include "FontUtils.h"
 #include "EditorLayout.h"
 
 namespace Editor {
