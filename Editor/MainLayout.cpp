@@ -18,7 +18,6 @@ Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresent
 			ImGui::MenuItem("New");
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
-				//exit(window, vulkan->get_instance(), vulkan->get_device());
 				m_Parent->Destroy();
 				return Editor::RENDER_STATUS::EXIT;
 			}
