@@ -35,10 +35,6 @@ public:
 
     ImageData prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath);
 
-    //void prepare_texture(const std::filesystem::path& filepath) {
-    //    return prepare_image_for_copy();
-    //}
-
 private:
     static std::filesystem::path get_materials_path(const std::filesystem::path& filepath);
 
