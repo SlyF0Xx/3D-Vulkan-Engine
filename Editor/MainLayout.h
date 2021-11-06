@@ -39,8 +39,7 @@ namespace Editor {
 
 	class MainLayout : public EditorLayout {
 	public:
-		MainLayout(diffusion::Ref<Game>& vulkan) {
-			m_ContentBrowser = Editor::ContentBrowser();
+		MainLayout(diffusion::Ref<Game>& vulkan) : m_ContentBrowser(vulkan), m_SceneHierarchy(vulkan) {
 
 			m_TextEditor = TextEditor();
 			m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -49,8 +48,6 @@ namespace Editor {
 			m_TextEditor.SetShowWhitespaces(false);
 
 			m_LuaConsole = LuaConsole();
-
-			m_SceneHierarchy = SceneHierarchy(vulkan);
 		}
 
 		RENDER_STATUS Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;

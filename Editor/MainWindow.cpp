@@ -63,3 +63,7 @@ void Editor::MainWindow::StartMainLoop() {
 	}
 }
 
+const char* Editor::MainWindow::GetWindowTitle() const {
+	return "Main Window";
+}
+

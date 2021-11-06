@@ -91,6 +91,7 @@ Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresent
 		ImGui::Begin("Inspector", &m_WindowStates.isInspectorOpen, 0);
 
 		// TODO: Add inspector widget.
+		ImGui::Text("Nothing to inspect.");
 
 		ImGui::End();
 	}
@@ -118,6 +119,8 @@ void Editor::MainLayout::InitDockspace() {
 	if (m_IsDockspaceInitialized) {
 		return;
 	}
+
+	m_ContentBrowser.InitContexed();
 
 	m_WindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	m_WindowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;

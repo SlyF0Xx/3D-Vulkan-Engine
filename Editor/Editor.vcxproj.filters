@@ -99,6 +99,9 @@
     <ClCompile Include="ImGUIBasedPresentationEngine.cpp">
       <Filter>Исходные файлы\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="GameWidget.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -160,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="MenuRender.h">
       <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWidget.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,17 +1,5 @@
 #include "SceneHierarchy.h"
 
-Editor::SceneHierarchy::SceneHierarchy(const Ref<Game>& game) {
-	SetContext(game);
-}
-
-void Editor::SceneHierarchy::SetContext(const Ref<Game>& game) {
-	m_Context = game;
-}
-
-void Editor::SceneHierarchy::Render() {
-	Widget::Render();
-}
-
 void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::Begin(TITLE, p_open, flags);
 

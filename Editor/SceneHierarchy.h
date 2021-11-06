@@ -2,9 +2,7 @@
 
 #include <string>
 
-#include "BaseWidget.h"
-#include "Engine.h"
-#include "Core/Base.h"
+#include "GameWidget.h"
 #include "Relation.h"
 #include "TagComponent.h"
 
@@ -12,16 +10,12 @@ namespace Editor {
 
 	using namespace diffusion;
 
-	class SceneHierarchy : Widget {
+	class SceneHierarchy : GameWidget {
 	public:
-		SceneHierarchy() = default;
-		SceneHierarchy(const Ref<Game>& game);
+		SceneHierarchy() = delete;
+		SceneHierarchy(const Ref<Game>& game) : GameWidget(game) {};
 
-		void SetContext(const Ref<Game>& game);
-
-		void Render();
-
-		virtual void Render(bool* p_open, ImGuiWindowFlags flags);
+		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 
 		void DrawEntityNode(ENTT_ID_TYPE entity);
 
@@ -35,7 +29,7 @@ namespace Editor {
 	private:
 		static inline constexpr const int RENAME_BUF_SIZE = 64;
 
-		Ref<Game> m_Context;
+		
 		ENTT_ID_TYPE m_SelectionContext;
 
 		bool m_IsRenameInputFocused = false;
