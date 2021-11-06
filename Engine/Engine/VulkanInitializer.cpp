@@ -159,7 +159,7 @@ void VulkanInitializer::search_for_unlit_material(::entt::registry& registry, ::
         auto command_buffer = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, 1))[0];
 
         command_buffer.begin(vk::CommandBufferBeginInfo());
-        ImageData albedo_image = prepare_image_for_copy(command_buffer, unlit_material_component.m_albedo_path);
+        ImageData albedo_image = prepare_image_for_copy(command_buffer, get_materials_path(unlit_material_component.m_albedo_path));
 
         vk::ImageView albedo_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, albedo_image.m_image, vk::ImageViewType::e2D, m_game.get_color_format(), m_game.get_texture_component_mapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         vk::Sampler albedo_sampler = m_game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
@@ -218,13 +218,13 @@ void VulkanInitializer::search_for_lit_material(::entt::registry& registry, ::en
         auto command_buffer = m_game.get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_game.get_command_pool(), vk::CommandBufferLevel::ePrimary, 1))[0];
 
         command_buffer.begin(vk::CommandBufferBeginInfo());
-        ImageData albedo_image = prepare_image_for_copy(command_buffer, lit_material_component.m_albedo_path);
+        ImageData albedo_image = prepare_image_for_copy(command_buffer, get_materials_path(lit_material_component.m_albedo_path));
 
         vk::ImageView albedo_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, albedo_image.m_image, vk::ImageViewType::e2D, m_game.get_color_format(), m_game.get_texture_component_mapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         vk::Sampler albedo_sampler = m_game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
 
 
-        ImageData normals_image = prepare_image_for_copy(command_buffer, lit_material_component.m_normal_path);
+        ImageData normals_image = prepare_image_for_copy(command_buffer, get_materials_path(lit_material_component.m_normal_path));
 
         vk::ImageView normal_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, normals_image.m_image, vk::ImageViewType::e2D, m_game.get_color_format(), m_game.get_texture_component_mapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)));
         vk::Sampler normal_sampler = m_game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
@@ -266,7 +266,7 @@ ImageData VulkanInitializer::prepare_image_for_copy(const vk::CommandBuffer& com
     std::array<uint32_t, 1> queues{ 0 };
 
     int tex_width, tex_height, n;
-    auto* data = stbi_load((std::filesystem::path("Materials") / filepath).string().c_str(), &tex_width, &tex_height, &n, 4);
+    auto* data = stbi_load(filepath.string().c_str(), &tex_width, &tex_height, &n, 4);
 
     n = 4;
 
@@ -316,6 +316,10 @@ ImageData VulkanInitializer::prepare_image_for_copy(const vk::CommandBuffer& com
     command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, finish_barrier);
 
     return { image, image_memory };
+}
+
+std::filesystem::path VulkanInitializer::get_materials_path(const std::filesystem::path& filepath) {
+    return std::filesystem::path("Materials") / filepath;
 }
 
 vk::RenderPass VulkanInitializer::initialize_render_pass()

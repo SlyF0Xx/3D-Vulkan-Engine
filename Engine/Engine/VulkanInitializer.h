@@ -33,8 +33,14 @@ public:
     void add_directional_light(::entt::registry& registry, ::entt::entity parent_entity);
     static void init_command_buffer(Game& game, diffusion::VulkanDirectionalLights& light, int i, const vk::CommandBuffer& command_buffer);
 
-private:
     ImageData prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath);
+
+    //void prepare_texture(const std::filesystem::path& filepath) {
+    //    return prepare_image_for_copy();
+    //}
+
+private:
+    static std::filesystem::path get_materials_path(const std::filesystem::path& filepath);
 
     Game& m_game;
 };

@@ -199,6 +199,9 @@ public:
     {
         return m_presentation_engine.m_depth_format;
     }
+    const diffusion::ImageData get_texture(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath) {
+        return m_initializer.prepare_image_for_copy(command_buffer, filepath);
+    }
     vk::ComponentMapping get_texture_component_mapping()
     {
         return m_texture_component_mapping;

@@ -12,6 +12,12 @@ namespace Editor {
 
 		void Render();
 		virtual void Render(bool* p_open, ImGuiWindowFlags flags) = 0;
+
+		// Initialization with ImGui Context.
+		virtual void InitContexed();
+
+	private:
+		bool m_IsInitContexed = false;
 	};
 
 }

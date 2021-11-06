@@ -58,7 +58,7 @@ bool Editor::EditorWindow::GLFWInit() {
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
-	m_Window = glfwCreateWindow(1280, 720, "Awesome editor window", nullptr, NULL);
+	m_Window = glfwCreateWindow(1280, 720, GetWindowTitle(), nullptr, NULL);
 	GLFWimage images[1];
 	images[0].pixels = stbi_load(FAVICON_PATH, &images[0].width, &images[0].height, 0, 4); //rgba channels 
 	glfwSetWindowIcon(m_Window, 1, images);
@@ -224,6 +224,10 @@ void Editor::EditorWindow::SetLayout(Ref<EditorLayout>& layout) {
 
 void Editor::EditorWindow::SetContext(Ref<Game>& context) {
 	m_Context = context;
+}
+
+const char* Editor::EditorWindow::GetWindowTitle() const {
+	return "Awesome Editor Window";
 }
 
 void Editor::EditorWindow::SetupStyle() {

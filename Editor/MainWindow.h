@@ -10,6 +10,7 @@ namespace Editor {
 		MainWindow(Ref<EditorLayout>& layout, Ref<Game>& context) : EditorWindow(layout, context) {};
 
 		void StartMainLoop() override;
+		const char* GetWindowTitle() const override;
 	};
 
 }

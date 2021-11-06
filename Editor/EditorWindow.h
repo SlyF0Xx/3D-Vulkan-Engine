@@ -71,6 +71,8 @@ namespace Editor {
 		void Destroy();
 		void SetLayout(Ref<EditorLayout>& layout);
 		void SetContext(Ref<Game>& context);
+
+		virtual const char* GetWindowTitle() const;
 	protected:
 		bool GLFWInit();
 		void SetupVulkan();
