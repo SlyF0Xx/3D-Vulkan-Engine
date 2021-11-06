@@ -175,8 +175,7 @@ void Game::InitializePipelineLayout()
     };
 
     std::array light_bindings{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr), /*light*/
-        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr)  /*light count*/
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr) /*light*/
     };
 
     m_descriptor_set_layouts = {

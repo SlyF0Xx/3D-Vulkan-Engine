@@ -403,6 +403,12 @@ auto initialize_render_pipeline(Game& game, const vk::PipelineLayout & layout, c
     return std::make_tuple(vertex_shader, cache, pipeline);
 }
 
+struct Lights {
+    float light_buffer_size;
+    float padding[3];
+    LightShaderInfo lights[10];
+};
+
 } // unnamed namespace
 
 void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt::entity parent_entity)
@@ -433,14 +439,10 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
 
         auto sets = m_game.get_device().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_game.get_descriptor_pool(), m_game.get_descriptor_set_layouts()[3]));
 
-        auto m_lights_buffer_memory = sync_create_empty_host_invisible_buffer(m_game, 10 * sizeof(LightShaderInfo), vk::BufferUsageFlagBits::eUniformBuffer, 0);
+        auto m_lights_buffer_memory = sync_create_empty_host_invisible_buffer(m_game, sizeof(Lights), vk::BufferUsageFlagBits::eUniformBuffer, 0);
         std::array lights_buffer_infos{ vk::DescriptorBufferInfo(m_lights_buffer_memory.m_buffer, {}, VK_WHOLE_SIZE) };
 
-        auto m_lights_count_buffer_memory = sync_create_empty_host_invisible_buffer(m_game, sizeof(uint32_t), vk::BufferUsageFlagBits::eUniformBuffer, 0);
-        std::array lights_count_buffer_infos{ vk::DescriptorBufferInfo(m_lights_count_buffer_memory.m_buffer, {}, VK_WHOLE_SIZE) };
-
-        std::array write_lights_descriptors{ vk::WriteDescriptorSet(sets[0], 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}),
-                                             vk::WriteDescriptorSet(sets[0], 1, 0, vk::DescriptorType::eUniformBuffer, {}, lights_count_buffer_infos, {}) };
+        std::array write_lights_descriptors{ vk::WriteDescriptorSet(sets[0], 0, 0, vk::DescriptorType::eUniformBuffer, {}, lights_buffer_infos, {}) };
         m_game.get_device().updateDescriptorSets(write_lights_descriptors, {});
 
         lights_ptr = &registry.set<VulkanDirectionalLights>(
@@ -454,9 +456,7 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
             std::vector<entt::entity>{},
             sets[0],
             m_lights_buffer_memory.m_buffer,
-            m_lights_buffer_memory.m_allocation,
-            m_lights_count_buffer_memory.m_buffer,
-            m_lights_count_buffer_memory.m_allocation);
+            m_lights_buffer_memory.m_allocation);
     }
     else {
         VulkanDirectionalLights& lights = *lights_ptr;
@@ -510,18 +510,15 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
 
     m_game.Update();
 
-    std::vector<LightShaderInfo> light_shader_info;
-    for (auto& light_entity : lights_ptr->m_light_entities) {
-        auto light_camera = registry.get<CameraComponent>(light_entity);
-        light_shader_info.emplace_back(light_camera.m_camera_target - light_camera.m_camera_position, light_camera.m_view_projection_matrix);
+    Lights lights;
+    lights.light_buffer_size = lights_ptr->m_light_entities.size();
+    for (int i = 0; i < lights_ptr->m_light_entities.size(); ++i) {
+        auto& light_camera = registry.get<CameraComponent>(lights_ptr->m_light_entities[i]);
+        lights.lights[i].m_direction = light_camera.m_camera_target - light_camera.m_camera_position;
+        lights.lights[i].m_ViewProjection = light_camera.m_view_projection_matrix;
     }
 
-    std::vector<std::byte> lights_memory_to_transfer(reinterpret_cast<std::byte*>(light_shader_info.begin()._Ptr), reinterpret_cast<std::byte*>(light_shader_info.end()._Ptr));
-    update_buffer(m_game, lights_memory_to_transfer.size(), lights_memory_to_transfer.data(), lights_ptr->m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
-
-    uint32_t size = static_cast<uint32_t>(light_shader_info.size());
-    std::vector<std::byte> lights_count_memory_to_transfer(reinterpret_cast<std::byte*>(&size), reinterpret_cast<std::byte*>(&size) + sizeof(size));
-    update_buffer(m_game, lights_count_memory_to_transfer.size(), lights_count_memory_to_transfer.data(), lights_ptr->m_lights_count_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
+    update_buffer(m_game, sizeof(lights), &lights, lights_ptr->m_lights_buffer, vk::BufferUsageFlagBits::eUniformBuffer, 0);
 }
 
 void VulkanInitializer::init_command_buffer(Game& game, diffusion::VulkanDirectionalLights & light, int i, const vk::CommandBuffer& command_buffer)

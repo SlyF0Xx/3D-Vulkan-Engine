@@ -21,14 +21,8 @@ struct VulkanDirectionalLightComponent
 
 struct LightShaderInfo
 {
-    LightShaderInfo(
-        glm::vec3 direction,
-        glm::mat4 ViewProjection)
-        : m_direction(direction), m_ViewProjection(ViewProjection)
-    {}
-
     glm::vec3 m_direction;
-    uint32_t padding = 0;
+    float padding = 0;
     glm::mat4 m_ViewProjection;
 };
 
@@ -58,9 +52,10 @@ struct VulkanDirectionalLights
     vk::DescriptorSet m_lights_descriptor_set;
     vk::Buffer m_lights_buffer;
     vma::Allocation m_lights_memory;
-
+    /*
     vk::Buffer m_lights_count_buffer;
     vma::Allocation m_lights_count_memory;
+    */
 };
 
 } // namespace diffusion {

@@ -1,10 +1,11 @@
 VK_LAYER_NV_optimus
-<<<<<<< HEAD
-VK_LAYER_AMD_switchable_graphics
-VK_LAYER_bandicam_helper
-=======
->>>>>>> 1416a5f04e6aa47b58194637c07e161d44fc9b4b
+VK_LAYER_RENDERDOC_Capture
 VK_LAYER_OBS_HOOK
+GalaxyOverlayVkLayer
+GalaxyOverlayVkLayer_VERBOSE
+GalaxyOverlayVkLayer_DEBUG
+VK_LAYER_NV_nomad_release_public_2021_3_0
+VK_LAYER_NV_GPU_Trace_release_public_2021_3_0
 VK_LAYER_VALVE_steam_overlay
 VK_LAYER_VALVE_steam_fossilize
 VK_LAYER_EOS_Overlay

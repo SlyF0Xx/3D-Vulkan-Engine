@@ -23,13 +23,10 @@ layout (set = 1, binding = 0) uniform WorldMatrix{
 
 // #pragma pack(push, 1)
 layout (set = 3, binding = 0) uniform Lights{
+	float light_buffer_size;
 	LightInfo lights[10];
 } light_buffer;
 // #pragma pack(pop)
-
-layout (set = 3, binding = 1) uniform LightsCount{
-	uint light_buffer_size;
-} lights_count;
 
 layout(push_constant) uniform PushConsts {
 	int is_unlit;
@@ -57,7 +54,7 @@ void main()
 	out_norm = in_norm;
 
 	if (pushConsts.is_unlit != 1) {
-		for (int i = 0; i < lights_count.light_buffer_size; ++i) {
+		for (int i = 0; i < light_buffer.light_buffer_size; ++i) {
 			out_shadow_coords[i] =  (biasMat * light_buffer.lights[i].ViewProjection * world_mat.World) * vec4(position, 1.0);
 		}
 	}

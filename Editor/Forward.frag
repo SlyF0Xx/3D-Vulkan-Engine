@@ -20,13 +20,10 @@ struct LightInfo
 
 // #pragma pack(push, 1)
 layout (set = 3, binding = 0) uniform Lights{
+	float light_buffer_size;
 	LightInfo lights[10];
 } light_buffer;
 // #pragma pack(pop)
-
-layout (set = 3, binding = 1) uniform LightsCount{
-	uint light_buffer_size;
-} lights_count;
 
 layout(push_constant) uniform PushConsts {
 	int is_unlit;
@@ -49,7 +46,7 @@ void main()
 		vec3 N = normalize(normal);
 
 		vec3 fragcolor = vec3(0.0f, 0.0f, 0.0f);
-		for (int i = 0; i < lights_count.light_buffer_size; ++i) {
+		for (int i = 0; i < light_buffer.light_buffer_size; ++i) {
 			// Light to fragment
 			vec3 L = normalize(light_buffer.lights[i].m_direction);
 			//L = vec3(L.x, -L.z, L.y);
