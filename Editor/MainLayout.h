@@ -14,6 +14,7 @@
 
 #include "FontUtils.h"
 #include "EditorLayout.h"
+#include "MainWindow.h"
 
 namespace Editor {
 
@@ -28,12 +29,29 @@ namespace Editor {
 	struct WindowStates {
 		bool isDocksSpaceOpen = true;
 		bool isContentBrowserOpen = true;
+		bool isLuaConsoleOpen = true;
+		bool isSceneHierarchyOpen = true;
+		bool isViewportOpen = true;
+		bool isInspectorOpen = true;
 	};
 
 	class MainLayout : public EditorLayout {
 	public:
-		MainLayout(diffusion::Ref<Game>& vulkan);
-		void Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		MainLayout(diffusion::Ref<Game>& vulkan, diffusion::Ref<EditorWindow>& parent) : EditorLayout(parent) {
+			m_ContentBrowser = Editor::ContentBrowser();
+
+			m_TextEditor = TextEditor();
+			m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+			m_TextEditor.SetTabSize(4);
+			m_TextEditor.SetPalette(m_TextEditor.GetLightPalette());
+			m_TextEditor.SetShowWhitespaces(false);
+
+			m_LuaConsole = LuaConsole();
+
+			m_SceneHierarchy = SceneHierarchy(vulkan);
+		};
+
+		RENDER_STATUS Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
 
 	private:

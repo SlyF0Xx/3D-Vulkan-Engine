@@ -28,6 +28,18 @@
     <Filter Include="Исходные файлы\Layouts">
       <UniqueIdentifier>{63544a6a-2c4d-4ed1-9f45-70c1d76722fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\Windows">
+      <UniqueIdentifier>{420081a1-07d5-47ba-bdc7-7d0d2931cd8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\Utils">
+      <UniqueIdentifier>{8078d505-d029-4844-854f-48934b54ae52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Windows">
+      <UniqueIdentifier>{466823b1-35d8-4b10-bd66-3d0ff87e8eac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Utils">
+      <UniqueIdentifier>{b1bb989e-1ee9-4857-9110-e402bd35bbd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -69,20 +81,23 @@
     <ClCompile Include="SceneHierarchy.cpp">
       <Filter>Исходные файлы\Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="EditorWindow.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorLayout.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="MainLayout.cpp">
       <Filter>Исходные файлы\Layouts</Filter>
     </ClCompile>
-    <ClCompile Include="ImGUIBasedPresentationEngine.cpp">
-      <Filter>Исходные файлы</Filter>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>Исходные файлы\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorWindow.cpp">
+      <Filter>Исходные файлы\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorLayout.cpp">
+      <Filter>Исходные файлы\Layouts</Filter>
     </ClCompile>
     <ClCompile Include="FontUtils.cpp">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Исходные файлы\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUIBasedPresentationEngine.cpp">
+      <Filter>Исходные файлы\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,23 +140,26 @@
     <ClInclude Include="SceneHierarchy.h">
       <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="EditorWindow.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorLayout.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="MainLayout.h">
       <Filter>Файлы заголовков\Layouts</Filter>
     </ClInclude>
-    <ClInclude Include="MenuRender.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="EditorWindow.h">
+      <Filter>Файлы заголовков\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="ImGUIBasedPresentationEngine.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="MainWindow.h">
+      <Filter>Файлы заголовков\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorLayout.h">
+      <Filter>Файлы заголовков\Layouts</Filter>
     </ClInclude>
     <ClInclude Include="FontUtils.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUIBasedPresentationEngine.h">
+      <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuRender.h">
+      <Filter>Файлы заголовков\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

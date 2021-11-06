@@ -155,6 +155,7 @@
     <ClCompile Include="ContentBrowser.cpp" />
     <ClCompile Include="EditorLayout.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="FontUtils.cpp" />
     <ClCompile Include="ImGUIBasedPresentationEngine.cpp" />
     <ClCompile Include="LuaConsole.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="ContentBrowser.h" />
     <ClInclude Include="EditorLayout.h" />
     <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="FontUtils.h" />
     <ClInclude Include="ImGUIBasedPresentationEngine.h" />
     <ClInclude Include="LuaConsole.h" />

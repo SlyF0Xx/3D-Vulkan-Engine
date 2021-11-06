@@ -60,16 +60,18 @@ namespace Editor {
 	class EditorWindow {
 	public:
 		EditorWindow() = default;
-		EditorWindow(Ref<EditorLayout>& layout, Ref<Game>& context);
+		EditorWindow(Ref<EditorLayout>&layout, Ref<Game>&context);
 		~EditorWindow();
 
 		bool Create();
 
-		void StartMainLoop();
+		virtual void StartMainLoop() = 0;
+		virtual void SetupStyle();
+
+		void Destroy();
 		void SetLayout(Ref<EditorLayout>& layout);
 		void SetContext(Ref<Game>& context);
-		void SetupStyle();
-	private: 
+	protected:
 		bool GLFWInit();
 		void SetupVulkan();
 		void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, const vk::Instance& instance,
@@ -77,9 +79,9 @@ namespace Editor {
 			const vk::PhysicalDevice& phys_device,
 			uint32_t queue_index);
 		void SetupImGuiContext();
-		void UploadFonts();
+		void UploadFonts();		
 
-	private:
+	protected:
 		static inline constexpr const char* FAVICON_PATH = "./misc/icons/toolbar_icon.png";
 
 		int m_Width = 0;
@@ -89,7 +91,7 @@ namespace Editor {
 		bool						m_SwapChainRebuild = false;
 		int							m_MinImageCount = 3;
 
-		VkAllocationCallbacks*		m_Allocator = NULL;
+		VkAllocationCallbacks* m_Allocator = NULL;
 		VkPipelineCache				m_PipelineCache = VK_NULL_HANDLE;
 		VkDescriptorPool			m_DescriptorPool = VK_NULL_HANDLE;
 		ImGui_ImplVulkanH_Window	m_MainWindowData;

@@ -1,20 +1,6 @@
 #include "MainLayout.h"
 
-Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) {
-	m_ContentBrowser = Editor::ContentBrowser();
-
-	m_TextEditor = TextEditor();
-	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-	m_TextEditor.SetTabSize(4);
-	m_TextEditor.SetPalette(m_TextEditor.GetLightPalette());
-	m_TextEditor.SetShowWhitespaces(false);
-
-	m_LuaConsole = LuaConsole();
-
-	m_SceneHierarchy = SceneHierarchy(vulkan);
-}
-
-void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 	// all active windows docked into it will lose their parent and become undocked.
@@ -32,15 +18,34 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 			ImGui::MenuItem("New");
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
-				//exit(window, vulkan->get_instance(), vulkan->get_device());
+				m_Parent->Destroy();
+				return Editor::RENDER_STATUS::EXIT;
 			}
 
 			ImGui::EndMenu();
 		}
 
+	
+
 		if (ImGui::BeginMenu("Windows")) {
-			if (ImGui::MenuItem("Content Browser")) {
+			if (ImGui::MenuItem("Content Browser", NULL, m_WindowStates.isContentBrowserOpen)) {
 				m_WindowStates.isContentBrowserOpen = !m_WindowStates.isContentBrowserOpen;
+			}
+
+			if (ImGui::MenuItem("Lua Console", NULL, m_WindowStates.isLuaConsoleOpen)) {
+				m_WindowStates.isLuaConsoleOpen = !m_WindowStates.isLuaConsoleOpen;
+			}
+
+			if (ImGui::MenuItem("Inspector", NULL, m_WindowStates.isInspectorOpen)) {
+				m_WindowStates.isInspectorOpen = !m_WindowStates.isInspectorOpen;
+			}
+
+			if (ImGui::MenuItem("Scene Hierarchy", NULL, m_WindowStates.isSceneHierarchyOpen)) {
+				m_WindowStates.isSceneHierarchyOpen = !m_WindowStates.isSceneHierarchyOpen;
+			}
+
+			if (ImGui::MenuItem("Viewport", NULL, m_WindowStates.isViewportOpen)) {
+				m_WindowStates.isViewportOpen = !m_WindowStates.isViewportOpen;
 			}
 
 			ImGui::EndMenu();
@@ -49,10 +54,14 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 		ImGui::EndMainMenuBar();
 	}
 
-	m_SceneHierarchy.Render();
+	if (m_WindowStates.isSceneHierarchyOpen) {
+		m_SceneHierarchy.Render(&m_WindowStates.isSceneHierarchyOpen, 0);
+	}
 
-	ImGui::SetNextWindowDockID(m_DockIDs.DownDock, ImGuiCond_Once);
-	m_LuaConsole.Render();
+	if (m_WindowStates.isLuaConsoleOpen) {
+		ImGui::SetNextWindowDockID(m_DockIDs.DownDock, ImGuiCond_Once);
+		m_LuaConsole.Render(&m_WindowStates.isLuaConsoleOpen, 0);
+	}
 
 	if (m_WindowStates.isContentBrowserOpen) {
 		m_ContentBrowser.Render(&m_WindowStates.isContentBrowserOpen, 0);
@@ -65,22 +74,28 @@ void Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engi
 	ImGui::PopFont();
 	ImGui::End();
 
-	ImGui::Begin("Viewport");
-	ImVec2 current_size = ImGui::GetWindowSize();
-	if (current_size.x != m_SceneSize.x || current_size.y != m_SceneSize.y) {
-		m_SceneSize = current_size;
+	if (m_WindowStates.isViewportOpen) {
+		ImGui::Begin("Viewport", &m_WindowStates.isViewportOpen, 0);
+		ImVec2 current_size = ImGui::GetWindowSize();
+		if (current_size.x != m_SceneSize.x || current_size.y != m_SceneSize.y) {
+			m_SceneSize = current_size;
 
-		OnResize(vulkan, engine);
+			OnResize(vulkan, engine);
+		}
+
+		ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().SemaphoreIndex], current_size);
+		ImGui::End();
 	}
 
-	ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().SemaphoreIndex], current_size);
-	ImGui::End();
+	if (m_WindowStates.isInspectorOpen) {
+		ImGui::Begin("Inspector", &m_WindowStates.isInspectorOpen, 0);
 
+		// TODO: Add inspector widget.
 
-	ImGui::Begin("Inspector");
+		ImGui::End();
+	}
 
-
-	ImGui::End();
+	return Editor::RENDER_STATUS::SUCCESS;
 }
 
 void Editor::MainLayout::InitDockspace() {

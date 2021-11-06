@@ -1,7 +1,7 @@
 #include <Engine.h>
 
 #include "MainLayout.h"
-#include "EditorWindow.h"
+#include "MainWindow.h"
 
 void import_scene(Game& vulkan) {
 	std::ifstream fin("sample_scene.json");
@@ -21,19 +21,23 @@ void import_scene(Game& vulkan) {
 }
 
 int main() {
+	diffusion::Ref <Editor::EditorWindow> container = diffusion::CreateRef<Editor::MainWindow>();
+
 	diffusion::Ref<Game> vulkan = diffusion::CreateRef<Game>();
 
 	diffusion::Ref<Editor::EditorLayout> layout =
-		diffusion::CreateRef<Editor::MainLayout>(vulkan);
+		diffusion::CreateRef<Editor::MainLayout>(vulkan, container);
 
-	Editor::EditorWindow container(layout, vulkan);
-	if (!container.Create()) {
+	container->SetContext(vulkan);
+	container->SetLayout(layout);
+
+	if (!container->Create()) {
 		return 1;
 	}
 
 	import_scene(*vulkan);
 
-	container.StartMainLoop();
+	container->StartMainLoop();
 
 	return 0;
 }
