@@ -45,7 +45,7 @@ void add_material(
         registry.emplace<UnlitMaterialComponent>(parent_entity, "default.png");
     }
     else {
-        registry.emplace<LitMaterialComponent>(parent_entity, std::filesystem::path(str.C_Str()), std::filesystem::path(normal_str.C_Str()));
+        registry.emplace<LitMaterialComponent>(parent_entity, std::filesystem::path(str.C_Str()), normal_str.length == 0 ? "default_normal.png" : std::filesystem::path(normal_str.C_Str()));
     }
 }
 
