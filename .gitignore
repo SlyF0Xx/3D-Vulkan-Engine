@@ -360,6 +360,8 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
+*/vcpkg_installed
+*/*/vcpkg_installed
 FodyWeavers.xsd
 /Engine/Engine/VulkanTransformComponent.ixx
 /Engine/Engine/TransformComponent.ixx

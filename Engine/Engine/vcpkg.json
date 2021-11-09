@@ -1,0 +1,11 @@
+{
+  "name": "engine",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "glm",
+    "nlohmann-json",
+    "entt",
+    "stb",
+    "assimp"
+  ]
+}
