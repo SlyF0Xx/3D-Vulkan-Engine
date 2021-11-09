@@ -156,6 +156,7 @@
     <ClCompile Include="EditorLayout.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="GameWidget.cpp" />
+    <ClCompile Include="Inspector.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="FontUtils.cpp" />
     <ClCompile Include="ImGUIBasedPresentationEngine.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="EditorLayout.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="GameWidget.h" />
+    <ClInclude Include="Inspector.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="FontUtils.h" />
     <ClInclude Include="ImGUIBasedPresentationEngine.h" />
@@ -185,6 +187,7 @@
     <ClInclude Include="MainLayout.h" />
     <ClInclude Include="MenuRender.h" />
     <ClInclude Include="SceneHierarchy.h" />
+    <ClInclude Include="SceneInteraction.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />

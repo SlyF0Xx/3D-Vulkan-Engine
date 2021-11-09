@@ -1,5 +1,24 @@
 #include "MainLayout.h"
 
+Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
+	m_ContentBrowser(vulkan), 
+	m_SceneHierarchy(vulkan), 
+	m_Inspector(vulkan) {
+
+	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
+
+	m_SceneHierarchy.SetDispatcher(m_SceneEventDispatcher);
+	m_Inspector.SetDispatcher(m_SceneEventDispatcher);
+
+	m_TextEditor = TextEditor();
+	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+	m_TextEditor.SetTabSize(4);
+	m_TextEditor.SetPalette(m_TextEditor.GetLightPalette());
+	m_TextEditor.SetShowWhitespaces(false);
+
+	m_LuaConsole = LuaConsole();
+}
+
 Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
@@ -88,12 +107,7 @@ Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresent
 	}
 
 	if (m_WindowStates.isInspectorOpen) {
-		ImGui::Begin("Inspector", &m_WindowStates.isInspectorOpen, 0);
-
-		// TODO: Add inspector widget.
-		ImGui::Text("Nothing to inspect.");
-
-		ImGui::End();
+		m_Inspector.Render(&m_WindowStates.isInspectorOpen, 0);
 	}
 
 	return Editor::RENDER_STATUS::SUCCESS;
@@ -147,7 +161,7 @@ void Editor::MainLayout::InitDockspace() {
 
 	ImGui::DockBuilderDockWindow("Actions", m_DockIDs.TopDock);
 	ImGui::DockBuilderDockWindow(Editor::SceneHierarchy::TITLE, m_DockIDs.LeftDock);
-	ImGui::DockBuilderDockWindow("Inspector", m_DockIDs.RightDock);
+	ImGui::DockBuilderDockWindow(Editor::Inspector::TITLE, m_DockIDs.RightDock);
 	ImGui::DockBuilderDockWindow(Editor::ContentBrowser::TITLE, m_DockIDs.DownDock);
 	ImGui::DockBuilderDockWindow("Viewport", m_DockIDs.MainDock);
 	ImGui::DockBuilderFinish(m_DockIDs.MainDock);
