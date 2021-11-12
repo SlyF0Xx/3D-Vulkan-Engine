@@ -6,6 +6,8 @@
     "nlohmann-json",
     "entt",
     "stb",
-    "assimp"
+    "assimp",
+    "lua",
+    "luabridge"
   ]
 }
