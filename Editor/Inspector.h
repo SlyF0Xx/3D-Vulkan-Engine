@@ -5,6 +5,7 @@
 #include "TransformComponent.h"
 
 #include "GameWidget.h"
+#include "TagComponentInspector.h"
 
 #include "SceneInteraction.h"
 
@@ -20,12 +21,18 @@ namespace Editor {
 
 		void SetDispatcher(const SceneEventDispatcher& dispatcher);
 
+	private:
+		void OnEvent(const SceneInteractEvent& sEvent);
+
 	public:
 		static inline constexpr const char* TITLE	= "Inspector";
 	private:
 
-		ENTT_ID_TYPE m_SelectionContext				= ENTT_ID_TYPE(-1);
 		bool m_IsSelected							= false;
+
+#pragma region Inspectors
+		TagComponentInspector m_TagInspector;
+#pragma endregion
 
 		SceneEventDispatcher m_SingleDispatcher;
 

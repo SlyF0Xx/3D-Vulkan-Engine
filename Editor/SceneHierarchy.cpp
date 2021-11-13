@@ -23,7 +23,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		}
 
 		ImGui::PushItemWidth(-1);
-		if (ImGui::InputText("Title", m_RenameBuf, RENAME_BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputText("Title", m_RenameBuf, Constants::ACTOR_NAME_LENGTH, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (strlen(m_RenameBuf) > 0) {
 				m_Context->get_registry()
 					.emplace_or_replace<TagComponent, std::string>((entt::entity) m_SelectionContext, std::string(m_RenameBuf));
@@ -104,7 +104,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 
 void Editor::SceneHierarchy::StartRenaming(const ENTT_ID_TYPE& entity, const char* tag) {
 	SelectOneNotify(entity);
-	strcpy_s(m_RenameBuf, RENAME_BUF_SIZE, tag);
+	strcpy_s(m_RenameBuf, Constants::ACTOR_NAME_LENGTH, tag);
 	m_IsRenaming = true;
 }
 

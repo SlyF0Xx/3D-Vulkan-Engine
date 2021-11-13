@@ -8,6 +8,7 @@
 #include "TagComponent.h"
 
 #include "SceneInteraction.h"
+#include "Constants.h"
 
 namespace Editor {
 
@@ -40,8 +41,6 @@ namespace Editor {
 		static inline constexpr const char* TITLE = "Hierarchy";
 
 	private:
-		static inline constexpr const int RENAME_BUF_SIZE = 64;
-
 		// Only for single entities.
 		SceneEventDispatcher m_SingleDispatcher;
 		
@@ -49,7 +48,7 @@ namespace Editor {
 
 		bool m_IsRenameInputFocused = false;
 		bool m_IsRenaming = false;
-		char m_RenameBuf[RENAME_BUF_SIZE] = "";
+		char m_RenameBuf[Constants::ACTOR_NAME_LENGTH] = "";
 	};
 
 }

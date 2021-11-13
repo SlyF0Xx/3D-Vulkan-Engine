@@ -9,6 +9,7 @@
 namespace Editor {
 
 	enum class SceneInteractType {
+		UNDEFINED,
 		SELECTED_ONE,
 		RESET_SELECTION,
 		SELECTED_MANY,
@@ -19,6 +20,12 @@ namespace Editor {
 		int Length;
 		ENTT_ID_TYPE* Entities;
 
+		SceneInteractEvent() {
+			Type = SceneInteractType::UNDEFINED;
+			Length = 0;
+			Entities = nullptr;
+		}
+
 		SceneInteractEvent(SceneInteractType type) {
 			Length = 0;
 			Type = type;
@@ -26,11 +33,9 @@ namespace Editor {
 		}
 
 		SceneInteractEvent(SceneInteractType type, const ENTT_ID_TYPE& entity) {
-			ENTT_ID_TYPE e = entity;
-
 			Length = 1;
 			Type = type;
-			Entities = &e;
+			Entities = new ENTT_ID_TYPE[Length] { entity };
 		}
 	};
 
