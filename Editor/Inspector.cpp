@@ -1,6 +1,7 @@
 #include "Inspector.h"
 
-Editor::Inspector::Inspector(const Ref<Game>& game) : GameWidget(game), m_TagInspector(game) {
+Editor::Inspector::Inspector(const Ref<Game>& game) 
+	: GameWidget(game), m_TagInspector(game), m_TransformInspector(game) {
 	// ..
 }
 
@@ -14,6 +15,7 @@ void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
 	}
 
 	m_TagInspector.Render();
+	m_TransformInspector.Render();
 
 	ImGui::End();
 }
@@ -36,4 +38,5 @@ void Editor::Inspector::SetDispatcher(const SceneEventDispatcher& dispatcher) {
 
 void Editor::Inspector::OnEvent(const SceneInteractEvent& sEvent) {
 	m_TagInspector.OnEvent(sEvent);
+	m_TransformInspector.OnEvent(sEvent);
 }

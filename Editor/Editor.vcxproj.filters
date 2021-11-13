@@ -117,6 +117,15 @@
     <ClCompile Include="BaseComponentInspector.cpp">
       <Filter>Исходные файлы\Widgets\Inspector</Filter>
     </ClCompile>
+    <ClCompile Include="TransformComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -196,6 +205,15 @@
     </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\widgets\GroupPanel.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\widgets\ColoredDragFloat.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

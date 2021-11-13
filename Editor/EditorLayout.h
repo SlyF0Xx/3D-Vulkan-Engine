@@ -8,14 +8,14 @@ namespace Editor {
 
 	class EditorWindow;
 
-	enum class RENDER_STATUS {
+	enum class LayoutRenderStatus {
 		SUCCESS, EXIT
 	};
 
 	class EditorLayout {
 	public:
 		EditorLayout() = default;
-		virtual RENDER_STATUS Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
+		virtual LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 
 	protected:

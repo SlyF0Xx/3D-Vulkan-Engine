@@ -6,6 +6,7 @@
 
 #include "GameWidget.h"
 #include "TagComponentInspector.h"
+#include "TransformComponentInspector.h"
 
 #include "SceneInteraction.h"
 
@@ -32,6 +33,7 @@ namespace Editor {
 
 #pragma region Inspectors
 		TagComponentInspector m_TagInspector;
+		TransformComponentInspector m_TransformInspector;
 #pragma endregion
 
 		SceneEventDispatcher m_SingleDispatcher;

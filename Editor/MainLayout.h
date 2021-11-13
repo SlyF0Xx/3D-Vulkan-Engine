@@ -44,7 +44,7 @@ namespace Editor {
 	public:
 		MainLayout(diffusion::Ref<Game>& vulkan);
 
-		RENDER_STATUS Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
 		ImVec2 GetSceneSize() const;

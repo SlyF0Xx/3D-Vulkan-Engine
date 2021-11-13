@@ -15,13 +15,13 @@ void Editor::BaseComponentInspector::OnEvent(const SceneInteractEvent& e) {
 void Editor::BaseComponentInspector::Render() {
 	if (IsRenderable()) {
 		if (ImGui::CollapsingHeader(GetTitle(), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
-			ImGui::BeginChild(GetTitle(), ImVec2(0, 0));
+			/*ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+			ImGui::BeginChild(GetTitle(), ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);*/
 
 			RenderContent();
 
-			ImGui::EndChild();
-			ImGui::PopStyleVar();
+			/*ImGui::EndChild();
+			ImGui::PopStyleVar();*/
 		}
 	}
 }

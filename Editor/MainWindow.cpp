@@ -41,7 +41,7 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != RENDER_STATUS::SUCCESS) {
+		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != LayoutRenderStatus::SUCCESS) {
 			break;
 		}
 

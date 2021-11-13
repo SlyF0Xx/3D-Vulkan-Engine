@@ -72,10 +72,13 @@ namespace Editor {
 		void SetLayout(Ref<EditorLayout>& layout);
 		void SetContext(Ref<Game>& context);
 
+		// TODO: Add resize listener.
+
 		virtual const char* GetWindowTitle() const;
 	protected:
 		bool GLFWInit();
 		void SetupVulkan();
+		// TODO: Refactor this.
 		void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, const vk::Instance& instance,
 			const vk::Device& device,
 			const vk::PhysicalDevice& phys_device,

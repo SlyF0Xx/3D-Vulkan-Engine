@@ -19,7 +19,7 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_LuaConsole = LuaConsole();
 }
 
-Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 	// all active windows docked into it will lose their parent and become undocked.
@@ -38,7 +38,7 @@ Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresent
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
 				GetParent()->Destroy();
-				return Editor::RENDER_STATUS::EXIT;
+				return Editor::LayoutRenderStatus::EXIT;
 			}
 
 			ImGui::EndMenu();
@@ -110,7 +110,7 @@ Editor::RENDER_STATUS Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresent
 		m_Inspector.Render(&m_WindowStates.isInspectorOpen, 0);
 	}
 
-	return Editor::RENDER_STATUS::SUCCESS;
+	return Editor::LayoutRenderStatus::SUCCESS;
 }
 
 void Editor::MainLayout::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {

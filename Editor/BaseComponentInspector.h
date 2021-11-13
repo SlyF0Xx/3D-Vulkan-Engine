@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imgui.h"
+#include "widgets/GroupPanel.h"
 
 #include <Engine.h>
 #include <Core/Base.h>
