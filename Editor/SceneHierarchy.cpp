@@ -23,7 +23,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		}
 
 		ImGui::PushItemWidth(-1);
-		if (ImGui::InputText("Title", m_RenameBuf, RENAME_BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputText("Title", m_RenameBuf, Constants::ACTOR_NAME_LENGTH, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (strlen(m_RenameBuf) > 0) {
 				m_Context->get_registry()
 					.emplace_or_replace<TagComponent, std::string>((entt::entity) m_SelectionContext, std::string(m_RenameBuf));
@@ -61,7 +61,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 
 	if (ImGui::IsItemClicked()) {
 		StopRenaming();
-		m_SelectionContext = entity;
+		SelectOneNotify(entity);
 	}
 
 	bool isEntityDeleted = false;
@@ -85,28 +85,26 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		ImGui::EndPopup();
 	}
 
-	if (isOpened) {
-		if (children) {
-			for (const auto& child : children->m_childs) {
-				DrawEntityNode((ENTT_ID_TYPE) child);
-			}
-
-			ImGui::TreePop();
+	if (isOpened && children) {
+		for (const auto& child : children->m_childs) {
+			DrawEntityNode((ENTT_ID_TYPE) child);
 		}
+
+		ImGui::TreePop();
 	}
 
 	if (isEntityDeleted) {
 		// TODO: delete entity from scene.
 		if (m_SelectionContext == entity)
-			m_SelectionContext = ENTT_ID_TYPE(-1);
+			ResetSelectionNotify();
 	}
 
 
 }
 
-void Editor::SceneHierarchy::StartRenaming(ENTT_ID_TYPE& entity, const char* tag) {
-	m_SelectionContext = entity;
-	strcpy_s(m_RenameBuf, RENAME_BUF_SIZE, tag);
+void Editor::SceneHierarchy::StartRenaming(const ENTT_ID_TYPE& entity, const char* tag) {
+	SelectOneNotify(entity);
+	strcpy_s(m_RenameBuf, Constants::ACTOR_NAME_LENGTH, tag);
 	m_IsRenaming = true;
 }
 
@@ -114,4 +112,16 @@ void Editor::SceneHierarchy::StopRenaming() {
 	m_IsRenaming = false;
 	strcpy_s(m_RenameBuf, 1, "");
 	m_IsRenameInputFocused = false;
+}
+
+void Editor::SceneHierarchy::SelectOneNotify(const ENTT_ID_TYPE& entity) {
+	m_SelectionContext = entity;
+	IM_ASSERT(&m_SingleDispatcher != nullptr);
+	m_SingleDispatcher->dispatch({ SceneInteractType::SELECTED_ONE, entity });
+}
+
+void Editor::SceneHierarchy::ResetSelectionNotify() {
+	m_SelectionContext = ENTT_ID_TYPE(-1);
+	IM_ASSERT(&m_SingleDispatcher != nullptr);
+	m_SingleDispatcher->dispatch({ SceneInteractType::RESET_SELECTION });
 }

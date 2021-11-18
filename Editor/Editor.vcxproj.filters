@@ -40,6 +40,12 @@
     <Filter Include="Исходные файлы\Utils">
       <UniqueIdentifier>{b1bb989e-1ee9-4857-9110-e402bd35bbd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Widgets\Inspector">
+      <UniqueIdentifier>{6016a9b7-2f1e-4b2b-8c0e-d06a10eb2284}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\Widgets\Inspector">
+      <UniqueIdentifier>{e586688e-35a0-4ea5-9d64-f53f9e49a6b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -101,6 +107,24 @@
     </ClCompile>
     <ClCompile Include="GameWidget.cpp">
       <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Inspector.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="TagComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +190,30 @@
     </ClInclude>
     <ClInclude Include="GameWidget.h">
       <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Inspector.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneInteraction.h">
+      <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TagComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Файлы заголовков\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\widgets\GroupPanel.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\widgets\ColoredDragFloat.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
