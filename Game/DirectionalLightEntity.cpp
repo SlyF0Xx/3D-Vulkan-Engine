@@ -2,6 +2,8 @@
 
 #include "CameraComponent.h"
 #include "DirectionalLightComponent.h"
+#include "PointLightComponent.h"
+#include "TransformComponent.h"
 #include "Engine.h"
 
 #include <glm/glm.hpp>
@@ -15,6 +17,15 @@ namespace diffusion {
 	// TODO: ortho projection
 	registry.emplace<CameraComponent>(entity, position, cameraTarget, upVector/*, glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f)*/);
 	registry.emplace<DirectionalLightComponent>(entity);
+	return entity;
+}
+
+::entt::entity create_point_light_entity(::entt::registry& registry, const glm::vec3& position)
+{
+	auto entity = registry.create();
+	// TODO: ortho projection
+	registry.emplace<TransformComponent>(entity, create_matrix(position, glm::vec3(0), glm::vec3(1)));
+	registry.emplace<PointLightComponent>(entity /*, glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f)*/);
 	return entity;
 }
 

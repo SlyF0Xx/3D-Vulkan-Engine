@@ -44,7 +44,8 @@ void ForwardRender::Initialize(int i, const vk::CommandBuffer& command_buffer)
 void ForwardRender::InitializePipelineLayout()
 {
     std::array shadows_bindings{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr), /*shadows*/
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr), /* directional shadows*/
+        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr) /* point shadows*/
     };
 
     m_descriptor_set_layouts = m_game.get_descriptor_set_layouts();
@@ -117,7 +118,17 @@ void ForwardRender::InitializeVariablePerImage()
 
         diffusion::VulkanDirectionalLights* light = m_game.get_registry().try_ctx<diffusion::VulkanDirectionalLights>();
         if (light) {
-            shadows_infos.push_back({ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_depth_sampler, light->m_swapchain_data[i].m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) });
+            if (light->m_directional_light_entities.size() == 0) {
+                shadows_infos.push_back({ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_point_light_info.m_depth_sampler, light->m_swapchain_data[i].m_point_light_info.m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) });
+            }
+            else if (light->m_point_light_entities.size() == 0) {
+                // WILL CRASH!
+                shadows_infos.push_back({ vk::DescriptorImageInfo(), vk::DescriptorImageInfo(light->m_swapchain_data[i].m_directional_light_info.m_depth_sampler, light->m_swapchain_data[i].m_directional_light_info.m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) });
+            }
+            else {
+                shadows_infos.push_back({ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_directional_light_info.m_depth_sampler, light->m_swapchain_data[i].m_directional_light_info.m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal),
+                                          vk::DescriptorImageInfo(light->m_swapchain_data[i].m_point_light_info.m_depth_sampler, light->m_swapchain_data[i].m_point_light_info.m_depth_image_view, vk::ImageLayout::eDepthStencilReadOnlyOptimal) });
+            }
             write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_shadows_descriptor_set, 0, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos[i], {}, {}));
         }
     }

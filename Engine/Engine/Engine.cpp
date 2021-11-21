@@ -104,6 +104,19 @@ Game::Game()
     m_instance = vk::createInstance(vk::InstanceCreateInfo({}, &application_info, layers, extensions));
     m_phys_device = select_physical_device();
 
+    vk::PhysicalDeviceFeatures required_features;
+    required_features.imageCubeArray = true;
+    required_features.geometryShader = true;
+
+    auto features = m_phys_device.getFeatures();
+    if (!features.imageCubeArray) {
+        throw std::exception("Vulkan cube array is not supported by your device!");
+    }
+
+    if (!features.geometryShader) {
+        throw std::exception("Vulkan geometry shaders is not supported by your device!");
+    }
+
     select_graphics_queue_family();
     if (m_queue_family_index == -1) {
         throw std::exception("Vulkan queue family not found!");
@@ -112,7 +125,7 @@ Game::Game()
     std::array queue_priorities{ 1.0f };
     std::array queue_create_infos{ vk::DeviceQueueCreateInfo{{}, m_queue_family_index, queue_priorities} };
     std::array device_extensions{ "VK_KHR_swapchain" };
-    m_device = m_phys_device.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions));
+    m_device = m_phys_device.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, device_extensions, &required_features));
 
     m_queue = m_device.getQueue(m_queue_family_index, 0);
     m_command_pool = m_device.createCommandPool(vk::CommandPoolCreateInfo({}, 0));
@@ -175,8 +188,7 @@ void Game::InitializePipelineLayout()
     };
 
     std::array light_bindings{
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr), /*light*/
-        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr)  /*light count*/
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex, nullptr) /*light*/
     };
 
     m_descriptor_set_layouts = {

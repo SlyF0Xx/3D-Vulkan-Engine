@@ -92,6 +92,9 @@
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Engine</TargetName>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -176,6 +179,7 @@
     <ClInclude Include="IRender.h" />
     <ClInclude Include="LitMaterial.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="PointLightComponent.h" />
     <ClInclude Include="PossessedComponent.h" />
     <ClInclude Include="Relation.h" />
     <ClInclude Include="TagComponent.h" />
@@ -186,6 +190,7 @@
     <ClInclude Include="VulkanDirectionalLightComponent.h" />
     <ClInclude Include="VulkanInitializer.h" />
     <ClInclude Include="VulkanMeshComponent.h" />
+    <ClInclude Include="VulkanPointLightComponent.h" />
     <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 
 #include "MainLayout.h"
 #include "MainWindow.h"
+#include "PointLightComponent.h"
 
 void import_scene(Game& vulkan) {
 	std::ifstream fin("sample_scene.json");
@@ -13,7 +14,7 @@ void import_scene(Game& vulkan) {
 	loader.entities(json_in)
 		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
 				   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-				   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent>(json_in);
+				   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent>(json_in);
 
 	auto main_entity = vulkan.get_registry().view<diffusion::PossessedEntity>().front();
 	vulkan.get_registry().set<diffusion::PossessedEntity>(main_entity);

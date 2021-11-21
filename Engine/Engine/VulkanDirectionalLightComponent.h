@@ -19,48 +19,65 @@ struct VulkanDirectionalLightComponent
     std::vector<PerSwapchainImageData> m_swapchain_data;
 };
 
+struct VulkanPointLightCamera
+{
+    vk::DescriptorPool m_descriptor_pool;
+    vk::DescriptorSet m_descriptor_set;
+    vk::Buffer m_world_view_projection_matrix_buffer;
+    vma::Allocation m_world_view_projection_matrix_memory;
+    std::byte* m_world_view_projection_mapped_memory;
+};
+
 struct LightShaderInfo
 {
-    LightShaderInfo(
-        glm::vec3 direction,
-        glm::mat4 ViewProjection)
-        : m_direction(direction), m_ViewProjection(ViewProjection)
-    {}
-
     glm::vec3 m_direction;
-    uint32_t padding = 0;
+    float padding = 0;
     glm::mat4 m_ViewProjection;
+};
+
+struct PointLightInfo
+{
+    glm::vec3 m_position;
 };
 
 struct VulkanDirectionalLights
 {
-    struct PerSwapchainImageData
+    struct PipelineInfo
+    {
+        std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
+        vk::PipelineLayout m_layout;
+
+        vk::ShaderModule m_vertex_shader;
+        vk::PipelineCache m_cache;
+        vk::Pipeline m_pipeline;
+    };
+    
+    struct SwaphainInfo
     {
         vk::Image m_depth_image;
         vma::Allocation m_depth_memory;
-
         vk::ImageView m_depth_image_view;
         vk::Sampler m_depth_sampler;
     };
+
+    struct PerSwapchainImageData
+    {
+        SwaphainInfo m_directional_light_info;
+        SwaphainInfo m_point_light_info;
+    };
+
     std::vector<PerSwapchainImageData> m_swapchain_data;
 
-    std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
-    vk::PipelineLayout m_layout;
-
     vk::RenderPass m_render_pass;
+    PipelineInfo m_directional_light_pipeline;
+    PipelineInfo m_point_light_pipeline;
 
-    vk::ShaderModule m_vertex_shader;
-    vk::PipelineCache m_cache;
-    vk::Pipeline m_pipeline;
-
-    std::vector<entt::entity> m_light_entities;
+    std::vector<entt::entity> m_directional_light_entities;
+    std::vector<entt::entity> m_point_light_entities;
 
     vk::DescriptorSet m_lights_descriptor_set;
     vk::Buffer m_lights_buffer;
     vma::Allocation m_lights_memory;
-
-    vk::Buffer m_lights_count_buffer;
-    vma::Allocation m_lights_count_memory;
 };
 
 } // namespace diffusion {
