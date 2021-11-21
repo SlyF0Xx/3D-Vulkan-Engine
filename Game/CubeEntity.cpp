@@ -27,17 +27,17 @@ namespace diffusion {
             2, 1, 0,
             2, 3, 1,
 
-            // right
+            // left
             5, 4, 0,
             1, 5, 0,
-
-            // left
+            
+            // right
             2, 6, 7,
             2, 7, 3,
 
             // backward
-            6, 5, 4,
-            6, 7, 5,
+            6, 4, 5,
+            6, 5, 7,
 
             // down
             7, 5, 1,

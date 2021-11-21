@@ -179,6 +179,7 @@
     <ClInclude Include="IRender.h" />
     <ClInclude Include="LitMaterial.h" />
     <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="PointLightComponent.h" />
     <ClInclude Include="PossessedComponent.h" />
     <ClInclude Include="Relation.h" />
     <ClInclude Include="TagComponent.h" />
@@ -189,6 +190,7 @@
     <ClInclude Include="VulkanDirectionalLightComponent.h" />
     <ClInclude Include="VulkanInitializer.h" />
     <ClInclude Include="VulkanMeshComponent.h" />
+    <ClInclude Include="VulkanPointLightComponent.h" />
     <ClInclude Include="VulkanTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>

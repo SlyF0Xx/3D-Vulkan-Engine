@@ -196,7 +196,8 @@ void DeferredRender::InitializeVariablePerImage()
 
         diffusion::VulkanDirectionalLights* light = m_game.get_registry().try_ctx<diffusion::VulkanDirectionalLights>();
         if (light) {
-            std::array shadows_infos{ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_depth_sampler, light->m_swapchain_data[i].m_depth_image_view, vk::ImageLayout::eShaderReadOnlyOptimal) };
+            std::array shadows_infos{ vk::DescriptorImageInfo(light->m_swapchain_data[i].m_directional_light_info.m_depth_sampler, light->m_swapchain_data[i].m_directional_light_info.m_depth_image_view, vk::ImageLayout::eShaderReadOnlyOptimal),
+                                      vk::DescriptorImageInfo(light->m_swapchain_data[i].m_point_light_info.m_depth_sampler, light->m_swapchain_data[i].m_point_light_info.m_depth_image_view, vk::ImageLayout::eShaderReadOnlyOptimal) };
             write_descriptors.push_back(vk::WriteDescriptorSet(m_swapchain_data[i].m_descriptor_set, 3, 0, vk::DescriptorType::eCombinedImageSampler, shadows_infos, {}, {}));
         }
 

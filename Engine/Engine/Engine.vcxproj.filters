@@ -108,6 +108,12 @@
     <ClInclude Include="VulkanDirectionalLightComponent.h">
       <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanPointLightComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLightComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">

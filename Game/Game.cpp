@@ -23,6 +23,7 @@
 #include "MeshComponent.h"
 #include "DirectionalLightEntity.h"
 #include "DirectionalLightComponent.h"
+#include "PointLightComponent.h"
 #include "TagComponent.h"
 
 #include <Engine.h>
@@ -174,7 +175,9 @@ void generate_scene()
         glm::vec3(0.1, 0.1, 0.1));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(stool, "stool");
 
-    diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 30, 90, 1 });
+    auto floor = diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,0,0 }, glm::vec3{ 90, 180, 1 });
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(floor, "floor");
+    //diffusion::create_plane_entity_lit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0,glm::pi<float>(),0 }, glm::vec3{ 30, 90, 1 });
     //BoundingSphere{ glm::vec3(0.0f, 0.0f, 0.0f), 3.0f }
 
 
@@ -184,21 +187,34 @@ void generate_scene()
     // for serialization prposes only
     g_vulkan->get_registry().emplace<diffusion::PossessedEntity>(main_entity, main_entity);
     g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_entity, main_entity);
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(main_entity, "main cube");
 
-    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
-    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
-    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
-    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    auto right_kitamori_cube = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(right_kitamori_cube, "right kitamori cube");
+    auto left_kitamori_cube = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(left_kitamori_cube, "left kitamori cube");
+    auto right_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(right_wall, "right wall");
+    auto left_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(left_wall, "left wall");
 
-    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
+    auto directional_light = diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(3.0f, -4.0f, -3.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(directional_light, "directional light");
+    auto point_light = diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(0.0f, -4.0f, -1.0f));
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(point_light, "point light");
+    //diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f));
+    
 
     NJSONOutputArchive output;
     entt::snapshot{ g_vulkan->get_registry() }
         .entities(output)
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(output);
+                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
+                   diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 
