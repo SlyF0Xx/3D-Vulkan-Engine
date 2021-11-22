@@ -35,7 +35,7 @@ namespace Editor {
 
 			ImGui::PushID(filenameString.c_str());
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			if (m_TexFile == nullptr || m_TexFolder == nullptr) {
+			if (m_GridTex == nullptr || m_TexFolder == nullptr) {
 				ImGui::Button(directoryEntry.is_directory() ? "DIR" : "FILE", ImVec2(thumbnailSize, thumbnailSize));
 			} else {
 				int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
@@ -44,7 +44,7 @@ namespace Editor {
 				ImVec2 uv1 = ImVec2(1, 1);								// UV coordinates for (thumbnailSize, thumbnailSize) in our texture
 				ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);         // Background.
 				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);       // No tint
-				ImGui::ImageButton(directoryEntry.is_directory() ? m_TexFolder : m_TexFile, size, uv0, uv1, frame_padding, bg_col, tint_col);
+				ImGui::ImageButton(directoryEntry.is_directory() ? m_TexFolder : m_GridTex, size, uv0, uv1, frame_padding, bg_col, tint_col);
 			}
 
 			if (ImGui::BeginDragDropSource()) {
@@ -77,36 +77,8 @@ namespace Editor {
 	void ContentBrowser::InitContexed() {
 		GameWidget::InitContexed();
 
-		m_TexFile = GenerateTextureID(m_Context, m_TexFileData, FILE_ICON_PATH);
-		//ImGuiIO& io = ImGui::GetIO();
-		//m_TexFile = io.Fonts->TexID;
+		m_GridTex = GenerateTextureID(m_Context, m_GridTexData, GRID_ICON_PATH);
 		m_TexFolder = GenerateTextureID(m_Context, m_TexFolderData, FOLDER_ICON_PATH);
-	}
-
-	ImTextureID ContentBrowser::GenerateTextureID(diffusion::Ref<Game>& ctx, diffusion::ImageData& imData, const std::filesystem::path& path) {
-		auto command_buffer = ctx->get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(ctx->get_command_pool(), vk::CommandBufferLevel::ePrimary, 1))[0];
-
-		command_buffer.begin(vk::CommandBufferBeginInfo());
-		imData = ctx->get_texture(command_buffer, path);
-
-		vk::ImageView color_image_view = ctx->get_device().createImageView(
-			vk::ImageViewCreateInfo({}, imData.m_image, vk::ImageViewType::e2D, ctx->get_color_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-		);
-
-		vk::Sampler color_sampler = ctx->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
-		command_buffer.end();
-
-		auto fence = ctx->get_device().createFence(vk::FenceCreateInfo());
-
-		std::array command_buffers {command_buffer};
-		std::array queue_submits {vk::SubmitInfo({}, {}, command_buffers, {})};
-		ctx->get_queue().submit(queue_submits, fence);
-
-
-		ctx->get_device().waitForFences(fence, VK_TRUE, -1);
-		ctx->get_device().destroyFence(fence);
-
-		return ImGui_ImplVulkan_AddTexture(color_sampler, color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral));
 	}
 
 }

@@ -6,6 +6,7 @@
 #include "ColoredDragFloat.h"
 
 #include "BaseComponentInspector.h"
+#include "ViewportSnapInteraction.h"
 
 namespace Editor {
 
@@ -16,6 +17,8 @@ namespace Editor {
 
 		void OnEvent(const SceneInteractEvent& e) override;
 		void RenderContent() override;
+
+		void SetSnapDispatcher(const ViewportEventDispatcher& dispatcher);
 
 	private:
 		inline const char* GetTitle() const override;
@@ -29,6 +32,8 @@ namespace Editor {
 
 		diffusion::TransformComponent* m_TransformComponent;
 
+		ViewportEventDispatcher m_SnapDispatcher;
+
 		bool m_AlreadyAppliedChanges	= false;
 
 		bool m_LocationFocused			= false;
@@ -38,6 +43,14 @@ namespace Editor {
 		float m_Location[3]				= { 0.f, 0.f, 0.f };
 		float m_Rotation[3]				= { 0.f, 0.f, 0.f };
 		float m_Scale[3]				= { 0.f, 0.f, 0.f };
+
+		bool m_IsTransformSnap = true;
+		bool m_IsRotationSnap = true;
+		bool m_IsScaleSnap = true;
+
+		TransformSnapSize m_TransformSnapSize = TransformSnapSize::ONE;
+		RotationSnapSize m_RotationSnapSize = RotationSnapSize::FIVE;
+		ScaleSnapSize m_ScaleSnapSize = ScaleSnapSize::HALF;
 	};
 
 }

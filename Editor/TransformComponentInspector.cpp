@@ -35,7 +35,7 @@ void Editor::TransformComponentInspector::RenderContent() {
 		m_Location[2] = translation.z;
 	}
 	ImGui::PushItemWidth(-1);
-	if (ImGui::DragFloatN_Colored("##Location", m_Location, 3)) {
+	if (ImGui::DragFloatN_Colored("##Location", m_Location, 3, GetTransformSpeedBySnapSize(m_IsTransformSnap, m_TransformSnapSize))) {
 		ApplyTransform();
 	}
 	bool focused = ImGui::IsItemActive();
@@ -55,7 +55,7 @@ void Editor::TransformComponentInspector::RenderContent() {
 	}
 
 	ImGui::PushItemWidth(-1);
-	if (ImGui::DragFloatN_Colored("##Rotation", m_Rotation, 3)) {
+	if (ImGui::DragFloatN_Colored("##Rotation", m_Rotation, 3, GetRotationSpeedBySnapSize(m_IsRotationSnap, m_RotationSnapSize))) {
 		ApplyTransform();
 	}
 	focused = ImGui::IsItemActive();
@@ -73,7 +73,7 @@ void Editor::TransformComponentInspector::RenderContent() {
 		m_Scale[2] = scale.z;
 	}
 	ImGui::PushItemWidth(-1);
-	if (ImGui::DragFloatN_Colored("##Scale", m_Scale, 3, 0.1f, 0.01f)) {
+	if (ImGui::DragFloatN_Colored("##Scale", m_Scale, 3, GetScaleSpeedBySnapSize(m_IsScaleSnap, m_ScaleSnapSize), 0.01f)) {
 		ApplyTransform();
 	}
 	focused = ImGui::IsItemActive();
@@ -82,6 +82,27 @@ void Editor::TransformComponentInspector::RenderContent() {
 	}
 	m_ScaleFocused = focused;
 	ImGui::EndGroupPanel();
+}
+
+void Editor::TransformComponentInspector::SetSnapDispatcher(const ViewportEventDispatcher& dispatcher) {
+	m_SnapDispatcher = dispatcher;
+
+	IM_ASSERT(&m_SnapDispatcher != nullptr);
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::TRANSFORM_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsTransformSnap = enabled;
+		m_TransformSnapSize = static_cast<TransformSnapSize>(value);
+	});
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::ROTATION_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsRotationSnap = enabled;
+		m_RotationSnapSize = static_cast<RotationSnapSize>(value);
+	});
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::SCALE_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsScaleSnap = enabled;
+		m_ScaleSnapSize = static_cast<ScaleSnapSize>(value);
+	});
 }
 
 inline const char* Editor::TransformComponentInspector::GetTitle() const {

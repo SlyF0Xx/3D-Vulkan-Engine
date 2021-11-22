@@ -3,12 +3,14 @@
 Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_ContentBrowser(vulkan), 
 	m_SceneHierarchy(vulkan), 
-	m_Inspector(vulkan) {
+	m_Inspector(vulkan),
+	m_Viewport(vulkan) {
 
 	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
 
 	m_SceneHierarchy.SetDispatcher(m_SceneEventDispatcher);
 	m_Inspector.SetDispatcher(m_SceneEventDispatcher);
+	m_Inspector.SetSnapDispatcher(m_Viewport.GetDispatcher());
 
 	m_TextEditor = TextEditor();
 	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -94,16 +96,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	ImGui::End();
 
 	if (m_WindowStates.isViewportOpen) {
-		ImGui::Begin("Viewport", &m_WindowStates.isViewportOpen, 0);
-		ImVec2 current_size = ImGui::GetWindowSize();
-		if (current_size.x != m_SceneSize.x || current_size.y != m_SceneSize.y) {
-			m_SceneSize = current_size;
-
-			OnResize(vulkan, engine);
-		}
-
-		ImGui::Image(m_TexIDs[vulkan.get_presentation_engine().SemaphoreIndex], current_size);
-		ImGui::End();
+		m_Viewport.Render(&m_WindowStates.isViewportOpen, 0, engine);
 	}
 
 	if (m_WindowStates.isInspectorOpen) {
@@ -114,19 +107,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 }
 
 void Editor::MainLayout::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
-	engine.resize(m_SceneSize.x, m_SceneSize.y);
-	vulkan.InitializePresentationEngine(engine.get_presentation_engine());
-	vulkan.SecondInitialize();
-
-	m_TexIDs.clear();
-	for (auto& swapchain_data : engine.get_presentation_engine().m_swapchain_data) {
-		vk::Sampler color_sampler = vulkan.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
-		m_TexIDs.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
-	}
-}
-
-ImVec2 Editor::MainLayout::GetSceneSize() const {
-	return m_SceneSize;
+	m_Viewport.OnResize(vulkan, engine);
 }
 
 void Editor::MainLayout::InitDockspace() {
@@ -135,6 +116,7 @@ void Editor::MainLayout::InitDockspace() {
 	}
 
 	m_ContentBrowser.InitContexed();
+	m_Viewport.InitContexed();
 
 	m_WindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	m_WindowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;

@@ -40,6 +40,7 @@
 #include "MenuRender.h"
 #include "EditorLayout.h"
 #include "ImGUIBasedPresentationEngine.h"
+#include "Constants.h"
 
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT

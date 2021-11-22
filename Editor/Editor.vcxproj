@@ -158,6 +158,7 @@
     <ClCompile Include="BaseWidget.cpp" />
     <ClCompile Include="ContentBrowser.cpp" />
     <ClCompile Include="EditorLayout.cpp" />
+    <ClCompile Include="EditorViewport.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="GameWidget.cpp" />
     <ClCompile Include="Inspector.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="ContentBrowser.h" />
     <ClInclude Include="EditorLayout.h" />
+    <ClInclude Include="EditorViewport.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="GameWidget.h" />
     <ClInclude Include="Inspector.h" />
@@ -211,6 +213,7 @@
     <ClInclude Include="vendor\imgui\widgets\ColoredDragFloat.h" />
     <ClInclude Include="vendor\imgui\widgets\GroupPanel.h" />
     <ClInclude Include="vendor\imgui\widgets\TextEditor.h" />
+    <ClInclude Include="ViewportSnapInteraction.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">

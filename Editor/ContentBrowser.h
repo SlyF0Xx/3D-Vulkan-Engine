@@ -21,19 +21,13 @@ namespace Editor {
 		void InitContexed() override;
 
 	private:
-
-		//void CreateTexture(Game& vulkan, const char* path);
-
-	private:
-		static inline constexpr const char* FILE_ICON_PATH		= "./misc/icons/file_icon.png";
+		static inline constexpr const char* GRID_ICON_PATH		= "./misc/icons/file_icon.png";
 		static inline constexpr const char* FOLDER_ICON_PATH	= "./misc/icons/folder_icon.png";
-
-		static ImTextureID GenerateTextureID(diffusion::Ref<Game>& ctx, diffusion::ImageData& imData, const std::filesystem::path& path);
 
 		std::filesystem::path m_CurrentDirectory;
 
-		diffusion::ImageData m_TexFileData;
-		ImTextureID m_TexFile;
+		diffusion::ImageData m_GridTexData;
+		ImTextureID m_GridTex;
 		diffusion::ImageData m_TexFolderData;
 		ImTextureID m_TexFolder;
 

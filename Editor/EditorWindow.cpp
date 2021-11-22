@@ -233,5 +233,8 @@ const char* Editor::EditorWindow::GetWindowTitle() const {
 void Editor::EditorWindow::SetupStyle() {
 	ImGui::StyleColorsLight();
 	ImGui::GetStyle().FrameRounding = 4.f;
-	ImGui::GetStyle().FrameBorderSize = 1;
+	ImGui::GetStyle().WindowPadding = Constants::EDITOR_WINDOW_PADDING;
+	ImGui::GetStyle().WindowBorderSize = 0.f;
+	ImGui::GetStyle().FrameBorderSize = 0.f;
+	ImGui::GetStyle().ChildBorderSize = 0.f;
 }
