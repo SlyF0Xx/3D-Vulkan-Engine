@@ -50,10 +50,19 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
 
+
 	ImGui::SetNextWindowPos(ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos());
 	ImGui::SetNextWindowSize(m_SceneSize);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);	
-	ImGui::Begin("foobar", NULL, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
+	ImGui::BeginChild("##Overlay", m_SceneSize, false,
+		ImGuiWindowFlags_NoBackground
+		| ImGuiWindowFlags_NoTitleBar
+		| ImGuiWindowFlags_NoResize
+		| ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoScrollbar
+		| ImGuiWindowFlags_NoScrollWithMouse
+		| ImGuiWindowFlags_AlwaysUseWindowPadding
+	);
 	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(210, 240, 110, 160));
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 250, 32, 190));
 
@@ -76,6 +85,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::BeginPopup(POPUP_TRANSFORM)) {
 		TransformSnapSize localSize = m_TransformSnapSize;
 		bool localCheckbox = m_IsTransformSnap;
+
+		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
+		ImGui::Text("Location");
+		ImGui::PopFont();
 
 		ImGui::Checkbox("Snap enabled", &m_IsTransformSnap);
 		ImGui::Separator();
@@ -115,8 +128,8 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 		if (localSize != m_TransformSnapSize || localCheckbox != m_IsTransformSnap) {
 			m_SnapDispatcher->dispatch(
-				ViewportInteractType::TRANSFORM_SNAP, 
-				m_IsTransformSnap, 
+				ViewportInteractType::TRANSFORM_SNAP,
+				m_IsTransformSnap,
 				static_cast<int>(m_TransformSnapSize)
 			);
 		}
@@ -126,6 +139,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::BeginPopup(POPUP_ROTATION)) {
 		RotationSnapSize localSize = m_RotationSnapSize;
 		bool localCheckbox = m_IsRotationSnap;
+
+		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
+		ImGui::Text("Rotation");
+		ImGui::PopFont();
 
 		ImGui::Checkbox("Snap enabled", &m_IsRotationSnap);
 		ImGui::Separator();
@@ -173,6 +190,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::BeginPopup(POPUP_SCALE)) {
 		ScaleSnapSize localSize = m_ScaleSnapSize;
 		bool localCheckbox = m_IsScaleSnap;
+		
+		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
+		ImGui::Text("Scale");
+		ImGui::PopFont();
 
 		ImGui::Checkbox("Snap enabled", &m_IsScaleSnap);
 		ImGui::Separator();
@@ -230,8 +251,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
-	ImGui::End();
+	ImGui::EndChild();
 	ImGui::PopStyleVar();
+
 
 	//ImVec2 p1 = ImGui::GetCursorScreenPos();
 	//ImVec2 p2 = ImVec2(p1.x + 200, p1.y + 200);

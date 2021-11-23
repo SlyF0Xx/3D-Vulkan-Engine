@@ -7,6 +7,7 @@
 #include "GameWidget.h"
 #include "Constants.h"
 #include "ViewportSnapInteraction.h"
+#include "FontUtils.h"
 
 namespace Editor {
 
