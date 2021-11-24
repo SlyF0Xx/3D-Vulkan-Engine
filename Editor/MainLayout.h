@@ -15,6 +15,7 @@
 #include "SceneHierarchy.h"
 #include "Inspector.h"
 #include "widgets/TextEditor.h"
+#include "EditorViewport.h"
 #pragma endregion
 
 #include "FontUtils.h"
@@ -47,8 +48,6 @@ namespace Editor {
 		LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
-		ImVec2 GetSceneSize() const;
-
 	private:
 		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags m_WindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -61,11 +60,9 @@ namespace Editor {
 		SceneHierarchy m_SceneHierarchy;
 		Inspector m_Inspector;
 		TextEditor m_TextEditor;
+		EditorViewport m_Viewport;
 
 		bool m_IsDockspaceInitialized = false;
-
-		ImVec2 m_SceneSize;
-		std::vector<ImTextureID> m_TexIDs;
 
 		SceneEventDispatcher m_SceneEventDispatcher;
 	};

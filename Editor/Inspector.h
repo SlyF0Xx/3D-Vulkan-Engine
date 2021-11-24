@@ -9,6 +9,8 @@
 #include "TransformComponentInspector.h"
 
 #include "SceneInteraction.h"
+#include "ViewportSnapInteraction.h"
+#include "Constants.h"
 
 namespace Editor {
 
@@ -21,6 +23,7 @@ namespace Editor {
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 
 		void SetDispatcher(const SceneEventDispatcher& dispatcher);
+		void SetSnapDispatcher(const ViewportEventDispatcher& dispatcher);
 
 	private:
 		void OnEvent(const SceneInteractEvent& sEvent);
@@ -37,7 +40,6 @@ namespace Editor {
 #pragma endregion
 
 		SceneEventDispatcher m_SingleDispatcher;
-
 	};
 
 }

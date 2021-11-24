@@ -10,7 +10,7 @@ namespace Editor {
 	public:
 		static inline constexpr const char* TITLE = "BaseWidget";
 
-		void Render();
+		virtual void Render();
 		virtual void Render(bool* p_open, ImGuiWindowFlags flags) = 0;
 
 		// Initialization with ImGui Context.

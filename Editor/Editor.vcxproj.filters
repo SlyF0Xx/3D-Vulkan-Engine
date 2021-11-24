@@ -46,6 +46,9 @@
     <Filter Include="Файлы заголовков\Widgets\Inspector">
       <UniqueIdentifier>{e586688e-35a0-4ea5-9d64-f53f9e49a6b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\Utils\Interaction">
+      <UniqueIdentifier>{5b02de17-4ee8-48e7-a36d-90558c559791}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -126,6 +129,9 @@
     <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="EditorViewport.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -194,9 +200,6 @@
     <ClInclude Include="Inspector.h">
       <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="SceneInteraction.h">
-      <Filter>Файлы заголовков\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="TagComponentInspector.h">
       <Filter>Файлы заголовков\Widgets\Inspector</Filter>
     </ClInclude>
@@ -214,6 +217,15 @@
     </ClInclude>
     <ClInclude Include="vendor\imgui\widgets\ColoredDragFloat.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorViewport.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneInteraction.h">
+      <Filter>Файлы заголовков\Utils\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewportSnapInteraction.h">
+      <Filter>Файлы заголовков\Utils\Interaction</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
