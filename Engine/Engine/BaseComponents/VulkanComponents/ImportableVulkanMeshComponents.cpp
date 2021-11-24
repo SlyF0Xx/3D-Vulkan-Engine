@@ -1,11 +1,11 @@
 #include "ImportableVulkanMeshComponents.h"
 
 #include "VulkanMeshComponent.h"
-#include "LitMaterial.h"
-#include "UnlitMaterial.h"
-#include "Relation.h"
-#include "MeshComponent.h"
-#include "TransformComponent.h"
+#include "../LitMaterial.h"
+#include "../UnlitMaterial.h"
+#include "../Relation.h"
+#include "../MeshComponent.h"
+#include "../TransformComponent.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

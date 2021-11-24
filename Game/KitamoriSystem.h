@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BoundingComponent.h"
+#include "BaseComponents/BoundingComponent.h"
 
 #include <entt/entt.hpp>
 

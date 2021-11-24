@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanDirectionalLightComponent.h"
+#include "BaseComponents/VulkanComponents/VulkanDirectionalLightComponent.h"
 
 #include <entt/entt.hpp>
 #include <vulkan/vulkan.hpp>

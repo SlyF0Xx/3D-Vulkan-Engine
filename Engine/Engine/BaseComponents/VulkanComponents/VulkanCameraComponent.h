@@ -1,5 +1,5 @@
 #pragma once
-#include "CameraComponent.h"
+#include "../CameraComponent.h"
 
 #include <vk_mem_alloc.hpp>
 

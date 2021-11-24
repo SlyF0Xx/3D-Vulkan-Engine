@@ -1,7 +1,6 @@
 #include "KitamoriMovingSystem.h"
-#include "TransformComponent.h"
+#include "BaseComponents/TransformComponent.h"
 
-#include "VulkanTransformComponent.h"
 #include "KitamoriSystem.h"
 
 #include <glm/gtc/matrix_transform.hpp>

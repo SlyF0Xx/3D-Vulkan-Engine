@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine.h"
+#include "../../Engine.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

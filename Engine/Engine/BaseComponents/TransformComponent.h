@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glm_printer.h"
+#include "../glm_printer.h"
 
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>

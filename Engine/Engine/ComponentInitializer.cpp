@@ -1,7 +1,7 @@
 #include "ComponentInitializer.h"
 
 #include "Engine.h"
-#include "Relation.h"
+#include "BaseComponents/Relation.h"
 
 namespace diffusion {
 

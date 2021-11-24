@@ -1,8 +1,8 @@
 #pragma once
 
-#include "TagComponent.h"
-#include "CameraComponent.h"
-#include "TransformComponent.h"
+#include "BaseComponents/TagComponent.h"
+#include "BaseComponents/CameraComponent.h"
+#include "BaseComponents/TransformComponent.h"
 
 #include "GameWidget.h"
 #include "TagComponentInspector.h"

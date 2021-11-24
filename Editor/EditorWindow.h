@@ -14,15 +14,16 @@
 #include <Core/Base.h>
 #include "Archiver.h"
 
-#include "BoundingComponent.h"
-#include "CameraComponent.h"
-#include "MeshComponent.h"
-#include "Relation.h"
-#include "LitMaterial.h"
-#include "UnlitMaterial.h"
-#include "TransformComponent.h"
-#include "PossessedComponent.h"
-#include "DirectionalLightComponent.h"
+#include "BaseComponents/BoundingComponent.h"
+#include "BaseComponents/CameraComponent.h"
+#include "BaseComponents/MeshComponent.h"
+#include "BaseComponents/Relation.h"
+#include "BaseComponents/LitMaterial.h"
+#include "BaseComponents/UnlitMaterial.h"
+#include "BaseComponents/TransformComponent.h"
+#include "BaseComponents/PossessedComponent.h"
+#include "BaseComponents/DirectionalLightComponent.h"
+#include "BaseComponents/PointLightComponent.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

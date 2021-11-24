@@ -1,10 +1,10 @@
 #include "DeferredRender.h"
 #include "Engine.h"
-#include "VulkanTransformComponent.h"
-#include "VulkanMeshComponent.h"
-#include "VulkanCameraComponent.h"
-#include "UnlitMaterial.h"
-#include "LitMaterial.h"
+#include "BaseComponents/VulkanComponents/VulkanTransformComponent.h"
+#include "BaseComponents/VulkanComponents/VulkanMeshComponent.h"
+#include "BaseComponents/VulkanComponents/VulkanCameraComponent.h"
+#include "BaseComponents/UnlitMaterial.h"
+#include "BaseComponents/LitMaterial.h"
 
 DeferredRender::DeferredRender(Game& game)
     : m_game(game), m_registry(m_game.get_registry())

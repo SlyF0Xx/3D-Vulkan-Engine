@@ -25,6 +25,15 @@
     <Filter Include="Header Files\BaseComponents\VulkanComponents">
       <UniqueIdentifier>{bb9cdbda-d1d9-423d-b6e9-7886066dc2a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Entities">
+      <UniqueIdentifier>{e4fd3638-8f58-49bd-b09a-a5d7348c32a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Entities">
+      <UniqueIdentifier>{926f370d-cf92-422e-b626-54d2d8d3f5db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\BaseComponents\VulkanComponents">
+      <UniqueIdentifier>{7b7df3e8-7146-43ed-80e2-861d02edcd94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -45,32 +54,8 @@
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TransformComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="PossessedComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanInitializer.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UnlitMaterial.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="Relation.h">
-      <Filter>Header Files\BaseComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="LitMaterial.h">
-      <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="glm_printer.h">
       <Filter>Header Files</Filter>
@@ -87,32 +72,74 @@
     <ClInclude Include="Core\Base.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="TagComponent.h">
+    <ClInclude Include="BaseComponents\VulkanComponents\VulkanCameraComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\VulkanComponents\VulkanDirectionalLightComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\VulkanComponents\VulkanMeshComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\VulkanComponents\VulkanPointLightComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\VulkanComponents\VulkanTransformComponent.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\VulkanComponents\ImportableVulkanMeshComponents.h">
+      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\MeshComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanCameraComponent.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanMeshComponent.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanTransformComponent.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="ImportableVulkanMeshComponents.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectionalLightComponent.h">
+    <ClInclude Include="BaseComponents\PointLightComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanDirectionalLightComponent.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanPointLightComponent.h">
-      <Filter>Header Files\BaseComponents\VulkanComponents</Filter>
-    </ClInclude>
-    <ClInclude Include="PointLightComponent.h">
+    <ClInclude Include="BaseComponents\PossessedComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\Relation.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\TagComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\TransformComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\UnlitMaterial.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\BoundingComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\CameraComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\DebugComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\DirectionalLightComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseComponents\LitMaterial.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\PlaneEntity.h">
+      <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\PrimitiveEntity.h">
+      <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\DirectionalLightEntity.h">
+      <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\ImportableEntity.h">
+      <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\CubeEntity.h">
+      <Filter>Header Files\Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,23 +155,41 @@
     <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TransformComponent.cpp">
-      <Filter>Source Files\BaseComponents</Filter>
-    </ClCompile>
-    <ClCompile Include="ImportableVulkanMeshComponents.cpp">
-      <Filter>Source Files\BaseComponents</Filter>
-    </ClCompile>
-    <ClCompile Include="BoundingComponent.cpp">
-      <Filter>Source Files\BaseComponents</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraComponent.cpp">
-      <Filter>Source Files\BaseComponents</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanInitializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ComponentInitializer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\BoundingComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\CameraComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\TransformComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\UnlitMaterial.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\VulkanComponents\ImportableVulkanMeshComponents.cpp">
+      <Filter>Source Files\BaseComponents\VulkanComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\PlaneEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\PrimitiveEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\CubeEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\DirectionalLightEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\ImportableEntity.cpp">
+      <Filter>Source Files\Entities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

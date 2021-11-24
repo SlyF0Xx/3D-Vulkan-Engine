@@ -1,6 +1,6 @@
 #pragma once
 #include "PrimitiveEntity.h"
-#include "Engine.h"
+#include "../Engine.h"
 
 namespace diffusion {
 

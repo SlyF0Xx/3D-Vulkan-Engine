@@ -1,7 +1,7 @@
 #include "ImportableEntity.h"
 
-#include "ImportableVulkanMeshComponents.h"
-#include "VulkanTransformComponent.h"
+#include "../BaseComponents/VulkanComponents/ImportableVulkanMeshComponents.h"
+#include "../BaseComponents/VulkanComponents/VulkanTransformComponent.h"
 
 namespace diffusion {
 

@@ -1,9 +1,9 @@
 #include "CubeEntity.h"
 
-#include "BoundingComponent.h"
-#include "TransformComponent.h"
-#include "PossessedComponent.h"
-#include "VulkanCameraComponent.h"
+#include "../BaseComponents/BoundingComponent.h"
+#include "../BaseComponents/TransformComponent.h"
+#include "../BaseComponents/PossessedComponent.h"
+#include "../BaseComponents/VulkanComponents/VulkanCameraComponent.h"
 
 namespace diffusion {
 

@@ -1,7 +1,7 @@
 #include "KitamoriSystem.h"
 
-#include "PossessedComponent.h"
-#include "TransformComponent.h"
+#include "BaseComponents/PossessedComponent.h"
+#include "BaseComponents/TransformComponent.h"
 
 namespace diffusion {
 

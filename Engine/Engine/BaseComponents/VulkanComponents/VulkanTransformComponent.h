@@ -1,16 +1,12 @@
 #pragma once
 
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan.hpp>
-
-#include "TransformComponent.h"
-#include "Engine.h"
-#include "util.h"
+#include "../TransformComponent.h"
+#include "../../Engine.h"
+#include "../../util.h"
 
 #include <glm/glm.hpp>
-
+#include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
-
 #include <entt/entt.hpp>
 
 #include <array>

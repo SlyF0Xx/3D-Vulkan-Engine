@@ -3,8 +3,8 @@
 Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_ContentBrowser(vulkan), 
 	m_SceneHierarchy(vulkan), 
-	m_Inspector(vulkan) {
-
+	m_Inspector(vulkan)
+{
 	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
 
 	m_SceneHierarchy.SetDispatcher(m_SceneEventDispatcher);
@@ -15,8 +15,6 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_TextEditor.SetTabSize(4);
 	m_TextEditor.SetPalette(m_TextEditor.GetLightPalette());
 	m_TextEditor.SetShowWhitespaces(false);
-
-	m_LuaConsole = LuaConsole();
 }
 
 Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {

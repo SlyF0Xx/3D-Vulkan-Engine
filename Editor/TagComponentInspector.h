@@ -1,6 +1,6 @@
 #pragma once
 
-#include <TagComponent.h>
+#include "BaseComponents/TagComponent.h"
 
 #include "BaseComponentInspector.h"
 #include "Constants.h"

@@ -1,7 +1,6 @@
 // Engine.cpp : Defines the exported functions for the DLL.
 //
 
-#define VK_USE_PLATFORM_WIN32_KHR
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
 

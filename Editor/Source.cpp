@@ -2,7 +2,6 @@
 
 #include "MainLayout.h"
 #include "MainWindow.h"
-#include "PointLightComponent.h"
 
 void import_scene(Game& vulkan) {
 	std::ifstream fin("sample_scene.json");

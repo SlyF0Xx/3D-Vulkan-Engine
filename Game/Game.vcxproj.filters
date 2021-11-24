@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Entities">
-      <UniqueIdentifier>{71e3a2d3-2db4-454c-9da8-d2fd55882c12}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Entities">
-      <UniqueIdentifier>{87ee2fdf-bf66-4274-bd93-6baa8775a0bb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Systems">
       <UniqueIdentifier>{cd90688d-9912-45df-b4d7-8cbac1682164}</UniqueIdentifier>
     </Filter>
@@ -39,15 +33,6 @@
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CubeEntity.h">
-      <Filter>Header Files\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="ImportableEntity.h">
-      <Filter>Header Files\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="PrimitiveEntity.h">
-      <Filter>Header Files\Entities</Filter>
-    </ClInclude>
     <ClInclude Include="KitamoriSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -57,28 +42,16 @@
     <ClInclude Include="RotateSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="PlaneEntity.h">
-      <Filter>Header Files\Entities</Filter>
-    </ClInclude>
     <ClInclude Include="InputEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="DirectionalLightEntity.h">
-      <Filter>Header Files\Entities</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CubeEntity.cpp">
-      <Filter>Source Files\Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="ImportableEntity.cpp">
-      <Filter>Source Files\Entities</Filter>
     </ClCompile>
     <ClCompile Include="KitamoriMovingSystem.cpp">
       <Filter>Source Files\Systems</Filter>
@@ -86,20 +59,11 @@
     <ClCompile Include="RotateSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="PrimitiveEntity.cpp">
-      <Filter>Source Files\Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="PlaneEntity.cpp">
-      <Filter>Source Files\Entities</Filter>
-    </ClCompile>
     <ClCompile Include="KitamoriSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="CameraSystem.cpp">
       <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectionalLightEntity.cpp">
-      <Filter>Source Files\Entities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

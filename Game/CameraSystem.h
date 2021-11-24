@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CameraComponent.h"
+#include "BaseComponents/CameraComponent.h"
 
 #include "eventpp/callbacklist.h"
 #include <glm/glm.hpp>

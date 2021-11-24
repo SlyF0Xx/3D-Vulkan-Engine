@@ -1,10 +1,10 @@
 #include "PrimitiveEntity.h"
 
-#include "VulkanTransformComponent.h"
-#include "VulkanMeshComponent.h"
+#include "../BaseComponents/VulkanComponents/VulkanTransformComponent.h"
+#include "../BaseComponents/VulkanComponents/VulkanMeshComponent.h"
 
-#include "UnlitMaterial.h"
-#include "LitMaterial.h"
+#include "../BaseComponents/UnlitMaterial.h"
+#include "../BaseComponents/LitMaterial.h"
 
 namespace diffusion {
 

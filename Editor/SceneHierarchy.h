@@ -4,8 +4,8 @@
 
 #include "GameWidget.h"
 
-#include "Relation.h"
-#include "TagComponent.h"
+#include "BaseComponents/Relation.h"
+#include "BaseComponents/TagComponent.h"
 
 #include "SceneInteraction.h"
 #include "Constants.h"

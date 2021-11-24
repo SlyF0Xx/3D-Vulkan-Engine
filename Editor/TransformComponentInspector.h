@@ -2,7 +2,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-#include <TransformComponent.h>
+#include "BaseComponents/TransformComponent.h"
 #include "ColoredDragFloat.h"
 
 #include "BaseComponentInspector.h"

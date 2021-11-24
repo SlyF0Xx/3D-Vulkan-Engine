@@ -158,30 +158,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CameraSystem.h" />
-    <ClInclude Include="CubeEntity.h" />
-    <ClInclude Include="DirectionalLightEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="ImportableEntity.h" />
     <ClInclude Include="InputEvents.h" />
     <ClInclude Include="KitamoriMovingSystem.h" />
     <ClInclude Include="KitamoriSystem.h" />
-    <ClInclude Include="PlaneEntity.h" />
-    <ClInclude Include="PrimitiveEntity.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RotateSystem.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraSystem.cpp" />
-    <ClCompile Include="CubeEntity.cpp" />
-    <ClCompile Include="DirectionalLightEntity.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="ImportableEntity.cpp" />
     <ClCompile Include="KitamoriMovingSystem.cpp" />
     <ClCompile Include="KitamoriSystem.cpp" />
-    <ClCompile Include="PlaneEntity.cpp" />
-    <ClCompile Include="PrimitiveEntity.cpp" />
     <ClCompile Include="RotateSystem.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,12 @@
 #include "LuaConsole.h"
 
+#include "BaseComponents/TagComponent.h"
+#include "BaseComponents/TransformComponent.h"
+#include "BaseComponents/VulkanComponents/ImportableVulkanMeshComponents.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
 void printMessage(const std::string& s) {
     std::cout << s << std::endl;
 }

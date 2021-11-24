@@ -1,10 +1,10 @@
 #include "DirectionalLightEntity.h"
 
-#include "CameraComponent.h"
-#include "DirectionalLightComponent.h"
-#include "PointLightComponent.h"
-#include "TransformComponent.h"
-#include "Engine.h"
+#include "../BaseComponents/CameraComponent.h"
+#include "../BaseComponents/DirectionalLightComponent.h"
+#include "../BaseComponents/PointLightComponent.h"
+#include "../BaseComponents/TransformComponent.h"
+#include "../Engine.h"
 
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>

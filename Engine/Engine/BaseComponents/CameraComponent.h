@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine.h"
-#include "glm_printer.h"
+#include "../Engine.h"
+#include "../glm_printer.h"
 
 #include "eventpp/callbacklist.h"
 #include <glm/glm.hpp>
