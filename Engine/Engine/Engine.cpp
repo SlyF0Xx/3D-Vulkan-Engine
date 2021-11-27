@@ -93,9 +93,8 @@ Game::Game()
         //"VK_NV_external_memory_capabilities",
         "VK_EXT_swapchain_colorspace",
         "VK_KHR_surface",
-        "VK_KHR_win32_surface",
-
-        //"VK_KHR_get_physical_device_properties2"
+        "VK_KHR_win32_surface"/*,
+        "VK_KHR_get_physical_device_properties2"*/
     };
 
     //std::array<const char* const, 0> extensions = {};

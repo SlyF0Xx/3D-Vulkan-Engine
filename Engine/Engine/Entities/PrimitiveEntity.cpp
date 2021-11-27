@@ -2,6 +2,7 @@
 
 #include "../BaseComponents/VulkanComponents/VulkanTransformComponent.h"
 #include "../BaseComponents/VulkanComponents/VulkanMeshComponent.h"
+#include "../BaseComponents/Relation.h"
 
 #include "../BaseComponents/UnlitMaterial.h"
 #include "../BaseComponents/LitMaterial.h"
@@ -14,10 +15,11 @@ namespace diffusion {
 	const std::vector<uint32_t>& indexes,
 	const glm::vec3& position,
 	const glm::vec3& rotation,
-	const glm::vec3& scale)
+	const glm::vec3& scale,
+	const SubMesh::AABB& bounding_box)
 {
 	auto entity = registry.create();
-	registry.emplace<SubMesh>(entity, verticies, indexes);
+	registry.emplace<SubMesh>(entity, verticies, indexes, bounding_box);
 	registry.emplace<TransformComponent>(entity, create_matrix(position, rotation, scale));
 	return entity;
 }

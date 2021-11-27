@@ -7,6 +7,7 @@
 #include "BaseComponents/LitMaterial.h"
 #include "BaseComponents/VulkanComponents/VulkanDirectionalLightComponent.h"
 #include "VulkanInitializer.h"
+#include "BaseComponents/DebugComponent.h"
 
 #include "util.h"
 
@@ -21,6 +22,7 @@ ForwardRender::ForwardRender(Game& game, entt::registry& registry)
     InitializeVariablePerImage();
 
     InitializePipeline();
+    InitializeDebugPipeline();
 }
 
 ForwardRender::~ForwardRender()
@@ -56,6 +58,13 @@ void ForwardRender::InitializePipelineLayout()
     };
 
     m_layout = m_game.get_device().createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_descriptor_set_layouts, push_constants));
+
+    m_debug_descriptor_set_layouts = {
+        m_game.get_descriptor_set_layouts()[0],
+        m_game.get_descriptor_set_layouts()[1]
+    };
+
+    m_debug_layout = m_game.get_device().createPipelineLayout(vk::PipelineLayoutCreateInfo({}, m_debug_descriptor_set_layouts));
 }
 
 void ForwardRender::InitializeRenderPass()
@@ -174,11 +183,50 @@ void ForwardRender::InitializePipeline()
 
     m_cache = m_game.get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
 
-    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eStencilReference /*just compatibility*/ };
+    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eStencilReference /*just compatibility*/, vk::DynamicState::ePrimitiveTopologyEXT };
     vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
 
     auto pipeline_result = m_game.get_device().createGraphicsPipeline(m_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_layout, m_render_pass));
     m_pipeline = pipeline_result.value;
+}
+
+void ForwardRender::InitializeDebugPipeline()
+{
+    m_debug_vertex_shader = m_game.loadSPIRVShader("Debug.vert.spv");
+    m_debug_fragment_shader = m_game.loadSPIRVShader("Debug.frag.spv");
+
+    std::array stages = { vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, m_debug_vertex_shader, "main"),
+                          vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eFragment, m_debug_fragment_shader, "main")
+    };
+
+    std::array vertex_input_bindings{ vk::VertexInputBindingDescription(0, sizeof(PrimitiveColoredVertex), vk::VertexInputRate::eVertex) };
+    std::array vertex_input_attributes{ vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat),
+                                        vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32Sfloat, 3 * sizeof(float)),
+                                        vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, 5 * sizeof(float)) };
+
+    vk::PipelineVertexInputStateCreateInfo vertex_input_info({}, vertex_input_bindings, vertex_input_attributes);
+    vk::PipelineInputAssemblyStateCreateInfo input_assemply({}, vk::PrimitiveTopology::eLineList, VK_FALSE);
+
+    std::array viewports{ vk::Viewport(0, 0, m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height, 0.0f, 1.0f) };
+    std::array scissors{ vk::Rect2D(vk::Offset2D(), vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)) };
+    vk::PipelineViewportStateCreateInfo viewport_state({}, viewports, scissors);
+
+    vk::PipelineRasterizationStateCreateInfo rasterization_info({}, VK_FALSE, VK_FALSE, vk::PolygonMode::eFill, vk::CullModeFlagBits::eFront, vk::FrontFace::eCounterClockwise, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f);
+    vk::PipelineDepthStencilStateCreateInfo depth_stensil_info({}, VK_TRUE, VK_TRUE, vk::CompareOp::eLessOrEqual, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1000.0f  /*Depth test*/);
+
+    vk::PipelineMultisampleStateCreateInfo multisample/*({}, vk::SampleCountFlagBits::e1)*/;
+
+    std::array blend{ vk::PipelineColorBlendAttachmentState(VK_FALSE) };
+    blend[0].colorWriteMask = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
+    vk::PipelineColorBlendStateCreateInfo blend_state({}, VK_FALSE, vk::LogicOp::eClear, blend);
+
+    m_debug_cache = m_game.get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
+
+    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+    vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
+
+    auto pipeline_result = m_game.get_device().createGraphicsPipeline(m_debug_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_layout, m_render_pass));
+    m_debug_pipeline = pipeline_result.value;
 }
 
 void ForwardRender::DestroyPipeline()
@@ -231,7 +279,7 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
         auto unlit_view = m_registry.view<const diffusion::UnlitMaterialComponent,
             const diffusion::VulkanTransformComponent,
             const diffusion::VulkanSubMesh,
-            const diffusion::SubMesh>();
+            const diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>);
 
         ::entt::entity material_entity{ ::entt::null };
 
@@ -254,13 +302,16 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
                 command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
             });
     }
-        
 
     {
         int unlit = 0;
         command_buffer.pushConstants(m_layout, vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eVertex /*because of layout*/, 0, sizeof(int), &unlit);
         command_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 1);
         command_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 1);
+
+        auto func = m_game.get_device().getProcAddr("vkCmdSetPrimitiveTopologyEXT");
+        reinterpret_cast<PFN_vkCmdSetPrimitiveTopologyEXT>(static_cast<VkCommandBuffer>(command_buffer), VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        //command_buffer.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleList);
 
         auto lit_view = m_registry.view<const diffusion::LitMaterialComponent,
             const diffusion::VulkanTransformComponent,
@@ -288,6 +339,42 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
                 command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
             });
     }
+
+
+
+
+
+
+
+
+    command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_debug_pipeline);
+
+    if (main_camera_component) {
+        const auto& camera = m_registry.get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
+        command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_debug_layout, 0, camera.m_descriptor_set, { {} });
+    }
+
+
+
+    {
+        auto unlit_view = m_registry.view<const diffusion::VulkanTransformComponent,
+            const diffusion::VulkanSubMesh,
+            const diffusion::SubMesh,
+            const diffusion::debug_tag>();
+
+        unlit_view.each([this, i, &command_buffer](
+            const diffusion::VulkanTransformComponent& transform,
+            const diffusion::VulkanSubMesh& vulkan_mesh,
+            const diffusion::SubMesh& mesh) {
+                command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_debug_layout, 1, transform.m_descriptor_set, { {} });
+
+                command_buffer.bindVertexBuffers(0, vulkan_mesh.m_vertex_buffer, { {0} });
+                command_buffer.bindIndexBuffer(vulkan_mesh.m_index_buffer, {}, vk::IndexType::eUint32);
+                command_buffer.drawIndexed(mesh.m_indexes.size(), 1, 0, 0, 0);
+            });
+    }
+
+
 
     command_buffer.endRenderPass();
 }

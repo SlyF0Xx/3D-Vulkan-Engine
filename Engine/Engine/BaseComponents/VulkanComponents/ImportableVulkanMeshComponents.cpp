@@ -99,7 +99,10 @@ void fill_meshes(
         registry.emplace<TransformComponent>(child_entity, matrix);
         //registry.emplace<TransformComponent>(child_entity, glm::mat4(1));
 
-        registry.emplace<SubMesh>(child_entity, verticies, indexes);
+        auto& aabb = scene.mMeshes[index]->mAABB;
+        registry.emplace<SubMesh>(child_entity, verticies, indexes,
+            SubMesh::AABB{ glm::vec3(aabb.mMin.x, aabb.mMin.y, aabb.mMin.z),
+                           glm::vec3(aabb.mMax.x, aabb.mMax.y, aabb.mMax.z) });
         add_material(scene.mMeshes[index]->mMaterialIndex, scene, registry, child_entity);
     }
 
@@ -116,7 +119,7 @@ void fill_meshes(
 void import_mesh(const std::filesystem::path& path, ::entt::registry& registry, ::entt::entity parent_entity)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
+    const aiScene* scene = importer.ReadFile(path.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
 
     fill_meshes(*scene->mRootNode, *scene, registry, parent_entity);
 }

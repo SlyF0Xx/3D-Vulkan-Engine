@@ -25,6 +25,8 @@
 #include "BaseComponents/DirectionalLightComponent.h"
 #include "BaseComponents/PointLightComponent.h"
 #include "BaseComponents/TagComponent.h"
+#include "BaseComponents/DebugComponent.h"
+#include "Entities/DebugCube.h"
 
 #include <Engine.h>
 
@@ -34,6 +36,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -160,6 +164,7 @@ void generate_scene()
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_1, "tv 1 - small");
+
     auto tv_2 = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "uploads_files_2941243_retrotv0319.fbx",
@@ -167,6 +172,7 @@ void generate_scene()
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.02, 0.02, 0.02));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_2, "tv 2 - big");
+
     auto stool = diffusion::import_entity(
         g_vulkan->get_registry(),
         std::filesystem::path("Models") / "ukopadbaw_LOD3.fbx",
@@ -198,6 +204,11 @@ void generate_scene()
     auto left_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(left_wall, "left wall");
 
+
+    diffusion::create_debug_sphere_entity(
+        g_vulkan->get_registry(),
+        glm::vec3(0, 1, -3));
+
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
@@ -207,6 +218,22 @@ void generate_scene()
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(point_light, "point light");
     //diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f));
     
+    g_vulkan->get_registry().view<diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each([](const diffusion::SubMesh & mesh) {
+        auto parrent = entt::to_entity(g_vulkan->get_registry(), mesh);
+        auto& transform = g_vulkan->get_registry().get<diffusion::TransformComponent>(parrent);
+
+        glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
+        glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
+
+        auto entity = diffusion::create_debug_cube_entity(
+            g_vulkan->get_registry(),
+            mesh.m_bounding_box.min + delta_2,
+            glm::vec3(0),
+            delta
+        );
+        g_vulkan->get_registry().emplace<diffusion::Relation>(entity, parrent);
+        
+    });
 
     NJSONOutputArchive output;
     entt::snapshot{ g_vulkan->get_registry() }
@@ -214,7 +241,7 @@ void generate_scene()
         .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
                    diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
                    diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
-                   diffusion::RotateTag>(output);
+                   diffusion::debug_tag /* should be ignored in runtime*/, diffusion::RotateTag>(output);
     output.Close();
     std::string json_output = output.AsString();
 

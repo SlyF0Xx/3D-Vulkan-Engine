@@ -12,6 +12,7 @@
 #include "BaseComponents/DirectionalLightComponent.h"
 #include "BaseComponents/VulkanComponents/VulkanDirectionalLightComponent.h"
 #include "BaseComponents/PointLightComponent.h"
+#include "BaseComponents/DebugComponent.h"
 
 #include "util.h"
 
@@ -31,41 +32,11 @@ VulkanInitializer::VulkanInitializer(Game& game)
     m_game.get_registry().on_construct<UnlitMaterialComponent>().connect<&VulkanInitializer::search_for_unlit_material>(*this);
     m_game.get_registry().on_construct<LitMaterialComponent>().connect<&VulkanInitializer::search_for_lit_material>(*this);
 
-
     m_game.get_registry().on_construct<DirectionalLightComponent>().connect<&VulkanInitializer::add_directional_light>(*this);
     m_game.get_registry().on_construct<PointLightComponent>().connect<&VulkanInitializer::add_point_light>(*this);
 
-    glm::mat4 m_projection_matrix = glm::perspective(
-        static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
-        16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
-        0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
-        100.0f                                 // Дальняя плоскость отсечения.
-    );
-
-    auto matrix = glm::lookAt(
-        glm::vec3{ 4.0f, -4.0f, -3.0f }, // Позиция камеры в мировом пространстве
-        glm::vec3{ 5.0f, -4.0f, -3.0f },   // Указывает куда вы смотрите в мировом пространстве
-        glm::vec3{ 0.0f, 0.0f, -1.0f } // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
-    /*
-    auto matrix2 = glm::lookAt(
-        glm::vec3{ 4.0f, -4.0f, -3.0f }, // Позиция камеры в мировом пространстве
-        glm::vec3{ 3.0f, -4.0f, -3.0f },   // Указывает куда вы смотрите в мировом пространстве
-        glm::vec3{ 0.0f, 0.0f, -1.0f } // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
-
-    auto matrix3 = glm::lookAt(
-        glm::vec3{ 4.0f, -4.0f, -3.0f }, // Позиция камеры в мировом пространстве
-        glm::vec3{ 4.0f, -3.0f, -3.0f },   // Указывает куда вы смотрите в мировом пространстве
-        glm::vec3{ 0.0f, 0.0f, -1.0f } // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
-
-    auto matrix4 = glm::lookAt(
-        glm::vec3{ 4.0f, -4.0f, -3.0f }, // Позиция камеры в мировом пространстве
-        glm::vec3{ 4.0f, -5.0f, -3.0f },   // Указывает куда вы смотрите в мировом пространстве
-        glm::vec3{ 0.0f, 0.0f, -1.0f } // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
-    );
-    */
+    //m_game.get_registry().on_construct<Relation>().connect<&VulkanInitializer::change_transform_component>(*this);
+    m_game.get_registry().on_construct<Relation>().connect<&VulkanInitializer::change_transform_component>(*this);
 }
 
 void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity)
@@ -93,6 +64,21 @@ void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registr
     registry.emplace<VulkanTransformComponent>(parent_entity, out2.m_buffer, out2.m_allocation, out2.m_mapped_memory, descriptor_pool, descriptor_set);
 }
 
+struct PointCamera
+{
+    glm::vec3 m_position;
+    float padding = 0;
+    glm::mat4 m_projection_matrix;
+};
+
+void VulkanInitializer::change_transform_component(::entt::registry& registry, ::entt::entity parent_entity)
+{
+    auto* transform = registry.try_get<TransformComponent>(parent_entity);
+    if (transform) {
+        transform_component_changed(registry, parent_entity);
+    }
+}
+
 void VulkanInitializer::transform_component_changed(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto& transform = registry.get<TransformComponent>(parent_entity);
@@ -112,6 +98,30 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
             registry.patch<TransformComponent>(child, [](auto& transform) {
             });
         }
+    }
+
+    const auto * light_comp_ptr = registry.try_get<VulkanDirectionalLightComponent>(parent_entity);
+
+    if (light_comp_ptr) {
+        registry.patch<diffusion::VulkanPointLightCamera>(parent_entity, [&registry, &parent_entity, &transform, this] (const diffusion::VulkanPointLightCamera & vulkan_camera) {
+            auto& camera = registry.get<PointLightComponent>(parent_entity);
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(transform.m_world_matrix, scale, rotation, translation, skew, perspective);
+            
+            std::vector<PointCamera> matrixes{ PointCamera{ translation, 0, camera.m_projection_matrix } };
+            auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
+            std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(out2.m_buffer, {}, VK_WHOLE_SIZE) };
+            
+            std::array write_descriptors{ vk::WriteDescriptorSet(vulkan_camera.m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, descriptor_buffer_infos, {}) };
+            m_game.get_device().updateDescriptorSets(write_descriptors, {});
+        });
+
+        auto& lights = registry.ctx<VulkanDirectionalLights>();
+        update_lights_buffer(registry, &lights);
     }
 }
 
@@ -665,13 +675,6 @@ void VulkanInitializer::add_directional_light(::entt::registry& registry, ::entt
     update_lights_buffer(registry, lights_ptr);
 }
 
-struct PointCamera
-{
-    glm::vec3 m_position;
-    float padding = 0;
-    glm::mat4 m_projection_matrix;
-};
-
 void VulkanInitializer::add_point_light(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto* lights_ptr = registry.try_ctx<VulkanDirectionalLights>();
@@ -783,7 +786,7 @@ void VulkanInitializer::init_light_command_buffer(Game& game, diffusion::VulkanD
     auto view = game.get_registry().view<
         const diffusion::VulkanTransformComponent,
         const diffusion::VulkanSubMesh,
-        const diffusion::SubMesh>();
+        const diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>);
 
     view.each([&light, &command_buffer, &point_camera](
         const diffusion::VulkanTransformComponent& transform,

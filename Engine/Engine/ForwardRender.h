@@ -34,8 +34,14 @@ class ForwardRender :
     vk::Pipeline m_pipeline;
 
 
-    //vk::PipelineLayout m_layout;
-    //std::array<vk::DescriptorSetLayout, 1> m_descriptor_set_layouts;
+
+    std::vector<vk::DescriptorSetLayout> m_debug_descriptor_set_layouts;
+    vk::PipelineLayout m_debug_layout;
+
+    vk::ShaderModule m_debug_vertex_shader;
+    vk::ShaderModule m_debug_fragment_shader;
+    vk::PipelineCache m_debug_cache;
+    vk::Pipeline m_debug_pipeline;
 
     Game& m_game;
     entt::registry& m_registry;
@@ -52,6 +58,7 @@ class ForwardRender :
     void DestroyVariablePerImageResources();
 
     void InitializePipeline();
+    void InitializeDebugPipeline();
     void DestroyPipeline();
 
     void InitCommandBuffer(int i, const vk::CommandBuffer& command_buffer);

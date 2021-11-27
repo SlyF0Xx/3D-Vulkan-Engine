@@ -18,7 +18,11 @@ namespace diffusion {
         },
         translation,
         rotation,
-        scale);
+        scale,
+        {
+            glm::vec3(-0.5, -0.5, 0.0),
+            glm::vec3( 0.5,  0.5, 0.0)
+        });
 }
 
 ::entt::entity create_plane_entity_lit(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)

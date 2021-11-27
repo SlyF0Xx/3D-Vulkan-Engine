@@ -49,7 +49,11 @@ namespace diffusion {
         },
         translation,
         rotation,
-        scale);
+        scale,
+        {
+            glm::vec3(-0.5, -0.5, -0.5),
+            glm::vec3( 0.5,  0.5,  0.5)
+        });
 }
 
 ::entt::entity create_cube_entity_lit(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
