@@ -7,7 +7,6 @@
     "entt",
     "stb",
     "assimp",
-    "lua",
-    "luabridge"
+    "lua"
   ]
 }

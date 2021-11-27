@@ -122,13 +122,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;..\Engine\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\LuaBridge\LuaBridge3\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;..\Engine\Engine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;$(ProjectDir)vendor\LuaBridge\LuaBridge3\build;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>

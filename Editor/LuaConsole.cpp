@@ -11,7 +11,9 @@ void printMessage(const std::string& s) {
     std::cout << s << std::endl;
 }
 
-LuaConsole::LuaConsole() {
+LuaConsole::LuaConsole(diffusion::Ref<Game>& vulkan)
+    : m_vulkan(vulkan)
+{
 	ClearLog();
 	memset(InputBuf, 0, sizeof(InputBuf));
 	HistoryPos = -1;
@@ -34,6 +36,69 @@ LuaConsole::LuaConsole() {
         .endClass();*/
     luaL_openlibs(m_State);
     lua_settop(m_State, 0);
+
+    getGlobalNamespace(m_State)
+        .beginClass<entt::entity>("entity")
+        .endClass()
+        /*
+        .beginClass<diffusion::TransformComponent>("transform")
+        .endClass()
+        .addFunction("get_transform_component", [this](entt::entity entity) {
+            return m_vulkan->get_registry().get<diffusion::TransformComponent>(entity);
+        })
+        .addFunction("global_translate", [this](diffusion::TransformComponent& transform, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entt::to_entity(m_vulkan->get_registry(), transform),
+                transform.m_world_matrix = glm::translate(glm::mat4(1), glm::vec3(x, y, z));
+            });
+        })
+        .addFunction("local_translate", [this](diffusion::TransformComponent& transform, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entt::to_entity(m_vulkan->get_registry(), transform),
+                [x, y, z](auto& transform) {
+                transform.m_world_matrix = glm::translate(transform.m_world_matrix, glm::vec3(x, y, z));
+            });
+        })
+        */
+        .addFunction("global_translate", [this](entt::entity& entity, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entity, [x, y, z](auto& transform) {
+                transform.m_world_matrix = glm::translate(glm::mat4(1), glm::vec3(x, y, z));
+            });
+        })
+        .addFunction("local_translate", [this](entt::entity & entity, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entity, [x, y, z](auto& transform) {
+                transform.m_world_matrix = glm::translate(transform.m_world_matrix, glm::vec3(x, y, z));
+            });
+        })
+        .addFunction("local_rotate", [this](entt::entity& entity, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entity, [x, y, z](auto& transform) {
+                glm::vec3 RotationX(1.0, 0, 0);
+                transform.m_world_matrix = glm::rotate(transform.m_world_matrix, x, RotationX);
+
+                glm::vec3 RotationY(0, 1.0, 0);
+                transform.m_world_matrix = glm::rotate(transform.m_world_matrix, y, RotationY);
+
+                glm::vec3 RotationZ(0, 0, 1.0);
+                transform.m_world_matrix = glm::rotate(transform.m_world_matrix, z, RotationZ);
+            });
+        })
+        .addFunction("local_scale", [this](entt::entity& entity, float x, float y, float z) {
+            m_vulkan->get_registry().patch<diffusion::TransformComponent>(entity, [x, y, z](auto& transform) {
+                glm::mat4 scale_matrix = glm::scale(glm::vec3(x, y, z));
+                transform.m_world_matrix *= scale_matrix;
+            });
+        })
+        .addFunction("spawn_entity", [this]() {
+            return m_vulkan->get_registry().create();
+        })
+        .addFunction("change_name", [this](entt::entity& entity, const char* name) {
+            m_vulkan->get_registry().emplace_or_replace<diffusion::TagComponent>(entity, name);
+        })
+        .addFunction("add_transform", [this](entt::entity& entity) {
+            m_vulkan->get_registry().emplace<diffusion::TransformComponent>(entity, glm::mat4(1));
+        })
+        .addFunction("import_mesh", [this](entt::entity& entity, const char* path) {
+            diffusion::import_mesh(std::filesystem::path(path), m_vulkan->get_registry(), entity);
+        })
+        .addFunction("get_entity_by_name", [this](const char* name) { return get_entity_by_name(name); });
 
     //lua_getglobal(m_State, "_G");
     //luaL_Reg luas[] = {
@@ -335,6 +400,19 @@ int LuaConsole::TextEditCallback(ImGuiInputTextCallbackData* data) {
 int LuaConsole::LuaPrint(const std::string& s) {
     std::cout << s << std::endl;
     return 0;
+}
+
+entt::entity LuaConsole::get_entity_by_name(const char * name)
+{
+    std::string_view name_view(name);
+    auto view = m_vulkan->get_registry().view<diffusion::TagComponent>();
+    for (auto & entity : view) {
+        auto& tag_component = m_vulkan->get_registry().get<diffusion::TagComponent>(entity);
+        if (tag_component.m_Tag == name_view) {
+            return entity;
+        }
+    }
+    return entt::entity();
 }
 
 void LuaConsole::AddLog(const char* fmt, ...) IM_FMTARGS(2) {

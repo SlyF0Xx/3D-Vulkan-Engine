@@ -8,14 +8,18 @@ extern "C" {
 # include "lualib.h"
 }
 
+#include "Engine.h"
+#include "Core/Base.h"
+
 #include <LuaBridge/LuaBridge.h>
 #include <iostream>
+#include <entt/entt.hpp>
 
 using namespace luabridge;
 
 class LuaConsole {
 public:
-	LuaConsole();
+	LuaConsole(diffusion::Ref<Game>& vulkan);
 	~LuaConsole();
 
 	void ClearLog();
@@ -32,6 +36,8 @@ public:
 
 	int LuaPrint(const std::string& s);
 
+	entt::entity get_entity_by_name(const char* name);
+
 	// In C++11 you'd be better off using lambdas for this sort of forwarding callbacks
 	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data) {
 		LuaConsole* console = (LuaConsole*) data->UserData;
@@ -46,6 +52,8 @@ public:
 
 private:
 	static inline constexpr const char* TITLE = "Lua Console";
+
+	diffusion::Ref<Game> m_vulkan;
 
 	lua_State* m_State;
 

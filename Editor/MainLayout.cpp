@@ -4,7 +4,8 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_ContentBrowser(vulkan), 
 	m_SceneHierarchy(vulkan), 
 	m_Inspector(vulkan),
-	m_Viewport(vulkan)
+	m_Viewport(vulkan),
+	m_LuaConsole(vulkan)
 {
 
 	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
