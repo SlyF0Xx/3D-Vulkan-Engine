@@ -2,12 +2,18 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include <entt/entt.hpp>
 #include <glm/common.hpp>
+#include <BaseComponents/CameraComponent.h>
+#include <BaseComponents/PossessedComponent.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "GameWidget.h"
 #include "Constants.h"
 #include "ViewportSnapInteraction.h"
 #include "FontUtils.h"
+
+#include <ImGuizmo.h>
 
 namespace Editor {
 
@@ -22,6 +28,7 @@ namespace Editor {
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 		void Render(bool* p_open, ImGuiWindowFlags flags, ImGUIBasedPresentationEngine& engine);
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void OnSceneUpdated();
 		void InitContexed() override;
 
 		ViewportEventDispatcher GetDispatcher() const;
@@ -58,6 +65,10 @@ namespace Editor {
 		TransformSnapSize m_TransformSnapSize = TransformSnapSize::ONE;
 		RotationSnapSize m_RotationSnapSize = RotationSnapSize::FIVE;
 		ScaleSnapSize m_ScaleSnapSize = ScaleSnapSize::HALF;
+		ImGuizmo::OPERATION m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+		ImGuizmo::MODE m_CurrentGizmoMode = ImGuizmo::WORLD;
+
+		ENTT_ID_TYPE m_MainEntity = -1;
 
 		ViewportEventDispatcher m_SnapDispatcher;
 	};

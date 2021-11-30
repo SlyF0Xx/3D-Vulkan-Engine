@@ -10,6 +10,8 @@
 #include "imgui_impl_vulkan.h"
 #include "imgui_internal.h"
 
+#include <ImGuizmo.h>
+
 #include <Engine.h>
 #include <Core/Base.h>
 #include "Archiver.h"
@@ -62,7 +64,7 @@ namespace Editor {
 	class EditorWindow {
 	public:
 		EditorWindow() = default;
-		EditorWindow(Ref<EditorLayout>&layout, Ref<Game>&context);
+		EditorWindow(Ref<EditorLayout>&layout);
 		~EditorWindow();
 
 		bool Create();

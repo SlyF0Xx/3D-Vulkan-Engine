@@ -1,8 +1,8 @@
 #include "EditorWindow.h"
 
-Editor::EditorWindow::EditorWindow(Ref<EditorLayout>& layout, Ref<Game>& context) {
+Editor::EditorWindow::EditorWindow(Ref<EditorLayout>& layout) {
 	SetLayout(layout);
-	SetContext(context);
+	SetContext(layout->m_Context);
 }
 
 Editor::EditorWindow::~EditorWindow() {
@@ -135,7 +135,7 @@ void Editor::EditorWindow::SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSur
 void Editor::EditorWindow::SetupImGuiContext() {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
+	ImGuiContext* context = ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void) io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
@@ -156,6 +156,8 @@ void Editor::EditorWindow::SetupImGuiContext() {
 	init_info.ImageCount = m_MainWindowData.ImageCount;
 	init_info.CheckVkResultFn = check_vk_result;
 	ImGui_ImplVulkan_Init(&init_info, m_MainWindowData.RenderPass);
+
+	ImGuizmo::SetImGuiContext(context);
 }
 
 void Editor::EditorWindow::UploadFonts() {

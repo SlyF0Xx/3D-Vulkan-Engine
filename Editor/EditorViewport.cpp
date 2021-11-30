@@ -18,6 +18,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 	ImGui::Begin(TITLE, p_open, _flags);
 
+#pragma region Render Target.
 	ImVec2 currentSize = ImGui::GetContentRegionAvail();
 	if (currentSize.x != m_SceneSize.x || currentSize.y != m_SceneSize.y) {
 		m_SceneSize = currentSize;
@@ -34,24 +35,17 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		m_RenderSize.y = STEP * multiplier;
 		OnResize(*m_Context, engine);
 	}
-	/*float y = glm::max(current_size.x / 16 * 9, current_size.y);
-	float x = glm::max(current_size.x, current_size.y / 9 * 16);
-	ImVec2 renderSize = {1920, 1080};*/
-	/*if (current_size.x * 9 > current_size.y * 16) {
-		renderSize = {current_size.x, current_size.x / 16 * 9};
-	} else {
-		renderSize = {current_size.y / 9 * 16, current_size.y};
-	}*/
 
-
-	//ImGui::PushItemWidth(-1);
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
 	ImGui::SetCursorPos(pos);
 
 	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
+#pragma endregion
 
+	ImVec2 leftTopWindowPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
 
-	ImGui::SetNextWindowPos(ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos());
+#pragma region Viewport Overlay.
+	ImGui::SetNextWindowPos(leftTopWindowPoint);
 	ImGui::SetNextWindowSize(m_SceneSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::BeginChild("##Overlay", m_SceneSize, false,
@@ -63,24 +57,60 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		| ImGuiWindowFlags_NoScrollWithMouse
 		| ImGuiWindowFlags_AlwaysUseWindowPadding
 	);
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(210, 240, 110, 160));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 250, 32, 190));
+
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::ACCENT_COLOR_HOVERED);
 
 	int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
 	ImVec2 size = ImVec2(16, 16);     // Size of the image we want to make visible
 	ImVec2 uv0 = ImVec2(0.0f, 0.0f);                        // UV coordinates for lower-left
 	ImVec2 uv1 = ImVec2(1, 1);								// UV coordinates for (thumbnailSize, thumbnailSize) in our texture
-	ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);         // Background.
-	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);       // No tint
+	ImVec4 bg_col = ImVec4(0.f, 0.f, 0.f, .0f);         // Background.
+	ImVec4 tint_col = ImVec4(1.0f, 1.f, 1.0f, 1.f);       // No tint
 	ImGui::SameLine(m_SceneSize.x - (32.f * 3.f));
+
+	if (m_CurrentGizmoOperation == ImGuizmo::TRANSLATE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+	}
 	if (ImGui::ImageButton(m_GridTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_TRANSFORM);
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine();
+
+	if (m_CurrentGizmoOperation == ImGuizmo::ROTATE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+	}
 	if (ImGui::ImageButton(m_RotationTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_ROTATION);
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine();
+
+	if (m_CurrentGizmoOperation == ImGuizmo::SCALE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+	}
 	if (ImGui::ImageButton(m_ScaleTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::SCALE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_SCALE);
+	ImGui::PopStyleColor();
+
+	if (ImGui::IsKeyPressed(90))
+		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsKeyPressed(69))
+		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsKeyPressed(82)) // r Key
+		m_CurrentGizmoOperation = ImGuizmo::SCALE;
 
 	if (ImGui::BeginPopup(POPUP_TRANSFORM)) {
 		TransformSnapSize localSize = m_TransformSnapSize;
@@ -190,7 +220,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::BeginPopup(POPUP_SCALE)) {
 		ScaleSnapSize localSize = m_ScaleSnapSize;
 		bool localCheckbox = m_IsScaleSnap;
-		
+
 		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Scale");
 		ImGui::PopFont();
@@ -244,27 +274,60 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PopStyleColor();
 #endif
 
-	/*int gcd = std::gcd((int) renderSize.x, (int) renderSize.y);
-	ImGui::Text(std::to_string(gcd).c_str());
-	std::string renderSizePropStr = "Render proportions: [" + std::to_string(renderSize.x / gcd) + ":" + std::to_string(renderSize.y / gcd) + "]";
-	ImGui::Text(renderSizePropStr.c_str());*/
-
-	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::EndChild();
 	ImGui::PopStyleVar();
+#pragma endregion
 
 
-	//ImVec2 p1 = ImGui::GetCursorScreenPos();
-	//ImVec2 p2 = ImVec2(p1.x + 200, p1.y + 200);
-	////ImGui::Checkbox("Menu", &menu);
-	//ImGui::GetWindowDrawList()->AddLine(p1, p2, IM_COL32(255, 0, 255, 255));
-	//ImGui::GetWindowDrawList()->AddCircleFilled(p1, 6.0f, IM_COL32(255, 0, 255, 255));
-	//ImGui::GetWindowDrawList()->AddCircleFilled(p2, 6.0f, IM_COL32(255, 0, 255, 255));
 
-	//ImGui::ShowDemoWindow();
 
-	//
+
+	if (m_MainEntity != -1) {
+		diffusion::CameraComponent camera = m_Context->get_registry().get<diffusion::CameraComponent>((entt::entity) m_MainEntity);
+		ImGuizmo::BeginFrame();
+		ImGuizmo::SetDrawlist();
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuizmo::SetRect(leftTopWindowPoint.x, leftTopWindowPoint.y, m_SceneSize.x, m_SceneSize.y);
+		//ImGuizmo::Perspective(27.f, m_SceneSize.x / m_SceneSize.y, 0.1f, 100.f, camera.m_view_projection_matrix);
+		static float objectMatrix[4][16] = {
+{ 1.f, 0.f, 0.f, 0.f,
+  0.f, 1.f, 0.f, 0.f,
+  0.f, 0.f, 1.f, 0.f,
+  0.f, 0.f, 0.f, 1.f },
+
+{ 1.f, 0.f, 0.f, 0.f,
+0.f, 1.f, 0.f, 0.f,
+0.f, 0.f, 1.f, 0.f,
+2.f, 0.f, 0.f, 1.f },
+
+{ 1.f, 0.f, 0.f, 0.f,
+0.f, 1.f, 0.f, 0.f,
+0.f, 0.f, 1.f, 0.f,
+2.f, 0.f, 2.f, 1.f },
+
+{ 1.f, 0.f, 0.f, 0.f,
+0.f, 1.f, 0.f, 0.f,
+0.f, 0.f, 1.f, 0.f,
+0.f, 0.f, 2.f, 1.f }
+		};
+		ImGuizmo::DrawCubes(
+			glm::value_ptr(camera.m_view_projection_matrix),
+			glm::value_ptr(camera.m_projection_matrix), 
+			&objectMatrix[0][0], 1
+		);
+		ImGuizmo::Manipulate(
+			glm::value_ptr(camera.m_view_projection_matrix),
+			glm::value_ptr(camera.m_projection_matrix),
+			m_CurrentGizmoOperation,
+			m_CurrentGizmoMode,
+			glm::value_ptr(camera.m_camera_matrix),
+			NULL,
+			NULL
+		);
+	}
+
+
 	ImGui::End();
 	ImGui::PopStyleVar();
 }
@@ -280,6 +343,16 @@ void Editor::EditorViewport::OnResize(Game& vulkan, ImGUIBasedPresentationEngine
 		vk::Sampler color_sampler = vulkan.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
 		m_TexIDs.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
 	}
+}
+
+void Editor::EditorViewport::OnSceneUpdated() {
+	m_Context->get_registry().each([&](auto entity) {
+		const auto& camera = m_Context->get_registry().try_get<diffusion::MainCameraTag>(entity);
+		if (camera != nullptr) {
+			m_MainEntity = (ENTT_ID_TYPE) entity;
+		}
+	});
+	IM_ASSERT(m_MainEntity != -1);
 }
 
 void Editor::EditorViewport::InitContexed() {
