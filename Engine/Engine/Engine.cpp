@@ -444,6 +444,47 @@ PresentationEngine Game::create_default_presentation_engine(HINSTANCE hinstance,
     return presentation_engine;
 }
 
+float Game::get_depth(size_t x, size_t y)
+{
+    auto command_buffers = m_device.allocateCommandBuffers(vk::CommandBufferAllocateInfo(m_command_pool, vk::CommandBufferLevel::ePrimary, 1));
+    vk::CommandBuffer command_buffer = command_buffers[0];
+
+    std::array<uint32_t, 1> queues{ 0 };
+    size_t buffer_size = m_presentation_engine.m_width * m_presentation_engine.m_height * sizeof(float);
+    auto buffer_memory =
+        m_allocator.createBuffer(vk::BufferCreateInfo({}, buffer_size, vk::BufferUsageFlagBits::eTransferDst, vk::SharingMode::eExclusive, queues),
+            vma::AllocationCreateInfo(vma::AllocationCreateInfo({}, vma::MemoryUsage::eCpuOnly)));
+
+    std::array regions{ vk::BufferImageCopy({}, 0, 0, {vk::ImageAspectFlagBits::eDepth, 0, 0, 1}, {}, {static_cast<uint32_t>(m_presentation_engine.m_width), static_cast<uint32_t>(m_presentation_engine.m_height), 1}) };
+
+    auto depth_image = m_presentation_engine.m_swapchain_data[m_presentation_engine.FrameIndex].m_depth_image;
+
+    auto image_aspects = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+    std::array start_barrier{ vk::ImageMemoryBarrier({}, vk::AccessFlagBits::eTransferRead, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 0, 0, depth_image, vk::ImageSubresourceRange(image_aspects, 0, 1, 0, 1)) };
+    std::array finish_barrier{ vk::ImageMemoryBarrier(vk::AccessFlagBits::eTransferRead, vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eDepthAttachmentOptimal, 0, 0, depth_image, vk::ImageSubresourceRange(image_aspects, 0, 1, 0, 1)) };
+
+    command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, start_barrier);
+    command_buffer.copyImageToBuffer(depth_image, vk::ImageLayout::eDepthAttachmentOptimal, buffer_memory.first, regions);
+    command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}/*vk::DependencyFlagBits::eViewLocal*/, {}, {}, finish_barrier);
+    command_buffer.end();
+
+    auto fence = m_device.createFence(vk::FenceCreateInfo());
+
+    std::array queue_submits{ vk::SubmitInfo({}, {}, command_buffers, {}) };
+    m_queue.submit(queue_submits, fence);
+
+    m_device.waitForFences({ fence }, true, -1);
+
+
+    void* mapped_data = nullptr;
+    m_allocator.mapMemory(buffer_memory.second, &mapped_data);
+
+    size_t index = y * m_presentation_engine.m_width + x;
+    float texel = reinterpret_cast<float*>(mapped_data)[index];
+    return texel;
+}
+
 void Game::Exit()
 {
     // Destroy presentation engine

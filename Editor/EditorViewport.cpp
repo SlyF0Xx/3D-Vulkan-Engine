@@ -1,5 +1,19 @@
 #include "EditorViewport.h"
 
+#include "BaseComponents/CameraComponent.h"
+#include "BaseComponents/Relation.h"
+#include "BaseComponents/MeshComponent.h"
+#include "BaseComponents/TransformComponent.h"
+#include "BaseComponents/DebugComponent.h"
+#include "Entities/DebugCube.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
+#include <set>
+
 Editor::EditorViewport::EditorViewport(const diffusion::Ref<Game>& game) : GameWidget(game) {
 	m_SnapDispatcher = diffusion::CreateRef<ViewportEventDispatcherSrc>();
 }
@@ -49,6 +63,42 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::SetCursorPos(pos);
 
 	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
+
+	auto click = ImGui::IsMouseClicked(0);
+
+	if (click) {
+		ImVec2 origin = ImGui::GetMousePos();
+		ImVec2 boundary = ImGui::GetWindowPos();
+		ImVec2 unnormalized_screen_space_coords = origin - boundary;
+
+		double depth = m_Context->get_depth(unnormalized_screen_space_coords.x, unnormalized_screen_space_coords.y);
+
+		ImVec2 screen_space_coords = unnormalized_screen_space_coords / m_RenderSize;
+		ImVec2 normalized_space_coords = (screen_space_coords - ImVec2(0.5f, 0.5f)) * 2;
+
+		glm::vec3 global_position = diffusion::get_world_point_by_screen(
+			m_Context->get_registry(), normalized_space_coords.x, normalized_space_coords.y, depth);
+
+		m_Context->get_registry().view<diffusion::TransformComponent, diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each(
+			[this, &global_position](const diffusion::TransformComponent & transform, const diffusion::SubMesh & mesh) {
+
+			if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
+					m_Context->get_registry(), mesh, transform), global_position)) {
+				auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
+
+				glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
+				glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
+
+				auto entity = diffusion::create_debug_cube_entity(
+					m_Context->get_registry(),
+					mesh.m_bounding_box.min + delta_2,
+					glm::vec3(0),
+					delta
+				);
+				m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
+			}
+		});
+	}
 
 
 	ImGui::SetNextWindowPos(ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos());

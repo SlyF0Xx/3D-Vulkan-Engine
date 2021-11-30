@@ -204,11 +204,6 @@ void generate_scene()
     auto left_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(left_wall, "left wall");
 
-
-    diffusion::create_debug_sphere_entity(
-        g_vulkan->get_registry(),
-        glm::vec3(0, 1, -3));
-
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
@@ -217,10 +212,14 @@ void generate_scene()
     auto point_light = diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(0.0f, -4.0f, -1.0f));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(point_light, "point light");
     //diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f));
-    
+
+    /*
+    diffusion::create_debug_sphere_entity(
+        g_vulkan->get_registry(),
+        glm::vec3(0, 1, -3));
+
     g_vulkan->get_registry().view<diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each([](const diffusion::SubMesh & mesh) {
         auto parrent = entt::to_entity(g_vulkan->get_registry(), mesh);
-        auto& transform = g_vulkan->get_registry().get<diffusion::TransformComponent>(parrent);
 
         glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
         glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
@@ -232,8 +231,8 @@ void generate_scene()
             delta
         );
         g_vulkan->get_registry().emplace<diffusion::Relation>(entity, parrent);
-        
     });
+    */
 
     NJSONOutputArchive output;
     entt::snapshot{ g_vulkan->get_registry() }

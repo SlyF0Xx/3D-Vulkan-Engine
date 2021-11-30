@@ -197,5 +197,14 @@
     <ClCompile Include="Entities\DebugCube.cpp">
       <Filter>Source Files\Entities</Filter>
     </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\MeshComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

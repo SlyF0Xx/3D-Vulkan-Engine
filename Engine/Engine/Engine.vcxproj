@@ -203,9 +203,11 @@
   <ItemGroup>
     <ClCompile Include="BaseComponents\BoundingComponent.cpp" />
     <ClCompile Include="BaseComponents\CameraComponent.cpp" />
+    <ClCompile Include="BaseComponents\MeshComponent.cpp" />
     <ClCompile Include="BaseComponents\TransformComponent.cpp" />
     <ClCompile Include="BaseComponents\UnlitMaterial.cpp" />
     <ClCompile Include="BaseComponents\VulkanComponents\ImportableVulkanMeshComponents.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ComponentInitializer.cpp" />
     <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="Engine.cpp" />
@@ -216,6 +218,7 @@
     <ClCompile Include="Entities\PlaneEntity.cpp" />
     <ClCompile Include="Entities\PrimitiveEntity.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>
