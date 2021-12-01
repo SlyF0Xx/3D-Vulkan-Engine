@@ -114,7 +114,8 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		| ImGuiWindowFlags_AlwaysUseWindowPadding
 	);
 
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::ACCENT_COLOR_HOVERED);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::OVERLAY_HOVER_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, Constants::OVERLAY_ACTIVE_COLOR);
 
 	int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
 	ImVec2 size = ImVec2(32, 32);     // Size of the image we want to make visible
@@ -125,9 +126,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::SameLine(m_SceneSize.x - (48.f * 3.f));
 
 	if (m_CurrentGizmoOperation == ImGuizmo::TRANSLATE) {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
 	} else {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
 	if (ImGui::ImageButton(m_GridTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
 		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
@@ -138,9 +139,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::SameLine();
 
 	if (m_CurrentGizmoOperation == ImGuizmo::ROTATE) {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
 	} else {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
 	if (ImGui::ImageButton(m_RotationTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
 		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
@@ -151,9 +152,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::SameLine();
 
 	if (m_CurrentGizmoOperation == ImGuizmo::SCALE) {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
 	} else {
-		ImGui::PushStyleColor(ImGuiCol_Button, Constants::SECONDARY_COLOR);
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
 	if (ImGui::ImageButton(m_ScaleTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
 		m_CurrentGizmoOperation = ImGuizmo::SCALE;
@@ -355,6 +356,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PopStyleColor();
 #endif
 
+	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::EndChild();
 	ImGui::PopStyleVar();

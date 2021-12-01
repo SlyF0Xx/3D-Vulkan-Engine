@@ -6,6 +6,7 @@ Editor::Inspector::Inspector(const Ref<Game>& game)
 }
 
 void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 	ImGui::Begin("Inspector", p_open, flags);
 
@@ -13,14 +14,15 @@ void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
 		ImGui::Text("Nothing to inspect.");
 		ImGui::End();
 		ImGui::PopStyleVar();
+		ImGui::PopStyleVar();
 		return;
 	}
 
-	
 	m_TagInspector.Render();
 	m_TransformInspector.Render();
 
 	ImGui::End();
+	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 }
 

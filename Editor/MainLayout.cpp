@@ -24,6 +24,10 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 }
 
 Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+	ImGui::PushStyleColor(ImGuiCol_Button, Constants::SUCCESS_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::HOVER_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, Constants::ACTIVE_COLOR);
+
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 	// all active windows docked into it will lose their parent and become undocked.
@@ -104,6 +108,10 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	if (m_WindowStates.isInspectorOpen) {
 		m_Inspector.Render(&m_WindowStates.isInspectorOpen, 0);
 	}
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 
 	return Editor::LayoutRenderStatus::SUCCESS;
 }
