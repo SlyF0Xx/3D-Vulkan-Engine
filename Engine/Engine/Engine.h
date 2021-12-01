@@ -231,4 +231,5 @@ public:
     //void update_light(int index, const LightInfo&);
 
     PresentationEngine create_default_presentation_engine(HINSTANCE hinstance, HWND hwnd);
+    float get_depth(size_t x, size_t y);
 };

@@ -63,7 +63,7 @@ void ImGUIBasedPresentationEngine::generate_presentation_engine_from_imgui(int w
 		presentation_engine.m_swapchain_data[i].m_fence = m_wd->Frames[i].Fence;
 
 		auto depth_allocation = m_game.get_allocator().createImage(
-			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_depth_format, vk::Extent3D(presentation_engine.m_width, presentation_engine.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
+			vk::ImageCreateInfo({}, vk::ImageType::e2D, presentation_engine.m_depth_format, vk::Extent3D(presentation_engine.m_width, presentation_engine.m_height, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc, vk::SharingMode::eExclusive, queues, vk::ImageLayout::eUndefined /*ePreinitialized*/),
 			vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 		presentation_engine.m_swapchain_data[i].m_depth_image = depth_allocation.first;
 		presentation_engine.m_swapchain_data[i].m_depth_memory = depth_allocation.second;

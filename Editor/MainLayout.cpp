@@ -1,4 +1,5 @@
 #include "MainLayout.h"
+#include <BaseComponents/DebugComponent.h>
 
 Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	EditorLayout(vulkan),
@@ -162,7 +163,8 @@ void Editor::MainLayout::ImportScene() {
 	loader.entities(json_in)
 		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
 		diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-		diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent>(json_in);
+		diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
+		diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
 
 	auto main_entity = m_Context->get_registry().view<diffusion::PossessedEntity>().front();
 	m_Context->get_registry().set<diffusion::PossessedEntity>(main_entity);

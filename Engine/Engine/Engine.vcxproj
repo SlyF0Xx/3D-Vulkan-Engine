@@ -216,6 +216,7 @@
     <ClCompile Include="Entities\PlaneEntity.cpp" />
     <ClCompile Include="Entities\PrimitiveEntity.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>

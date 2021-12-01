@@ -24,12 +24,19 @@ struct CameraComponent
 	glm::vec3 m_camera_target{ 0.0f, 0.0f, 0.0f };
 	glm::vec3 m_up_vector{ 0.0f, 0.0f, -1.0f };
 
+	float aspect = 16.0f / 9.0f;
+	float fov_y = glm::radians(60.0f);
+	float fov_x = atan(tan(fov_y / 2) * aspect) * 2;
+
+	float min_distance = 0.1f;
+	float max_distance = 100.0f;
+
 	glm::mat4 m_projection_matrix = //glm::orthoRH_ZO(-2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 100.0f);
 		glm::perspective(
-		static_cast<float>(glm::radians(60.0f)),  // Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
-		16.0f / 9.0f,                          // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
-		0.1f,                                  // Ближняя плоскость отсечения. Должна быть больше 0.
-		100.0f                                 // Дальняя плоскость отсечения.
+		fov_y,				// Вертикальное поле зрения в радианах. Обычно между 90&deg; (очень широкое) и 30&deg; (узкое)
+		aspect,             // Отношение сторон. Зависит от размеров вашего окна. Заметьте, что 4/3 == 800/600 == 1280/960
+		min_distance,       // Ближняя плоскость отсечения. Должна быть больше 0.
+		max_distance        // Дальняя плоскость отсечения.
 	);
 
 	glm::mat4 m_camera_matrix = glm::lookAt(
@@ -41,5 +48,7 @@ struct CameraComponent
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, m_camera_position, m_camera_target, m_up_vector, m_camera_matrix, m_projection_matrix, m_view_projection_matrix)
 };
+
+glm::vec3 get_world_point_by_screen(entt::registry& registry, float normalized_screen_x, float normalized_screen_y, double depth);
 
 } // namespace diffusion {
