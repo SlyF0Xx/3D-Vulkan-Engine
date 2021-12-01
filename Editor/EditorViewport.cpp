@@ -89,7 +89,6 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 					delta
 				);
 				m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
-				printf("ABOBA");
 			}
 		});
 	}
@@ -111,12 +110,12 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::ACCENT_COLOR_HOVERED);
 
 	int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
-	ImVec2 size = ImVec2(16, 16);     // Size of the image we want to make visible
+	ImVec2 size = ImVec2(32, 32);     // Size of the image we want to make visible
 	ImVec2 uv0 = ImVec2(0.0f, 0.0f);                        // UV coordinates for lower-left
 	ImVec2 uv1 = ImVec2(1, 1);								// UV coordinates for (thumbnailSize, thumbnailSize) in our texture
 	ImVec4 bg_col = ImVec4(0.f, 0.f, 0.f, .0f);         // Background.
 	ImVec4 tint_col = ImVec4(1.0f, 1.f, 1.0f, 1.f);       // No tint
-	ImGui::SameLine(m_SceneSize.x - (32.f * 3.f));
+	ImGui::SameLine(m_SceneSize.x - (48.f * 3.f));
 
 	if (m_CurrentGizmoOperation == ImGuizmo::TRANSLATE) {
 		ImGui::PushStyleColor(ImGuiCol_Button, Constants::ACCENT_COLOR);
@@ -321,6 +320,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	std::string sceneSizeStr = "Scene size: [X: " + std::to_string(m_SceneSize.x) + " Y: " + std::to_string(m_SceneSize.y) + "]";
 	ImGui::Text(sceneSizeStr.c_str());
+
+	if (click) {
+		ImGui::Text("Clicked!");
+	}
 	ImGui::PopStyleColor();
 #endif
 
@@ -332,50 +335,50 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 
 
-
-	if (m_MainEntity != -1) {
-		diffusion::CameraComponent camera = m_Context->get_registry().get<diffusion::CameraComponent>((entt::entity) m_MainEntity);
-		ImGuizmo::BeginFrame();
-		ImGuizmo::SetDrawlist();
-		ImGuiIO& io = ImGui::GetIO();
-		ImGuizmo::SetRect(leftTopWindowPoint.x, leftTopWindowPoint.y, m_SceneSize.x, m_SceneSize.y);
-		//ImGuizmo::Perspective(27.f, m_SceneSize.x / m_SceneSize.y, 0.1f, 100.f, camera.m_view_projection_matrix);
-		static float objectMatrix[4][16] = {
-{ 1.f, 0.f, 0.f, 0.f,
-  0.f, 1.f, 0.f, 0.f,
-  0.f, 0.f, 1.f, 0.f,
-  0.f, 0.f, 0.f, 1.f },
-
-{ 1.f, 0.f, 0.f, 0.f,
-0.f, 1.f, 0.f, 0.f,
-0.f, 0.f, 1.f, 0.f,
-2.f, 0.f, 0.f, 1.f },
-
-{ 1.f, 0.f, 0.f, 0.f,
-0.f, 1.f, 0.f, 0.f,
-0.f, 0.f, 1.f, 0.f,
-2.f, 0.f, 2.f, 1.f },
-
-{ 1.f, 0.f, 0.f, 0.f,
-0.f, 1.f, 0.f, 0.f,
-0.f, 0.f, 1.f, 0.f,
-0.f, 0.f, 2.f, 1.f }
-		};
-		ImGuizmo::DrawCubes(
-			glm::value_ptr(camera.m_view_projection_matrix),
-			glm::value_ptr(camera.m_projection_matrix), 
-			&objectMatrix[0][0], 1
-		);
-		ImGuizmo::Manipulate(
-			glm::value_ptr(camera.m_view_projection_matrix),
-			glm::value_ptr(camera.m_projection_matrix),
-			m_CurrentGizmoOperation,
-			m_CurrentGizmoMode,
-			glm::value_ptr(camera.m_camera_matrix),
-			NULL,
-			NULL
-		);
-	}
+//
+//	if (m_MainEntity != -1) {
+//		diffusion::CameraComponent camera = m_Context->get_registry().get<diffusion::CameraComponent>((entt::entity) m_MainEntity);
+//		ImGuizmo::BeginFrame();
+//		ImGuizmo::SetDrawlist();
+//		ImGuiIO& io = ImGui::GetIO();
+//		ImGuizmo::SetRect(leftTopWindowPoint.x, leftTopWindowPoint.y, m_SceneSize.x, m_SceneSize.y);
+//		//ImGuizmo::Perspective(27.f, m_SceneSize.x / m_SceneSize.y, 0.1f, 100.f, camera.m_view_projection_matrix);
+//		static float objectMatrix[4][16] = {
+//{ 1.f, 0.f, 0.f, 0.f,
+//  0.f, 1.f, 0.f, 0.f,
+//  0.f, 0.f, 1.f, 0.f,
+//  0.f, 0.f, 0.f, 1.f },
+//
+//{ 1.f, 0.f, 0.f, 0.f,
+//0.f, 1.f, 0.f, 0.f,
+//0.f, 0.f, 1.f, 0.f,
+//2.f, 0.f, 0.f, 1.f },
+//
+//{ 1.f, 0.f, 0.f, 0.f,
+//0.f, 1.f, 0.f, 0.f,
+//0.f, 0.f, 1.f, 0.f,
+//2.f, 0.f, 2.f, 1.f },
+//
+//{ 1.f, 0.f, 0.f, 0.f,
+//0.f, 1.f, 0.f, 0.f,
+//0.f, 0.f, 1.f, 0.f,
+//0.f, 0.f, 2.f, 1.f }
+//		};
+//		ImGuizmo::DrawCubes(
+//			glm::value_ptr(camera.m_view_projection_matrix),
+//			glm::value_ptr(camera.m_projection_matrix), 
+//			&objectMatrix[0][0], 1
+//		);
+//		ImGuizmo::Manipulate(
+//			glm::value_ptr(camera.m_view_projection_matrix),
+//			glm::value_ptr(camera.m_projection_matrix),
+//			m_CurrentGizmoOperation,
+//			m_CurrentGizmoMode,
+//			glm::value_ptr(camera.m_camera_matrix),
+//			NULL,
+//			NULL
+//		);
+//	}
 
 
 	ImGui::End();
