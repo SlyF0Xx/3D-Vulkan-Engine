@@ -61,22 +61,22 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	if (click) {
 		ImVec2 origin = ImGui::GetMousePos();
-		ImVec2 boundary = ImGui::GetWindowPos();
-		ImVec2 unnormalized_screen_space_coords = origin - boundary;
+		//ImVec2 boundary = ImGui::GetWindowPos();
+		ImVec2 unnormalized_screen_space_coords = origin - leftTopWindowPoint;
 
 		double depth = m_Context->get_depth(unnormalized_screen_space_coords.x, unnormalized_screen_space_coords.y);
 
-		ImVec2 screen_space_coords = unnormalized_screen_space_coords / m_RenderSize;
-		ImVec2 normalized_space_coords = (screen_space_coords - ImVec2(0.5f, 0.5f)) * 2;
+		m_ScreenSpaceClickCoords = unnormalized_screen_space_coords / m_RenderSize;
+		m_ScreenSpaceClickCoordsNorm = (m_ScreenSpaceClickCoords - ImVec2(0.5f, 0.5f)) * 2;
 
-		glm::vec3 global_position = diffusion::get_world_point_by_screen(
-			m_Context->get_registry(), normalized_space_coords.x, normalized_space_coords.y, depth);
+		m_GlobalPosition = diffusion::get_world_point_by_screen(
+			m_Context->get_registry(), m_ScreenSpaceClickCoordsNorm.x, m_ScreenSpaceClickCoordsNorm.y, depth);
 
 		m_Context->get_registry().view<diffusion::TransformComponent, diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each(
-			[this, &global_position](const diffusion::TransformComponent & transform, const diffusion::SubMesh & mesh) {
+			[this](const diffusion::TransformComponent & transform, const diffusion::SubMesh & mesh) {
 
 			if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
-					m_Context->get_registry(), mesh, transform), global_position)) {
+					m_Context->get_registry(), mesh, transform), m_GlobalPosition)) {
 				auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
 
 				glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
@@ -322,8 +322,23 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::Text(sceneSizeStr.c_str());
 
 	if (click) {
-		ImGui::Text("Clicked!");
+		ImGui::Text("Click status: TRUE");
+	} else {
+		ImGui::Text("Click status: -");
 	}
+
+	std::string screenSpaceStr = "Screen space click: [X: " + std::to_string(m_ScreenSpaceClickCoords.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoords.y) + "]";
+	ImGui::Text(screenSpaceStr.c_str());
+
+	std::string screenSpaceNormStr = "Screen space norm click: [X: " + std::to_string(m_ScreenSpaceClickCoordsNorm.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsNorm.y) + "]";
+	ImGui::Text(screenSpaceNormStr.c_str());
+
+	std::string globalCoordsStr = 
+		"Global coords: [X: " + std::to_string(m_GlobalPosition.x) + 
+		" Y: " + std::to_string(m_GlobalPosition.y) + 
+		" Z: " + std::to_string(m_GlobalPosition.z) + 
+		"]";
+	ImGui::Text(globalCoordsStr.c_str());
 	ImGui::PopStyleColor();
 #endif
 
