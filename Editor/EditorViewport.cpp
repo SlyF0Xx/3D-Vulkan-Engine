@@ -61,36 +61,43 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	if (click) {
 		ImVec2 origin = ImGui::GetMousePos();
-		//ImVec2 boundary = ImGui::GetWindowPos();
-		ImVec2 unnormalized_screen_space_coords = origin - leftTopWindowPoint;
+		ImVec2 boundary = ImGui::GetWindowPos();
+		m_ScreenSpaceClickCoordsRaw = origin - boundary;
 
-		double depth = m_Context->get_depth(unnormalized_screen_space_coords.x, unnormalized_screen_space_coords.y);
+		if (
+			m_ScreenSpaceClickCoordsRaw.x < m_SceneSize.x
+			&& m_ScreenSpaceClickCoordsRaw.x > 0
+			&& m_ScreenSpaceClickCoordsRaw.y < m_SceneSize.y
+			&& m_ScreenSpaceClickCoordsRaw.y > 0) {
 
-		m_ScreenSpaceClickCoords = unnormalized_screen_space_coords / m_RenderSize;
-		m_ScreenSpaceClickCoordsNorm = (m_ScreenSpaceClickCoords - ImVec2(0.5f, 0.5f)) * 2;
+			m_DepthClick = m_Context->get_depth(m_ScreenSpaceClickCoordsRaw.x, m_ScreenSpaceClickCoordsRaw.y);
 
-		m_GlobalPosition = diffusion::get_world_point_by_screen(
-			m_Context->get_registry(), m_ScreenSpaceClickCoordsNorm.x, m_ScreenSpaceClickCoordsNorm.y, depth);
+			m_ScreenSpaceClickCoords = m_ScreenSpaceClickCoordsRaw / m_SceneSize;
+			m_ScreenSpaceClickCoordsNorm = (m_ScreenSpaceClickCoords - ImVec2(0.5f, 0.5f)) * 2;
 
-		m_Context->get_registry().view<diffusion::TransformComponent, diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each(
-			[this](const diffusion::TransformComponent & transform, const diffusion::SubMesh & mesh) {
+			m_GlobalPosition = diffusion::get_world_point_by_screen(
+				m_Context->get_registry(), m_ScreenSpaceClickCoordsNorm.x, m_ScreenSpaceClickCoordsNorm.y, m_DepthClick);
 
-			if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
+			m_Context->get_registry().view<diffusion::TransformComponent, diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each(
+				[this](const diffusion::TransformComponent& transform, const diffusion::SubMesh& mesh) {
+
+				if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
 					m_Context->get_registry(), mesh, transform), m_GlobalPosition)) {
-				auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
+					auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
 
-				glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
-				glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
+					glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
+					glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
 
-				auto entity = diffusion::create_debug_cube_entity(
-					m_Context->get_registry(),
-					mesh.m_bounding_box.min + delta_2,
-					glm::vec3(0),
-					delta
-				);
-				m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
-			}
-		});
+					auto entity = diffusion::create_debug_cube_entity(
+						m_Context->get_registry(),
+						mesh.m_bounding_box.min + delta_2,
+						glm::vec3(0),
+						delta
+					);
+					m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
+				}
+			});
+		}
 	}
 
 #pragma region Viewport Overlay.
@@ -325,13 +332,19 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		ImGui::Text("Click status: TRUE");
 	} else {
 		ImGui::Text("Click status: -");
-	}
+	}	
+
+	std::string screenSpaceRawStr = "Screen space raw click: [X: " + std::to_string(m_ScreenSpaceClickCoordsRaw.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsRaw.y) + "]";
+	ImGui::Text(screenSpaceRawStr.c_str());
 
 	std::string screenSpaceStr = "Screen space click: [X: " + std::to_string(m_ScreenSpaceClickCoords.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoords.y) + "]";
 	ImGui::Text(screenSpaceStr.c_str());
 
 	std::string screenSpaceNormStr = "Screen space norm click: [X: " + std::to_string(m_ScreenSpaceClickCoordsNorm.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsNorm.y) + "]";
 	ImGui::Text(screenSpaceNormStr.c_str());
+
+	std::string depthStr = "Depth: " + std::to_string(m_DepthClick);
+	ImGui::Text(depthStr.c_str());
 
 	std::string globalCoordsStr = 
 		"Global coords: [X: " + std::to_string(m_GlobalPosition.x) + 

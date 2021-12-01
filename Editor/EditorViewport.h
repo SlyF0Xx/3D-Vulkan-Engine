@@ -57,8 +57,9 @@ namespace Editor {
 
 		ImVec2 m_SceneSize;
 		ImVec2 m_RenderSize = MIN_RENDER_SIZE;
-		ImVec2 m_ScreenSpaceClickCoords, m_ScreenSpaceClickCoordsNorm;
+		ImVec2 m_ScreenSpaceClickCoordsRaw, m_ScreenSpaceClickCoords, m_ScreenSpaceClickCoordsNorm;
 		glm::vec3 m_GlobalPosition;
+		double m_DepthClick = 0;
 		std::vector<ImTextureID> m_TexIDs;
 
 		bool m_IsTransformSnap = true;
