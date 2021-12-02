@@ -49,6 +49,9 @@
     <Filter Include="Файлы заголовков\Utils\Interaction">
       <UniqueIdentifier>{5b02de17-4ee8-48e7-a36d-90558c559791}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Utils\Interaction">
+      <UniqueIdentifier>{5a2959f1-cd7a-4444-9957-427a31a7babc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -134,6 +137,12 @@
     </ClCompile>
     <ClCompile Include="vendor\ImGuiFileDialog\ImGuiFileDialog.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneInteraction.cpp">
+      <Filter>Исходные файлы\Utils\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewportSnapInteraction.cpp">
+      <Filter>Исходные файлы\Utils\Interaction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

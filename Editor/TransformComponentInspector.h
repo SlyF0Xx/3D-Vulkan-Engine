@@ -15,11 +15,7 @@ namespace Editor {
 		TransformComponentInspector() = delete;
 		explicit TransformComponentInspector(const diffusion::Ref<Game>& ctx);
 
-		void OnEvent(const SceneInteractEvent& e) override;
 		void RenderContent() override;
-
-		void SetSnapDispatcher(const ViewportEventDispatcher& dispatcher);
-
 	private:
 		inline const char* GetTitle() const override;
 
@@ -32,6 +28,7 @@ namespace Editor {
 
 		diffusion::TransformComponent* m_TransformComponent;
 
+		SceneEventDispatcher m_SceneDispatcher;
 		ViewportEventDispatcher m_SnapDispatcher;
 
 		bool m_AlreadyAppliedChanges	= false;

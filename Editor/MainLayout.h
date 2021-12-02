@@ -8,8 +8,6 @@
 
 #include <vector>
 
-#include "SceneInteraction.h"
-
 #pragma region Widgets
 #include "ContentBrowser.h"
 #include "LuaConsole.h"
@@ -67,8 +65,6 @@ namespace Editor {
 		EditorViewport m_Viewport;
 
 		bool m_IsDockspaceInitialized = false;
-
-		SceneEventDispatcher m_SceneEventDispatcher;
 	};
 
 }

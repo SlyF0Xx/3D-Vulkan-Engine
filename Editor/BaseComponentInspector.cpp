@@ -8,10 +8,6 @@ void Editor::BaseComponentInspector::SetContext(const diffusion::Ref<Game>& game
 	m_Context = game;
 }
 
-void Editor::BaseComponentInspector::OnEvent(const SceneInteractEvent& e) {
-	m_Selection = e;
-}
-
 void Editor::BaseComponentInspector::Render() {
 	if (IsRenderable()) {
 		if (ImGui::CollapsingHeader(GetTitle(), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -27,13 +23,10 @@ void Editor::BaseComponentInspector::Render() {
 }
 
 bool Editor::BaseComponentInspector::IsAvailable() const {
-	return &m_Selection && ((m_Selection.Length > 1 && MULTI_ENTITIES_SUPPORT) || (m_Selection.Length == 1 && !MULTI_ENTITIES_SUPPORT));
+	//return &m_Selection && ((m_Selection.Length > 1 && MULTI_ENTITIES_SUPPORT) || (m_Selection.Length == 1 && !MULTI_ENTITIES_SUPPORT));
+	return true;
 }
 
 bool Editor::BaseComponentInspector::IsRenderable() const {
 	return true;
-}
-
-entt::entity Editor::BaseComponentInspector::GetFirstEntity() const {
-	return (entt::entity) m_Selection.Entities[0];
 }

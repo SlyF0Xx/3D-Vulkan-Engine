@@ -2,23 +2,22 @@
 
 Editor::TagComponentInspector::TagComponentInspector(const diffusion::Ref<Game>& ctx) 
 	: BaseComponentInspector(ctx) {
-	// ..
-}
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
+	IM_ASSERT(&m_SceneDispatcher != nullptr);
 
-void Editor::TagComponentInspector::OnEvent(const SceneInteractEvent& e) {
-	BaseComponentInspector::OnEvent(e);
+	m_SceneDispatcher->appendListener(SceneInteractType::SELECTED_ONE, [&](const SceneInteractEvent& e) {
+		m_Selection = (entt::entity) e.Entities[0];
+		m_TagComponent = GetComponent<diffusion::TagComponent>(m_Selection);
+		if (!m_TagComponent) {
+			return;
+		}
 
-	if (!IsAvailable()) {
+		strcpy_s(m_RenameBuf, Constants::ACTOR_NAME_LENGTH, m_TagComponent->m_Tag.c_str());
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::RESET_SELECTION, [&](const SceneInteractEvent& e) {
 		m_TagComponent = nullptr;
-		return;
-	}
-
-	m_TagComponent = GetComponent<diffusion::TagComponent>(GetFirstEntity());
-	if (!m_TagComponent) {
-		return;
-	}
-
-	strcpy_s(m_RenameBuf, Constants::ACTOR_NAME_LENGTH, m_TagComponent->m_Tag.c_str());
+	});
 }
 
 void Editor::TagComponentInspector::RenderContent() {
@@ -36,7 +35,7 @@ void Editor::TagComponentInspector::RenderContent() {
 
 void Editor::TagComponentInspector::Rename() {
 	if (strlen(m_RenameBuf) > 0) {
-		INS_COM_REP<diffusion::TagComponent, std::string>(GetFirstEntity(), std::string(m_RenameBuf));
+		INS_COM_REP<diffusion::TagComponent, std::string>(m_Selection, std::string(m_RenameBuf));
 	} else {
 		strcpy_s(m_RenameBuf, Constants::ACTOR_NAME_LENGTH, m_TagComponent->m_Tag.c_str());
 	}

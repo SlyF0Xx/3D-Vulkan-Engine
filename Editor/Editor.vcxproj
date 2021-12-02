@@ -172,6 +172,7 @@
     <ClCompile Include="LuaConsole.cpp" />
     <ClCompile Include="MainLayout.cpp" />
     <ClCompile Include="SceneHierarchy.cpp" />
+    <ClCompile Include="SceneInteraction.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="TagComponentInspector.cpp" />
     <ClCompile Include="TransformComponentInspector.cpp" />
@@ -186,6 +187,7 @@
     <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp" />
     <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp" />
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp" />
+    <ClCompile Include="ViewportSnapInteraction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponentInspector.h" />

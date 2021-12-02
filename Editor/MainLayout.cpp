@@ -10,12 +10,6 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 	m_LuaConsole(vulkan)
 {
 
-	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
-
-	m_SceneHierarchy.SetDispatcher(m_SceneEventDispatcher);
-	m_Inspector.SetDispatcher(m_SceneEventDispatcher);
-	m_Inspector.SetSnapDispatcher(m_Viewport.GetDispatcher());
-
 	m_TextEditor = TextEditor();
 	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 	m_TextEditor.SetTabSize(4);
@@ -177,7 +171,4 @@ void Editor::MainLayout::ImportScene() {
 	auto main_entity = m_Context->get_registry().view<diffusion::PossessedEntity>().front();
 	m_Context->get_registry().set<diffusion::PossessedEntity>(main_entity);
 	m_Context->get_registry().set<diffusion::MainCameraTag>(main_entity);
-
-	// Important.
-	m_Viewport.OnSceneUpdated();
 }

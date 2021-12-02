@@ -51,19 +51,12 @@ namespace Editor {
 	class SceneHierarchy : GameWidget {
 	public:
 		SceneHierarchy() = delete;
-		SceneHierarchy(const Ref<Game>& game)
-			: GameWidget(game) {};
-		/*SceneHierarchy(const Ref<Game>& game, const SceneEventDispatcher& dispatcher) 
-			: GameWidget(game), m_SingleDispatcher(dispatcher) {};*/
+		SceneHierarchy(const Ref<Game>& game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 
 		void DrawEntityNode(ENTT_ID_TYPE entity);
 		void DrawCreatableEntityNode(EditorCreatableEntity entity);
-
-		void SetDispatcher(const SceneEventDispatcher& dispatcher) {
-			m_SingleDispatcher = dispatcher;
-		}
 
 	private:
 		void StartRenaming(const ENTT_ID_TYPE& entity, const char* tag);

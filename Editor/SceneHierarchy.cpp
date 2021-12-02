@@ -1,5 +1,9 @@
 #include "SceneHierarchy.h"
 
+Editor::SceneHierarchy::SceneHierarchy(const Ref<Game>& game) : GameWidget(game) {
+	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
+}
+
 void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::Begin(TITLE, p_open, flags);
@@ -155,10 +159,10 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 				create_plane_entity_lit(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::LIGHT_DIRECTIONAL: {
-				auto& main_camera_entity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
-				auto& camera_component = m_Context->get_registry().get<diffusion::CameraComponent>(main_camera_entity.m_entity);
+				auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+				auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
 
-				create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f), camera_component.m_camera_target, glm::vec3(0.0f, 0.0f, -1.0f));
+				create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f), cameraComponent.m_camera_target, glm::vec3(0.0f, 0.0f, -1.0f));
 				break;
 			}
 			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE:

@@ -15,7 +15,16 @@
 #include <set>
 
 Editor::EditorViewport::EditorViewport(const diffusion::Ref<Game>& game) : GameWidget(game) {
-	m_SnapDispatcher = diffusion::CreateRef<ViewportEventDispatcherSrc>();
+	m_SnapDispatcher = ViewportSnapInteractionSingleTon::GetDispatcher();
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
+
+	m_SceneDispatcher->appendListener(SceneInteractType::SELECTED_ONE, [&](const SceneInteractEvent& e) {
+		m_Selection = e.Entities[0];
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::RESET_SELECTION, [&](const SceneInteractEvent& e) {
+		m_Selection = -1;
+	});
 }
 
 void Editor::EditorViewport::Render() {
@@ -56,13 +65,15 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
 #pragma endregion
 
-	ImVec2 leftTopWindowPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
+	m_TopLeftPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
 	auto click = ImGui::IsMouseClicked(0);
 
 	if (click) {
 		ImVec2 origin = ImGui::GetMousePos();
 		ImVec2 boundary = ImGui::GetWindowPos();
 		m_ScreenSpaceClickCoordsRaw = origin - boundary;
+
+		//ImGui::GetWindowDrawList()->AddCircle(origin, 3, Constants::ACTIVE_COLOR, 12, 1);
 
 		if (
 			m_ScreenSpaceClickCoordsRaw.x < m_SceneSize.x
@@ -101,7 +112,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	}
 
 #pragma region Viewport Overlay.
-	ImGui::SetNextWindowPos(leftTopWindowPoint);
+	ImGui::SetNextWindowPos(m_TopLeftPoint);
 	ImGui::SetNextWindowSize(m_SceneSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::BeginChild("##Overlay", m_SceneSize, false,
@@ -353,63 +364,28 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		" Z: " + std::to_string(m_GlobalPosition.z) + 
 		"]";
 	ImGui::Text(globalCoordsStr.c_str());
+
+	if (ImGuizmo::IsUsing()) {
+		ImGui::Text("Using gizmo");
+	} else {
+		ImGui::Text(ImGuizmo::IsOver() ? "Over gizmo" : "");
+		ImGui::SameLine();
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::TRANSLATE) ? "Over translate gizmo" : "");
+		ImGui::SameLine();
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::ROTATE) ? "Over rotate gizmo" : "");
+		ImGui::SameLine();
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::SCALE) ? "Over scale gizmo" : "");
+	}
 	ImGui::PopStyleColor();
-#endif
+#endif // _DEBUG.
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::EndChild();
 	ImGui::PopStyleVar();
-#pragma endregion
+#pragma endregion // Overlay.
 
-
-
-
-//
-//	if (m_MainEntity != -1) {
-//		diffusion::CameraComponent camera = m_Context->get_registry().get<diffusion::CameraComponent>((entt::entity) m_MainEntity);
-//		ImGuizmo::BeginFrame();
-//		ImGuizmo::SetDrawlist();
-//		ImGuiIO& io = ImGui::GetIO();
-//		ImGuizmo::SetRect(leftTopWindowPoint.x, leftTopWindowPoint.y, m_SceneSize.x, m_SceneSize.y);
-//		//ImGuizmo::Perspective(27.f, m_SceneSize.x / m_SceneSize.y, 0.1f, 100.f, camera.m_view_projection_matrix);
-//		static float objectMatrix[4][16] = {
-//{ 1.f, 0.f, 0.f, 0.f,
-//  0.f, 1.f, 0.f, 0.f,
-//  0.f, 0.f, 1.f, 0.f,
-//  0.f, 0.f, 0.f, 1.f },
-//
-//{ 1.f, 0.f, 0.f, 0.f,
-//0.f, 1.f, 0.f, 0.f,
-//0.f, 0.f, 1.f, 0.f,
-//2.f, 0.f, 0.f, 1.f },
-//
-//{ 1.f, 0.f, 0.f, 0.f,
-//0.f, 1.f, 0.f, 0.f,
-//0.f, 0.f, 1.f, 0.f,
-//2.f, 0.f, 2.f, 1.f },
-//
-//{ 1.f, 0.f, 0.f, 0.f,
-//0.f, 1.f, 0.f, 0.f,
-//0.f, 0.f, 1.f, 0.f,
-//0.f, 0.f, 2.f, 1.f }
-//		};
-//		ImGuizmo::DrawCubes(
-//			glm::value_ptr(camera.m_view_projection_matrix),
-//			glm::value_ptr(camera.m_projection_matrix), 
-//			&objectMatrix[0][0], 1
-//		);
-//		ImGuizmo::Manipulate(
-//			glm::value_ptr(camera.m_view_projection_matrix),
-//			glm::value_ptr(camera.m_projection_matrix),
-//			m_CurrentGizmoOperation,
-//			m_CurrentGizmoMode,
-//			glm::value_ptr(camera.m_camera_matrix),
-//			NULL,
-//			NULL
-//		);
-//	}
-
+	DrawGizmo();
 
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -428,16 +404,6 @@ void Editor::EditorViewport::OnResize(Game& vulkan, ImGUIBasedPresentationEngine
 	}
 }
 
-void Editor::EditorViewport::OnSceneUpdated() {
-	m_Context->get_registry().each([&](auto entity) {
-		const auto& camera = m_Context->get_registry().try_get<diffusion::MainCameraTag>(entity);
-		if (camera != nullptr) {
-			m_MainEntity = (ENTT_ID_TYPE) entity;
-		}
-	});
-	IM_ASSERT(m_MainEntity != -1);
-}
-
 void Editor::EditorViewport::InitContexed() {
 	GameWidget::InitContexed();
 
@@ -446,6 +412,116 @@ void Editor::EditorViewport::InitContexed() {
 	m_ScaleTex = GenerateTextureID(m_Context, m_ScaleTexData, SCALE_ICON_PATH);
 }
 
-ViewportEventDispatcher Editor::EditorViewport::GetDispatcher() const {
-	return m_SnapDispatcher;
+void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
+	if (m_Selection == -1)
+		return;
+
+	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	auto transformComponent = m_Context->get_registry().try_get<diffusion::TransformComponent>((entt::entity) m_Selection);
+
+
+	if (transformComponent) {
+		auto view = glm::lookAtLH(
+			cameraComponent.m_camera_position,
+			cameraComponent.m_camera_target,
+			-cameraComponent.m_up_vector
+		);
+
+		auto aspect_ratio = ASPECT_RATIO.x / ASPECT_RATIO.y;
+		auto perspective = glm::perspectiveLH(
+			cameraComponent.fov_y,
+			aspect_ratio,
+			cameraComponent.min_distance,
+			cameraComponent.max_distance
+		);
+
+		ImGuizmo::SetOrthographic(false);
+		//ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
+		ImGuizmo::BeginFrame();
+		ImGuizmo::SetDrawlist(drawlist);
+
+		ImGuizmo::SetRect(m_TopLeftPoint.x, m_TopLeftPoint.y, m_SceneSize.x, m_SceneSize.y);
+		/*ImGui::SetNextWindowSize(m_SceneSize);
+		ImGui::SetNextWindowPos(m_TopLeftPoint);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, Constants::OVERLAY_DEFAULT_COLOR);
+		ImGui::Begin("Gizmo", 0, ImGuiWindowFlags_NoMove);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(m_TopLeftPoint.x, m_TopLeftPoint.y, m_SceneSize.x, m_SceneSize.y);*/
+
+		// Prepare transform.
+		glm::vec3 s;
+		glm::quat r;
+		glm::vec3 pos;
+		glm::vec3 skew;
+		glm::vec4 pers;
+		glm::decompose(transformComponent->m_world_matrix, s, r, pos, skew, pers);
+		r = glm::conjugate(r);
+		glm::vec3 euler = glm::degrees(glm::eulerAngles(r));
+
+		static float translation[3], rotation[3], scale[3];
+		translation[0] = pos.x;
+		translation[1] = pos.y;
+		translation[2] = pos.z;
+
+		// skipping rotation for now cos I use quaternions in my own code
+		rotation[0] = euler.x;
+		rotation[1] = euler.y;
+		rotation[2] = euler.z;
+
+		scale[0] = s.x;
+		scale[1] = s.y;
+		scale[2] = s.z;
+
+		ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, glm::value_ptr(transformComponent->m_world_matrix));
+
+#if _DEBUG && false
+		ImGuizmo::DrawCubes(glm::value_ptr(view),
+			glm::value_ptr(perspective), glm::value_ptr(transformComponent->m_world_matrix), 1);
+#endif
+		ImGuizmo::Manipulate(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective),
+			m_CurrentGizmoOperation,
+			m_CurrentGizmoMode,
+			glm::value_ptr(transformComponent->m_world_matrix),
+			NULL,
+			NULL);
+
+		ImGuizmo::ViewManipulate(glm::value_ptr(view), 8.f, {m_SceneSize.x, m_TopLeftPoint.y}, {128.f, 128.f}, Constants::OVERLAY_DEFAULT_COLOR);
+
+		/*ImGui::End();
+		ImGui::PopStyleColor(1);*/
+
+		if (ImGuizmo::IsUsing()) {
+			ImGuizmo::DecomposeMatrixToComponents(
+				glm::value_ptr(transformComponent->m_world_matrix),
+				translation,
+				rotation,
+				scale
+			);
+
+			if (scale[0] == 0.0f) {
+				scale[0] += 0.01f;
+			}
+
+			if (scale[1] == 0.0f) {
+				scale[1] += 0.01f;
+			}
+
+			if (scale[2] == 0.0f) {
+				scale[2] += 0.01f;
+			}
+
+			glm::vec3 loc = glm::make_vec3(translation);
+			glm::vec3 rotRad = glm::radians(glm::make_vec3(rotation));
+			glm::vec3 glmScale = glm::make_vec3(scale);
+
+			// Apply transform.
+			m_Context->get_registry().emplace_or_replace<diffusion::TransformComponent>(
+				(entt::entity) m_Selection,
+				diffusion::create_matrix(loc, rotRad, glmScale)
+				);
+		}
+	}
 }
