@@ -2,6 +2,7 @@
 
 #include "Engine.h"
 #include "BaseComponents/Relation.h"
+#include "BaseComponents/ScriptComponent.h"
 
 namespace diffusion {
 
@@ -9,6 +10,7 @@ ComponentInitializer::ComponentInitializer(Game& game)
 	: m_game(game)
 {
 	m_game.get_registry().on_construct<Relation>().connect<&ComponentInitializer::add_childs_component>(*this);
+	//m_game.get_registry().on_construct<ScriptComponent>().connect<&ComponentInitializer::add_to_execution>(*this);
 }
 
 void ComponentInitializer::add_childs_component(::entt::registry& registry, ::entt::entity parent_entity)
@@ -24,6 +26,22 @@ void ComponentInitializer::add_childs_component(::entt::registry& registry, ::en
 		auto & constructed_childs = registry.emplace<Childs>(relation.m_parent);
 		constructed_childs.m_childs.insert(parent_entity);
 	}
+}
+
+void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::entity parent_entity)
+{
+	m_game.get_tasks().push_back(m_game.get_taskflow().emplace(  // create four tasks
+		[this, &registry, parent_entity]() {
+			const auto& script = registry.get<ScriptComponent>(parent_entity);
+
+			auto* lua = diffusion::create_lua_state(registry);
+			const int ret = luaL_dostring(lua, script.m_content.c_str());
+			if (ret != LUA_OK) {
+				const char* str = lua_tostring(lua, -1);
+				lua_pop(lua, 1);
+			}
+		}
+	));
 }
 
 } // namespace diffusion {

@@ -144,6 +144,9 @@
     <ClInclude Include="Entities\DebugCube.h">
       <Filter>Header Files\Entities</Filter>
     </ClInclude>
+    <ClInclude Include="BaseComponents\ScriptComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -165,9 +168,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BaseComponents\BoundingComponent.cpp">
-      <Filter>Source Files\BaseComponents</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseComponents\CameraComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
     <ClCompile Include="BaseComponents\TransformComponent.cpp">
@@ -197,13 +197,13 @@
     <ClCompile Include="Entities\DebugCube.cpp">
       <Filter>Source Files\Entities</Filter>
     </ClCompile>
-    <ClCompile Include="CameraComponent.cpp">
+    <ClCompile Include="BaseComponents\ScriptComponent.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponents\CameraComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
     <ClCompile Include="BaseComponents\MeshComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
   </ItemGroup>

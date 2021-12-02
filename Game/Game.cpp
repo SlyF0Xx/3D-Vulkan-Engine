@@ -115,6 +115,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
 
     MSG msg;
+    tf::Task draw;
     while (TRUE) {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
@@ -125,11 +126,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            vulkan.get_taskflow().clear();
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
+                vulkan.get_registry().view<diffusion::ScriptComponent>().each([&vulkan](const diffusion::ScriptComponent & script) {
+                    vulkan.get_component_initializer().add_to_execution(vulkan.get_registry(), entt::to_entity(vulkan.get_registry(), script));
+                });
+
                 rotate_system.tick();
                 time_point = std::chrono::steady_clock::now();
             }
-            vulkan.Draw();
+
+            draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
+            for (auto& task : vulkan.get_tasks()) {
+                draw.succeed(task);
+            }
+
+            vulkan.get_executor().run(vulkan.get_taskflow());
+            vulkan.get_executor().wait_for_all();
+            vulkan.get_tasks().clear();
         }
     }
     return (int) msg.wParam;
@@ -144,6 +158,7 @@ void generate_scene()
         glm::vec3(0, 0, 0),
         glm::vec3(0.0005, 0.0005, 0.0005));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(cat, "SLAVA cat");
+    g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(cat, "cat = get_entity_by_name(\"SLAVA cat\"); local_translate(cat, 15, 0, 0);");
     g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
     // for serialization prposes only
     g_vulkan->get_registry().emplace<diffusion::RotateTag>(cat, cat);
@@ -164,6 +179,7 @@ void generate_scene()
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_1, "tv 1 - small");
+    g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(tv_1, "tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 5);");
 
     auto tv_2 = diffusion::import_entity(
         g_vulkan->get_registry(),

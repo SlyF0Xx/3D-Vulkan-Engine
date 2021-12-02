@@ -133,6 +133,11 @@ Game::Game()
     allocator_info.instance = m_instance;
     allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
     m_allocator = vma::createAllocator(allocator_info);
+
+    m_lua_state = diffusion::create_lua_state(m_registry);
+
+    m_executor.run_until(m_taskflow
+        , [cnt = 0]() mutable { return ++cnt == 10; });
 }
 
 void Game::InitializePresentationEngine(const PresentationEngine& presentation_engine)
@@ -335,6 +340,29 @@ void Game::update_light(int index, const LightInfo & light)
 
 void Game::InitializeColorFormats(const std::vector<vk::SurfaceFormatKHR>& formats, PresentationEngine& presentation_engine)
 {
+    /*
+    std::vector<vk::Format> depth_formats{
+        vk::Format::eB8G8R8A8Unorm,
+        vk::Format::eD16Unorm,
+        vk::Format::eD16UnormS8Uint,
+        vk::Format::eD24UnormS8Uint,
+        vk::Format::eD32Sfloat,
+        vk::Format::eD32SfloatS8Uint };
+    
+    for (auto& format : depth_formats) {
+        vk::FormatProperties format_features = m_phys_device.getFormatProperties(format);
+        vk::FormatProperties2 format_props = m_phys_device.getFormatProperties2(format);
+        bool optimal_supported = (format_features.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        bool linear_supported = (format_features.linearTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        bool buffer_supported = (format_features.bufferFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        bool optimal_supported2 = (format_props.formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        bool linear_supported2 = (format_props.formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        bool buffer_supported2 = (format_props.formatProperties.bufferFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT) == vk::FormatFeatureFlagBits::eSampledImageFilterCubicEXT;
+        if (optimal_supported || linear_supported || optimal_supported2 || linear_supported2 || buffer_supported || buffer_supported2) {
+            std::cout << "kek";
+        }
+    }
+    */
     for (auto& format : formats) {
         switch (format.format)
         {

@@ -183,7 +183,7 @@ void ForwardRender::InitializePipeline()
 
     m_cache = m_game.get_device().createPipelineCache(vk::PipelineCacheCreateInfo());
 
-    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eStencilReference /*just compatibility*/, vk::DynamicState::ePrimitiveTopologyEXT };
+    std::array dynamic_states{ vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eStencilReference /*just compatibility*/ };
     vk::PipelineDynamicStateCreateInfo dynamic({}, dynamic_states);
 
     auto pipeline_result = m_game.get_device().createGraphicsPipeline(m_cache, vk::GraphicsPipelineCreateInfo({}, stages, &vertex_input_info, &input_assemply, {}, &viewport_state, &rasterization_info, &multisample, &depth_stensil_info, &blend_state, &dynamic, m_layout, m_render_pass));

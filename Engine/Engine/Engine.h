@@ -3,6 +3,7 @@
 #include "IRender.h"
 #include "VulkanInitializer.h"
 #include "ComponentInitializer.h"
+#include "BaseComponents/ScriptComponent.h"
 #include "glm_printer.h"
 
 #include <vulkan/vulkan.hpp>
@@ -10,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
+#include <taskflow/taskflow.hpp> 
 
 #include <windows.h>
 
@@ -109,6 +111,7 @@ public:
 
     int                 m_shadow_width = 1024;
     int                 m_shadow_height = 1024;
+    bool m_stopped = false;
 private:
     // Vulkan Common Data
     vk::Instance m_instance;
@@ -139,6 +142,11 @@ private:
     std::unique_ptr<IMenuRenderer> m_menu_renderer;
 
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
+    lua_State* m_lua_state;
+
+    tf::Executor m_executor;
+    tf::Taskflow m_taskflow;
+    std::vector<tf::Task> m_tasks;
 
     vk::PhysicalDevice select_physical_device();
     void select_graphics_queue_family();
@@ -225,6 +233,28 @@ public:
         return m_descriptor_pool;
     }
 
+    lua_State* get_lua_state()
+    {
+        return m_lua_state;
+    }
+
+    tf::Executor & get_executor()
+    {
+        return m_executor;
+    }
+
+    tf::Taskflow & get_taskflow()
+    {
+        return m_taskflow;
+    }
+
+    std::vector<tf::Task>& get_tasks()
+    {
+        return m_tasks;
+    }
+
+    diffusion::ComponentInitializer & get_component_initializer()
+    { return m_component_initializer; }
 
     vk::ShaderModule  loadSPIRVShader(std::string filename);
 

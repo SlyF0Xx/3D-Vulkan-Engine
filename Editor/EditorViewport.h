@@ -23,6 +23,7 @@ namespace Editor {
 		void Render(bool* p_open, ImGuiWindowFlags flags, ImGUIBasedPresentationEngine& engine);
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitContexed() override;
+		void ClickHandler();
 
 		ViewportEventDispatcher GetDispatcher() const;
 

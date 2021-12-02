@@ -423,7 +423,7 @@ auto initialize_point_depth_data(Game& game, size_t new_light_entities_size)
         vma::AllocationCreateInfo({}, vma::MemoryUsage::eGpuOnly));
 
     auto depth_image_view = game.get_device().createImageView(vk::ImageViewCreateInfo({}, depth_allocation.first, vk::ImageViewType::eCubeArray, game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, new_light_entities_size * 6)));
-    auto depth_sampler = game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eCubicEXT, vk::Filter::eCubicEXT, vk::SamplerMipmapMode::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+    auto depth_sampler = game.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
 
     return std::make_tuple(depth_allocation, depth_image_view, depth_sampler);
 }
@@ -590,7 +590,7 @@ void VulkanInitializer::recreate_framebuffer(::entt::registry& registry, std::ve
     }
 
     for (int j = 0; j < vulkan_light.m_swapchain_data.size(); ++j) {
-        vulkan_light.m_swapchain_data[j].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[j], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, i, 1)));
+        vulkan_light.m_swapchain_data[j].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[j], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, i, layer_count)));
 
         std::array deffered_views{ vulkan_light.m_swapchain_data[j].m_depth_image_view };
         vulkan_light.m_swapchain_data[j].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights.m_render_pass, deffered_views, m_game.m_shadow_width, m_game.m_shadow_height, layer_count));
@@ -713,7 +713,7 @@ void VulkanInitializer::add_point_light(::entt::registry& registry, ::entt::enti
     std::array<uint32_t, 1> queues{ 0 };
 
     for (int i = 0; i < swapchain_data.size(); ++i) {
-        swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[i], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, lights_ptr->m_point_light_entities.size(), 1)));
+        swapchain_data[i].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[i], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, lights_ptr->m_point_light_entities.size(), 6)));
 
         std::array deffered_views{ swapchain_data[i].m_depth_image_view };
         swapchain_data[i].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights_ptr->m_render_pass, deffered_views, m_game.m_shadow_width, m_game.m_shadow_height, 6));

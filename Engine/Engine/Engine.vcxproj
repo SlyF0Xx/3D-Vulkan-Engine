@@ -135,6 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;VK_USE_PLATFORM_WIN32_KHR;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\vendor\LuaBridge\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +175,7 @@
     <ClInclude Include="BaseComponents\PointLightComponent.h" />
     <ClInclude Include="BaseComponents\PossessedComponent.h" />
     <ClInclude Include="BaseComponents\Relation.h" />
+    <ClInclude Include="BaseComponents\ScriptComponent.h" />
     <ClInclude Include="BaseComponents\TagComponent.h" />
     <ClInclude Include="BaseComponents\TransformComponent.h" />
     <ClInclude Include="BaseComponents\UnlitMaterial.h" />
@@ -204,10 +206,10 @@
     <ClCompile Include="BaseComponents\BoundingComponent.cpp" />
     <ClCompile Include="BaseComponents\CameraComponent.cpp" />
     <ClCompile Include="BaseComponents\MeshComponent.cpp" />
+    <ClCompile Include="BaseComponents\ScriptComponent.cpp" />
     <ClCompile Include="BaseComponents\TransformComponent.cpp" />
     <ClCompile Include="BaseComponents\UnlitMaterial.cpp" />
     <ClCompile Include="BaseComponents\VulkanComponents\ImportableVulkanMeshComponents.cpp" />
-    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ComponentInitializer.cpp" />
     <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="Engine.cpp" />
@@ -218,7 +220,6 @@
     <ClCompile Include="Entities\PlaneEntity.cpp" />
     <ClCompile Include="Entities\PrimitiveEntity.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
-    <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>
