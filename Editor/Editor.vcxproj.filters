@@ -52,6 +52,9 @@
     <Filter Include="Исходные файлы\Utils\Interaction">
       <UniqueIdentifier>{5a2959f1-cd7a-4444-9957-427a31a7babc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imguizmo">
+      <UniqueIdentifier>{0c8d741e-5545-4238-9f49-cc02254833bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -143,6 +146,21 @@
     </ClCompile>
     <ClCompile Include="ViewportSnapInteraction.cpp">
       <Filter>Исходные файлы\Utils\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\GraphEditor.cpp">
+      <Filter>imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImCurveEdit.cpp">
+      <Filter>imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImGradient.cpp">
+      <Filter>imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp">
+      <Filter>imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImSequencer.cpp">
+      <Filter>imguizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +265,24 @@
     </ClInclude>
     <ClInclude Include="vendor\ImGuiFileDialog\dirent\dirent.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\GraphEditor.h">
+      <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImCurveEdit.h">
+      <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImGradient.h">
+      <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h">
+      <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImSequencer.h">
+      <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImZoomSlider.h">
+      <Filter>imguizmo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

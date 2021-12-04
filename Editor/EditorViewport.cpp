@@ -48,8 +48,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 		OnResize(*m_Context, engine);
 	}
+	m_RenderSize = ImGui::GetIO().DisplaySize;
 
-	if (currentSize.x > m_RenderSize.x) {
+	/*if (currentSize.x > m_RenderSize.x) {
 		float multiplier = (int) (currentSize.x / STEP) + 1;
 		m_RenderSize.x = STEP * multiplier;
 		OnResize(*m_Context, engine);
@@ -57,7 +58,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		float multiplier = (int) (currentSize.y / STEP) + 1;
 		m_RenderSize.y = STEP * multiplier;
 		OnResize(*m_Context, engine);
-	}
+	}*/
 
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
 	ImGui::SetCursorPos(pos);
@@ -344,7 +345,11 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		ImGui::Text("Click status: TRUE");
 	} else {
 		ImGui::Text("Click status: -");
-	}	
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+	std::string screenSpaceMouseCoordsStr = "Screen space mouse coords: [X: " + std::to_string(io.MousePos.x) + " Y: " + std::to_string(io.MousePos.y) + "]";
+	ImGui::Text(screenSpaceMouseCoordsStr.c_str());
 
 	std::string screenSpaceRawStr = "Screen space raw click: [X: " + std::to_string(m_ScreenSpaceClickCoordsRaw.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsRaw.y) + "]";
 	ImGui::Text(screenSpaceRawStr.c_str());
@@ -358,10 +363,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	std::string depthStr = "Depth: " + std::to_string(m_DepthClick);
 	ImGui::Text(depthStr.c_str());
 
-	std::string globalCoordsStr = 
-		"Global coords: [X: " + std::to_string(m_GlobalPosition.x) + 
-		" Y: " + std::to_string(m_GlobalPosition.y) + 
-		" Z: " + std::to_string(m_GlobalPosition.z) + 
+	std::string globalCoordsStr =
+		"Global coords: [X: " + std::to_string(m_GlobalPosition.x) +
+		" Y: " + std::to_string(m_GlobalPosition.y) +
+		" Z: " + std::to_string(m_GlobalPosition.z) +
 		"]";
 	ImGui::Text(globalCoordsStr.c_str());
 
@@ -369,13 +374,11 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		ImGui::Text("Using gizmo");
 	} else {
 		ImGui::Text(ImGuizmo::IsOver() ? "Over gizmo" : "");
-		ImGui::SameLine();
 		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::TRANSLATE) ? "Over translate gizmo" : "");
-		ImGui::SameLine();
 		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::ROTATE) ? "Over rotate gizmo" : "");
-		ImGui::SameLine();
 		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::SCALE) ? "Over scale gizmo" : "");
 	}
+
 	ImGui::PopStyleColor();
 #endif // _DEBUG.
 
@@ -413,7 +416,7 @@ void Editor::EditorViewport::InitContexed() {
 }
 
 void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
-	if (m_Selection == -1)
+	if (!m_Selection || m_Selection == -1)
 		return;
 
 	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
@@ -422,62 +425,51 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 
 
 	if (transformComponent) {
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist(drawlist);
+
+		auto pos = m_TopLeftPoint;
+		ImGuizmo::SetRect(pos.x, pos.y, m_SceneSize.x, m_SceneSize.y);
+
 		auto view = glm::lookAtLH(
 			cameraComponent.m_camera_position,
 			cameraComponent.m_camera_target,
 			-cameraComponent.m_up_vector
 		);
 
-		auto aspect_ratio = ASPECT_RATIO.x / ASPECT_RATIO.y;
 		auto perspective = glm::perspectiveLH(
 			cameraComponent.fov_y,
-			aspect_ratio,
+			cameraComponent.aspect,
 			cameraComponent.min_distance,
 			cameraComponent.max_distance
 		);
 
-		ImGuizmo::SetOrthographic(false);
-		//ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
-		ImGuizmo::BeginFrame();
-		ImGuizmo::SetDrawlist(drawlist);
+		//auto view = cameraComponent.m_camera_matrix;
+		//auto perspective = cameraComponent.m_projection_matrix;
 
-		ImGuizmo::SetRect(m_TopLeftPoint.x, m_TopLeftPoint.y, m_SceneSize.x, m_SceneSize.y);
-		/*ImGui::SetNextWindowSize(m_SceneSize);
-		ImGui::SetNextWindowPos(m_TopLeftPoint);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, Constants::OVERLAY_DEFAULT_COLOR);
-		ImGui::Begin("Gizmo", 0, ImGuiWindowFlags_NoMove);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(m_TopLeftPoint.x, m_TopLeftPoint.y, m_SceneSize.x, m_SceneSize.y);*/
+#if _DEBUG && 1
+		ImGuizmo::DrawGrid(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective),
+			glm::value_ptr(glm::identity<glm::mat4>()),
+			200.f
+		);
 
-		// Prepare transform.
-		glm::vec3 s;
-		glm::quat r;
-		glm::vec3 pos;
-		glm::vec3 skew;
-		glm::vec4 pers;
-		glm::decompose(transformComponent->m_world_matrix, s, r, pos, skew, pers);
-		r = glm::conjugate(r);
-		glm::vec3 euler = glm::degrees(glm::eulerAngles(r));
-
-		static float translation[3], rotation[3], scale[3];
-		translation[0] = pos.x;
-		translation[1] = pos.y;
-		translation[2] = pos.z;
-
-		// skipping rotation for now cos I use quaternions in my own code
-		rotation[0] = euler.x;
-		rotation[1] = euler.y;
-		rotation[2] = euler.z;
-
-		scale[0] = s.x;
-		scale[1] = s.y;
-		scale[2] = s.z;
-
-		ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, glm::value_ptr(transformComponent->m_world_matrix));
-
-#if _DEBUG && false
 		ImGuizmo::DrawCubes(glm::value_ptr(view),
 			glm::value_ptr(perspective), glm::value_ptr(transformComponent->m_world_matrix), 1);
+
+		// CAMERA.
+		/*ImGuizmo::DrawCubes(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective), 
+			glm::value_ptr(
+				diffusion::create_matrix(
+					cameraComponent.m_camera_position, 
+					glm::vec3(0, 0, 0), 
+					glm::vec3(0.5f, 0.5f, 0.5f)
+				)
+			), 
+			1);*/
 #endif
 		ImGuizmo::Manipulate(
 			glm::value_ptr(view),
@@ -488,12 +480,11 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			NULL,
 			NULL);
 
-		ImGuizmo::ViewManipulate(glm::value_ptr(view), 8.f, {m_SceneSize.x, m_TopLeftPoint.y}, {128.f, 128.f}, Constants::OVERLAY_DEFAULT_COLOR);
+		ImGuizmo::ViewManipulate(glm::value_ptr(view), 10.f, {m_SceneSize.x + m_TopLeftPoint.x - 128, m_SceneSize.y + m_TopLeftPoint.y - 128}, {128.f, 128.f}, Constants::OVERLAY_DEFAULT_COLOR);
 
-		/*ImGui::End();
-		ImGui::PopStyleColor(1);*/
 
 		if (ImGuizmo::IsUsing()) {
+			static float translation[3], rotation[3], scale[3];
 			ImGuizmo::DecomposeMatrixToComponents(
 				glm::value_ptr(transformComponent->m_world_matrix),
 				translation,

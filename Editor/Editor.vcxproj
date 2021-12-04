@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\ImGuiFileDialog;..\Engine\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\ImGuiFileDialog;$(ProjectDir)vendor\ImGuizmo;..\Engine\Engine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
@@ -177,6 +177,11 @@
     <ClCompile Include="TagComponentInspector.cpp" />
     <ClCompile Include="TransformComponentInspector.cpp" />
     <ClCompile Include="vendor\ImGuiFileDialog\ImGuiFileDialog.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\GraphEditor.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImCurveEdit.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImGradient.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImSequencer.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_vulkan.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -212,6 +217,12 @@
     <ClInclude Include="vendor\ImGuiFileDialog\dirent\dirent.h" />
     <ClInclude Include="vendor\ImGuiFileDialog\ImGuiFileDialog.h" />
     <ClInclude Include="vendor\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="vendor\ImGuizmo\GraphEditor.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImCurveEdit.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImGradient.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImSequencer.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImZoomSlider.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />

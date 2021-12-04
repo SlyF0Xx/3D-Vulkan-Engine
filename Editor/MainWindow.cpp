@@ -40,12 +40,14 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 
 		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != LayoutRenderStatus::SUCCESS) {
 			break;
 		}
 
 		ImGui::Render();
+		ImGui::EndFrame();
 		ImDrawData* draw_data = ImGui::GetDrawData();
 		const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 		if (!is_minimized) {
