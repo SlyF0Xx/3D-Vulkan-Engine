@@ -171,9 +171,4 @@ void Editor::MainLayout::ImportScene() {
 	auto main_entity = m_Context->get_registry().view<diffusion::PossessedEntity>().front();
 	m_Context->get_registry().set<diffusion::PossessedEntity>(main_entity);
 	m_Context->get_registry().set<diffusion::MainCameraTag>(main_entity);
-
-	// TODO: TEMP.
-	auto& a = m_Context->get_registry().get<diffusion::CameraComponent>(main_entity);
-	a.m_camera_position = glm::vec3(0, -25, 10);
-	m_Context->get_registry().emplace_or_replace<diffusion::CameraComponent>(main_entity, a);
 }

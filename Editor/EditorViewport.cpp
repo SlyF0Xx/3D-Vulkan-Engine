@@ -48,9 +48,9 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 		OnResize(*m_Context, engine);
 	}
-	m_RenderSize = ImGui::GetIO().DisplaySize;
+	//m_RenderSize = ImGui::GetIO().DisplaySize;
 
-	/*if (currentSize.x > m_RenderSize.x) {
+	if (currentSize.x > m_RenderSize.x) {
 		float multiplier = (int) (currentSize.x / STEP) + 1;
 		m_RenderSize.x = STEP * multiplier;
 		OnResize(*m_Context, engine);
@@ -58,7 +58,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		float multiplier = (int) (currentSize.y / STEP) + 1;
 		m_RenderSize.y = STEP * multiplier;
 		OnResize(*m_Context, engine);
-	}*/
+	}
 
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
 	ImGui::SetCursorPos(pos);
@@ -107,6 +107,8 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 						delta
 					);
 					m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
+
+					m_SceneDispatcher->dispatch(SceneInteractEvent(SceneInteractType::SELECTED_ONE, static_cast<uint32_t>(parrent)));
 				}
 			});
 		}
@@ -455,8 +457,11 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			200.f
 		);
 
+		glm::mat4 global_matrix = diffusion::calculate_global_world_matrix(m_Context->get_registry(), *transformComponent);
+		glm::mat4 original = global_matrix;
+
 		ImGuizmo::DrawCubes(glm::value_ptr(view),
-			glm::value_ptr(perspective), glm::value_ptr(transformComponent->m_world_matrix), 1);
+			glm::value_ptr(perspective), glm::value_ptr(global_matrix), 1);
 
 		// CAMERA.
 		/*ImGuizmo::DrawCubes(
@@ -476,7 +481,7 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			glm::value_ptr(perspective),
 			m_CurrentGizmoOperation,
 			m_CurrentGizmoMode,
-			glm::value_ptr(transformComponent->m_world_matrix),
+			glm::value_ptr(global_matrix),
 			NULL,
 			NULL);
 
@@ -484,35 +489,11 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 
 
 		if (ImGuizmo::IsUsing()) {
-			static float translation[3], rotation[3], scale[3];
-			ImGuizmo::DecomposeMatrixToComponents(
-				glm::value_ptr(transformComponent->m_world_matrix),
-				translation,
-				rotation,
-				scale
-			);
+			m_Context->get_registry().patch<diffusion::TransformComponent>((entt::entity)m_Selection, [global_matrix, &original](diffusion::TransformComponent & transform) {
+				glm::mat4 new_end = global_matrix / original;
 
-			if (scale[0] == 0.0f) {
-				scale[0] += 0.01f;
-			}
-
-			if (scale[1] == 0.0f) {
-				scale[1] += 0.01f;
-			}
-
-			if (scale[2] == 0.0f) {
-				scale[2] += 0.01f;
-			}
-
-			glm::vec3 loc = glm::make_vec3(translation);
-			glm::vec3 rotRad = glm::radians(glm::make_vec3(rotation));
-			glm::vec3 glmScale = glm::make_vec3(scale);
-
-			// Apply transform.
-			m_Context->get_registry().emplace_or_replace<diffusion::TransformComponent>(
-				(entt::entity) m_Selection,
-				diffusion::create_matrix(loc, rotRad, glmScale)
-				);
+				transform.m_world_matrix *= new_end;
+			});
 		}
 	}
 }
