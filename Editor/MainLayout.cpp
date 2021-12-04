@@ -1,18 +1,14 @@
 #include "MainLayout.h"
+#include <BaseComponents/DebugComponent.h>
 
 Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
+	EditorLayout(vulkan),
 	m_ContentBrowser(vulkan), 
 	m_SceneHierarchy(vulkan), 
 	m_Inspector(vulkan),
 	m_Viewport(vulkan),
 	m_LuaConsole(vulkan)
 {
-
-	m_SceneEventDispatcher = CreateRef<SceneEventDispatcherSrc>();
-
-	m_SceneHierarchy.SetDispatcher(m_SceneEventDispatcher);
-	m_Inspector.SetDispatcher(m_SceneEventDispatcher);
-	m_Inspector.SetSnapDispatcher(m_Viewport.GetDispatcher());
 
 	m_TextEditor = TextEditor();
 	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -22,6 +18,10 @@ Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
 }
 
 Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+	ImGui::PushStyleColor(ImGuiCol_Button, Constants::SUCCESS_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::HOVER_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, Constants::ACTIVE_COLOR);
+
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 	// all active windows docked into it will lose their parent and become undocked.
@@ -103,6 +103,10 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		m_Inspector.Render(&m_WindowStates.isInspectorOpen, 0);
 	}
 
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+
 	return Editor::LayoutRenderStatus::SUCCESS;
 }
 
@@ -149,4 +153,22 @@ void Editor::MainLayout::InitDockspace() {
 	ImGui::DockBuilderFinish(m_DockIDs.MainDock);
 
 	m_IsDockspaceInitialized = true;
+}
+
+void Editor::MainLayout::ImportScene() {
+	std::ifstream fin("sample_scene.json");
+	std::string str {std::istreambuf_iterator<char>(fin),
+					 std::istreambuf_iterator<char>()};
+
+	NJSONInputArchive json_in(str);
+	entt::basic_snapshot_loader loader(m_Context->get_registry());
+	loader.entities(json_in)
+		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+		diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+		diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
+		diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
+
+	auto main_entity = m_Context->get_registry().view<diffusion::PossessedEntity>().front();
+	m_Context->get_registry().set<diffusion::PossessedEntity>(main_entity);
+	m_Context->get_registry().set<diffusion::MainCameraTag>(main_entity);
 }

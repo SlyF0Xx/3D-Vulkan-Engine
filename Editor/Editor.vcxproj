@@ -92,8 +92,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS.</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,8 +107,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS.</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,15 +122,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)\..\vendor\LuaBridge\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;..\Engine\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)\..\vendor\LuaBridge\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\ImGuiFileDialog;$(ProjectDir)vendor\ImGuizmo;..\Engine\Engine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;$(ProjectDir)vendor\LuaBridge\LuaBridge3\build;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -139,10 +142,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS.</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -168,9 +172,16 @@
     <ClCompile Include="LuaConsole.cpp" />
     <ClCompile Include="MainLayout.cpp" />
     <ClCompile Include="SceneHierarchy.cpp" />
+    <ClCompile Include="SceneInteraction.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="TagComponentInspector.cpp" />
     <ClCompile Include="TransformComponentInspector.cpp" />
+    <ClCompile Include="vendor\ImGuiFileDialog\ImGuiFileDialog.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\GraphEditor.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImCurveEdit.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImGradient.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp" />
+    <ClCompile Include="vendor\ImGuizmo\ImSequencer.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_vulkan.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -181,6 +192,7 @@
     <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp" />
     <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp" />
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp" />
+    <ClCompile Include="ViewportSnapInteraction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponentInspector.h" />
@@ -202,6 +214,15 @@
     <ClInclude Include="SceneInteraction.h" />
     <ClInclude Include="TagComponentInspector.h" />
     <ClInclude Include="TransformComponentInspector.h" />
+    <ClInclude Include="vendor\ImGuiFileDialog\dirent\dirent.h" />
+    <ClInclude Include="vendor\ImGuiFileDialog\ImGuiFileDialog.h" />
+    <ClInclude Include="vendor\ImGuiFileDialog\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="vendor\ImGuizmo\GraphEditor.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImCurveEdit.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImGradient.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImSequencer.h" />
+    <ClInclude Include="vendor\ImGuizmo\ImZoomSlider.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />

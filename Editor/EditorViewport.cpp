@@ -15,7 +15,16 @@
 #include <set>
 
 Editor::EditorViewport::EditorViewport(const diffusion::Ref<Game>& game) : GameWidget(game) {
-	m_SnapDispatcher = diffusion::CreateRef<ViewportEventDispatcherSrc>();
+	m_SnapDispatcher = ViewportSnapInteractionSingleTon::GetDispatcher();
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
+
+	m_SceneDispatcher->appendListener(SceneInteractType::SELECTED_ONE, [&](const SceneInteractEvent& e) {
+		m_Selection = e.Entities[0];
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::RESET_SELECTION, [&](const SceneInteractEvent& e) {
+		m_Selection = -1;
+	});
 }
 
 void Editor::EditorViewport::Render() {
@@ -29,40 +38,44 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags) {
 void Editor::EditorViewport::ClickHandler() {
 	ImVec2 origin = ImGui::GetMousePos();
 	ImVec2 boundary = ImGui::GetWindowPos();
-	ImVec2 unnormalized_screen_space_coords = origin - boundary;
+	m_ScreenSpaceClickCoordsRaw = origin - boundary;
 
-	if (unnormalized_screen_space_coords.x < 0 || unnormalized_screen_space_coords.y < 0 ||
-		unnormalized_screen_space_coords.x > m_RenderSize.x || unnormalized_screen_space_coords.y > m_RenderSize.y) {
+	if (!(m_ScreenSpaceClickCoordsRaw.x < m_SceneSize.x
+		&& m_ScreenSpaceClickCoordsRaw.x > 0
+		&& m_ScreenSpaceClickCoordsRaw.y < m_SceneSize.y
+		&& m_ScreenSpaceClickCoordsRaw.y > 0)) {
 		return;
 	}
 
-	double depth = m_Context->get_depth(unnormalized_screen_space_coords.x, unnormalized_screen_space_coords.y);
+	m_DepthClick = m_Context->get_depth(m_ScreenSpaceClickCoordsRaw.x, m_ScreenSpaceClickCoordsRaw.y);
 
-	ImVec2 screen_space_coords = unnormalized_screen_space_coords / m_RenderSize;
-	ImVec2 normalized_space_coords = (screen_space_coords - ImVec2(0.5f, 0.5f)) * 2;
+	m_ScreenSpaceClickCoords = m_ScreenSpaceClickCoordsRaw / m_SceneSize;
+	m_ScreenSpaceClickCoordsNorm = (m_ScreenSpaceClickCoords - ImVec2(0.5f, 0.5f)) * 2;
 
-	glm::vec3 global_position = diffusion::get_world_point_by_screen(
-		m_Context->get_registry(), normalized_space_coords.x, normalized_space_coords.y, depth);
+	m_GlobalPosition = diffusion::get_world_point_by_screen(
+		m_Context->get_registry(), m_ScreenSpaceClickCoordsNorm.x, m_ScreenSpaceClickCoordsNorm.y, m_DepthClick);
 
 	m_Context->get_registry().view<diffusion::TransformComponent, diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>).each(
-		[this, &global_position](const diffusion::TransformComponent& transform, const diffusion::SubMesh& mesh) {
+		[this](const diffusion::TransformComponent& transform, const diffusion::SubMesh& mesh) {
 
-			if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
-				m_Context->get_registry(), mesh, transform), global_position)) {
-				auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
+		if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
+			m_Context->get_registry(), mesh, transform), m_GlobalPosition)) {
+			auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
 
-				glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
-				glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
+			glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
+			glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
 
-				auto entity = diffusion::create_debug_cube_entity(
-					m_Context->get_registry(),
-					mesh.m_bounding_box.min + delta_2,
-					glm::vec3(0),
-					delta
-				);
-				m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
-			}
-		});
+			auto entity = diffusion::create_debug_cube_entity(
+				m_Context->get_registry(),
+				mesh.m_bounding_box.min + delta_2,
+				glm::vec3(0),
+				delta
+			);
+			m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
+
+			m_SceneDispatcher->dispatch(SceneInteractEvent(SceneInteractType::SELECTED_ONE, static_cast<uint32_t>(parrent)));
+		}
+	});
 }
 
 void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIBasedPresentationEngine& engine) {
@@ -71,12 +84,14 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 	ImGui::Begin(TITLE, p_open, _flags);
 
+#pragma region Render Target.
 	ImVec2 currentSize = ImGui::GetContentRegionAvail();
 	if (currentSize.x != m_SceneSize.x || currentSize.y != m_SceneSize.y) {
 		m_SceneSize = currentSize;
 
 		OnResize(*m_Context, engine);
 	}
+	//m_RenderSize = ImGui::GetIO().DisplaySize;
 
 	if (currentSize.x > m_RenderSize.x) {
 		float multiplier = (int) (currentSize.x / STEP) + 1;
@@ -87,30 +102,22 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		m_RenderSize.y = STEP * multiplier;
 		OnResize(*m_Context, engine);
 	}
-	/*float y = glm::max(current_size.x / 16 * 9, current_size.y);
-	float x = glm::max(current_size.x, current_size.y / 9 * 16);
-	ImVec2 renderSize = {1920, 1080};*/
-	/*if (current_size.x * 9 > current_size.y * 16) {
-		renderSize = {current_size.x, current_size.x / 16 * 9};
-	} else {
-		renderSize = {current_size.y / 9 * 16, current_size.y};
-	}*/
 
-
-	//ImGui::PushItemWidth(-1);
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
 	ImGui::SetCursorPos(pos);
 
 	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
+#pragma endregion
 
+	m_TopLeftPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
 	auto click = ImGui::IsMouseClicked(0);
 
 	if (click) {
 		ClickHandler();
 	}
 
-
-	ImGui::SetNextWindowPos(ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos());
+#pragma region Viewport Overlay.
+	ImGui::SetNextWindowPos(m_TopLeftPoint);
 	ImGui::SetNextWindowSize(m_SceneSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::BeginChild("##Overlay", m_SceneSize, false,
@@ -122,24 +129,61 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		| ImGuiWindowFlags_NoScrollWithMouse
 		| ImGuiWindowFlags_AlwaysUseWindowPadding
 	);
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(210, 240, 110, 160));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 250, 32, 190));
+
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::OVERLAY_HOVER_COLOR);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, Constants::OVERLAY_ACTIVE_COLOR);
 
 	int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
-	ImVec2 size = ImVec2(16, 16);     // Size of the image we want to make visible
+	ImVec2 size = ImVec2(32, 32);     // Size of the image we want to make visible
 	ImVec2 uv0 = ImVec2(0.0f, 0.0f);                        // UV coordinates for lower-left
 	ImVec2 uv1 = ImVec2(1, 1);								// UV coordinates for (thumbnailSize, thumbnailSize) in our texture
-	ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);         // Background.
-	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);       // No tint
-	ImGui::SameLine(m_SceneSize.x - (32.f * 3.f));
+	ImVec4 bg_col = ImVec4(0.f, 0.f, 0.f, .0f);         // Background.
+	ImVec4 tint_col = ImVec4(1.0f, 1.f, 1.0f, 1.f);       // No tint
+	ImGui::SameLine(m_SceneSize.x - (48.f * 3.f));
+
+	if (m_CurrentGizmoOperation == ImGuizmo::TRANSLATE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
+	}
 	if (ImGui::ImageButton(m_GridTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_TRANSFORM);
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine();
+
+	if (m_CurrentGizmoOperation == ImGuizmo::ROTATE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
+	}
 	if (ImGui::ImageButton(m_RotationTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_ROTATION);
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine();
+
+	if (m_CurrentGizmoOperation == ImGuizmo::SCALE) {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_SUCCESS_COLOR);
+	} else {
+		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
+	}
 	if (ImGui::ImageButton(m_ScaleTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+		m_CurrentGizmoOperation = ImGuizmo::SCALE;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_SCALE);
+	ImGui::PopStyleColor();
+
+	if (ImGui::IsKeyPressed(90))
+		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsKeyPressed(69))
+		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsKeyPressed(82)) // r Key
+		m_CurrentGizmoOperation = ImGuizmo::SCALE;
 
 	if (ImGui::BeginPopup(POPUP_TRANSFORM)) {
 		TransformSnapSize localSize = m_TransformSnapSize;
@@ -249,7 +293,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::BeginPopup(POPUP_SCALE)) {
 		ScaleSnapSize localSize = m_ScaleSnapSize;
 		bool localCheckbox = m_IsScaleSnap;
-		
+
 		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Scale");
 		ImGui::PopFont();
@@ -300,30 +344,56 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	std::string sceneSizeStr = "Scene size: [X: " + std::to_string(m_SceneSize.x) + " Y: " + std::to_string(m_SceneSize.y) + "]";
 	ImGui::Text(sceneSizeStr.c_str());
-	ImGui::PopStyleColor();
-#endif
 
-	/*int gcd = std::gcd((int) renderSize.x, (int) renderSize.y);
-	ImGui::Text(std::to_string(gcd).c_str());
-	std::string renderSizePropStr = "Render proportions: [" + std::to_string(renderSize.x / gcd) + ":" + std::to_string(renderSize.y / gcd) + "]";
-	ImGui::Text(renderSizePropStr.c_str());*/
+	if (click) {
+		ImGui::Text("Click status: TRUE");
+	} else {
+		ImGui::Text("Click status: -");
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+	std::string screenSpaceMouseCoordsStr = "Screen space mouse coords: [X: " + std::to_string(io.MousePos.x) + " Y: " + std::to_string(io.MousePos.y) + "]";
+	ImGui::Text(screenSpaceMouseCoordsStr.c_str());
+
+	std::string screenSpaceRawStr = "Screen space raw click: [X: " + std::to_string(m_ScreenSpaceClickCoordsRaw.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsRaw.y) + "]";
+	ImGui::Text(screenSpaceRawStr.c_str());
+
+	std::string screenSpaceStr = "Screen space click: [X: " + std::to_string(m_ScreenSpaceClickCoords.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoords.y) + "]";
+	ImGui::Text(screenSpaceStr.c_str());
+
+	std::string screenSpaceNormStr = "Screen space norm click: [X: " + std::to_string(m_ScreenSpaceClickCoordsNorm.x) + " Y: " + std::to_string(m_ScreenSpaceClickCoordsNorm.y) + "]";
+	ImGui::Text(screenSpaceNormStr.c_str());
+
+	std::string depthStr = "Depth: " + std::to_string(m_DepthClick);
+	ImGui::Text(depthStr.c_str());
+
+	std::string globalCoordsStr =
+		"Global coords: [X: " + std::to_string(m_GlobalPosition.x) +
+		" Y: " + std::to_string(m_GlobalPosition.y) +
+		" Z: " + std::to_string(m_GlobalPosition.z) +
+		"]";
+	ImGui::Text(globalCoordsStr.c_str());
+
+	if (ImGuizmo::IsUsing()) {
+		ImGui::Text("Using gizmo");
+	} else {
+		ImGui::Text(ImGuizmo::IsOver() ? "Over gizmo" : "");
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::TRANSLATE) ? "Over translate gizmo" : "");
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::ROTATE) ? "Over rotate gizmo" : "");
+		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::SCALE) ? "Over scale gizmo" : "");
+	}
+
+	ImGui::PopStyleColor();
+#endif // _DEBUG.
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::EndChild();
 	ImGui::PopStyleVar();
+#pragma endregion // Overlay.
 
+	DrawGizmo();
 
-	//ImVec2 p1 = ImGui::GetCursorScreenPos();
-	//ImVec2 p2 = ImVec2(p1.x + 200, p1.y + 200);
-	////ImGui::Checkbox("Menu", &menu);
-	//ImGui::GetWindowDrawList()->AddLine(p1, p2, IM_COL32(255, 0, 255, 255));
-	//ImGui::GetWindowDrawList()->AddCircleFilled(p1, 6.0f, IM_COL32(255, 0, 255, 255));
-	//ImGui::GetWindowDrawList()->AddCircleFilled(p2, 6.0f, IM_COL32(255, 0, 255, 255));
-
-	//ImGui::ShowDemoWindow();
-
-	//
 	ImGui::End();
 	ImGui::PopStyleVar();
 }
@@ -349,6 +419,83 @@ void Editor::EditorViewport::InitContexed() {
 	m_ScaleTex = GenerateTextureID(m_Context, m_ScaleTexData, SCALE_ICON_PATH);
 }
 
-ViewportEventDispatcher Editor::EditorViewport::GetDispatcher() const {
-	return m_SnapDispatcher;
+void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
+	if (!m_Selection || m_Selection == -1)
+		return;
+
+	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	auto transformComponent = m_Context->get_registry().try_get<diffusion::TransformComponent>((entt::entity) m_Selection);
+
+
+	if (transformComponent) {
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist(drawlist);
+
+		auto pos = m_TopLeftPoint;
+		ImGuizmo::SetRect(pos.x, pos.y, m_SceneSize.x, m_SceneSize.y);
+
+		auto view = glm::lookAtLH(
+			cameraComponent.m_camera_position,
+			cameraComponent.m_camera_target,
+			-cameraComponent.m_up_vector
+		);
+
+		auto perspective = glm::perspectiveLH(
+			cameraComponent.fov_y,
+			cameraComponent.aspect,
+			cameraComponent.min_distance,
+			cameraComponent.max_distance
+		);
+
+		//auto view = cameraComponent.m_camera_matrix;
+		//auto perspective = cameraComponent.m_projection_matrix;
+
+#if _DEBUG && 1
+		ImGuizmo::DrawGrid(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective),
+			glm::value_ptr(glm::identity<glm::mat4>()),
+			200.f
+		);
+
+		glm::mat4 global_matrix = diffusion::calculate_global_world_matrix(m_Context->get_registry(), *transformComponent);
+		glm::mat4 original = global_matrix;
+
+		ImGuizmo::DrawCubes(glm::value_ptr(view),
+			glm::value_ptr(perspective), glm::value_ptr(global_matrix), 1);
+
+		// CAMERA.
+		/*ImGuizmo::DrawCubes(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective), 
+			glm::value_ptr(
+				diffusion::create_matrix(
+					cameraComponent.m_camera_position, 
+					glm::vec3(0, 0, 0), 
+					glm::vec3(0.5f, 0.5f, 0.5f)
+				)
+			), 
+			1);*/
+#endif
+		ImGuizmo::Manipulate(
+			glm::value_ptr(view),
+			glm::value_ptr(perspective),
+			m_CurrentGizmoOperation,
+			m_CurrentGizmoMode,
+			glm::value_ptr(global_matrix),
+			NULL,
+			NULL);
+
+		ImGuizmo::ViewManipulate(glm::value_ptr(view), 10.f, {m_SceneSize.x + m_TopLeftPoint.x - 128, m_SceneSize.y + m_TopLeftPoint.y - 128}, {128.f, 128.f}, Constants::OVERLAY_DEFAULT_COLOR);
+
+
+		if (ImGuizmo::IsUsing()) {
+			m_Context->get_registry().patch<diffusion::TransformComponent>((entt::entity)m_Selection, [global_matrix, &original](diffusion::TransformComponent & transform) {
+				glm::mat4 new_end = global_matrix / original;
+
+				transform.m_world_matrix *= new_end;
+			});
+		}
+	}
 }

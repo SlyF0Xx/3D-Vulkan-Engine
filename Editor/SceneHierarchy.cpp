@@ -1,6 +1,11 @@
 #include "SceneHierarchy.h"
 
+Editor::SceneHierarchy::SceneHierarchy(const Ref<Game>& game) : GameWidget(game) {
+	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
+}
+
 void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::Begin(TITLE, p_open, flags);
 
 	m_Context->get_registry().each([&](auto entity) {
@@ -11,7 +16,39 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 		}
 	});
 
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, Constants::EDITOR_WINDOW_PADDING);
+
+	const char* text = "Add Entity";
+	auto windowWidth = ImGui::GetWindowSize().x;
+	auto textWidth = ImGui::CalcTextSize(text).x;
+
+	ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+	if (ImGui::Button(text, {0.f, 0.f})) {
+		ImGui::OpenPopup(POPUP_ADD_ENTITY);
+	}
+
+	if (ImGui::BeginPopup(POPUP_ADD_ENTITY)) {
+		for (EditorCreatableEntity entity : m_CreatableEntities) {
+			DrawCreatableEntityNode(entity);
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleVar();
+
+	if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+		if (ImGuiFileDialog::Instance()->IsOk()) {
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+			
+			import_entity(m_Context->get_registry(), std::filesystem::path(filePathName));
+		}
+
+		ImGuiFileDialog::Instance()->Close();
+	}
+
 	ImGui::End();
+	ImGui::PopStyleVar();
 }
 
 void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
@@ -100,6 +137,52 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	}
 
 
+}
+
+void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entity) {
+	ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_SpanAvailWidth;
+
+	if (entity.Children) {
+		treeNodeFlags |= ImGuiTreeNodeFlags_OpenOnArrow;
+	} else {
+		treeNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+	}
+
+	bool isOpened = ImGui::TreeNodeEx(entity.Title, treeNodeFlags);
+
+	if (ImGui::IsItemClicked() && !entity.Children) {
+		switch (entity.Type) {
+			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_CUBE:
+				create_cube_entity_lit(m_Context->get_registry());
+				break;
+			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_PLANE:
+				create_plane_entity_lit(m_Context->get_registry());
+				break;
+			case EditorCreatableEntity::EditorCreatableEntityType::LIGHT_DIRECTIONAL: {
+				auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+				auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+
+				create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f), cameraComponent.m_camera_target, glm::vec3(0.0f, 0.0f, -1.0f));
+				break;
+			}
+			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE:
+				create_debug_cube_entity(m_Context->get_registry());
+				break;
+			case EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE: {
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Model", ".fbx,.obj", ".");
+				break;
+			}
+		}
+		ImGui::CloseCurrentPopup();
+	}
+
+	if (isOpened && entity.Children) {
+		for (auto i = 0; i < entity.Size; i++) {
+			DrawCreatableEntityNode(entity.Children[i]);
+		}
+
+		ImGui::TreePop();
+	}
 }
 
 void Editor::SceneHierarchy::StartRenaming(const ENTT_ID_TYPE& entity, const char* tag) {

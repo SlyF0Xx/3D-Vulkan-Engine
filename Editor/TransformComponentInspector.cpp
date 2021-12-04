@@ -2,18 +2,35 @@
 
 Editor::TransformComponentInspector::TransformComponentInspector(const diffusion::Ref<Game>& ctx) 
 	: BaseComponentInspector(ctx) {
-	// ..
-}
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
+	IM_ASSERT(&m_SceneDispatcher != nullptr);
 
-void Editor::TransformComponentInspector::OnEvent(const SceneInteractEvent& e) {
-	BaseComponentInspector::OnEvent(e);
+	m_SceneDispatcher->appendListener(SceneInteractType::SELECTED_ONE, [&](const SceneInteractEvent& e) {
+		m_Selection = (entt::entity) e.Entities[0];
+		m_TransformComponent = GetComponent<diffusion::TransformComponent>(m_Selection);
+	});
 
-	if (!IsAvailable()) {
+	m_SceneDispatcher->appendListener(SceneInteractType::RESET_SELECTION, [&](const SceneInteractEvent& e) {
 		m_TransformComponent = nullptr;
-		return;
-	}
+	});
 
-	m_TransformComponent = GetComponent<diffusion::TransformComponent>(GetFirstEntity());
+	m_SnapDispatcher = ViewportSnapInteractionSingleTon::GetDispatcher();
+	IM_ASSERT(&m_SnapDispatcher != nullptr);
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::TRANSFORM_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsTransformSnap = enabled;
+		m_TransformSnapSize = static_cast<TransformSnapSize>(value);
+	});
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::ROTATION_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsRotationSnap = enabled;
+		m_RotationSnapSize = static_cast<RotationSnapSize>(value);
+	});
+
+	m_SnapDispatcher->appendListener(ViewportInteractType::SCALE_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
+		m_IsScaleSnap = enabled;
+		m_ScaleSnapSize = static_cast<ScaleSnapSize>(value);
+	});
 }
 
 void Editor::TransformComponentInspector::RenderContent() {
@@ -84,27 +101,6 @@ void Editor::TransformComponentInspector::RenderContent() {
 	ImGui::EndGroupPanel();
 }
 
-void Editor::TransformComponentInspector::SetSnapDispatcher(const ViewportEventDispatcher& dispatcher) {
-	m_SnapDispatcher = dispatcher;
-
-	IM_ASSERT(&m_SnapDispatcher != nullptr);
-
-	m_SnapDispatcher->appendListener(ViewportInteractType::TRANSFORM_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
-		m_IsTransformSnap = enabled;
-		m_TransformSnapSize = static_cast<TransformSnapSize>(value);
-	});
-
-	m_SnapDispatcher->appendListener(ViewportInteractType::ROTATION_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
-		m_IsRotationSnap = enabled;
-		m_RotationSnapSize = static_cast<RotationSnapSize>(value);
-	});
-
-	m_SnapDispatcher->appendListener(ViewportInteractType::SCALE_SNAP, [&](const ViewportInteractType& type, const bool enabled, const int value) {
-		m_IsScaleSnap = enabled;
-		m_ScaleSnapSize = static_cast<ScaleSnapSize>(value);
-	});
-}
-
 inline const char* Editor::TransformComponentInspector::GetTitle() const {
 	if (IsRenderable()) {
 		return "Transform";
@@ -134,7 +130,7 @@ void Editor::TransformComponentInspector::ApplyTransform() {
 	}
 
 	glm::vec3 loc = glm::make_vec3(m_Location);
-	glm::vec3 rotRad = glm::radians(glm::make_vec3(m_Rotation)) * -1.f;
+	glm::vec3 rotRad = glm::radians(glm::make_vec3(m_Rotation));
 	glm::vec3 scale = glm::make_vec3(m_Scale);
 
 	/*printf("Applied\n");
@@ -142,6 +138,6 @@ void Editor::TransformComponentInspector::ApplyTransform() {
 	printf("ROT: %lf %lf %lf\n", rot.x, rot.y, rot.z);
 	printf("SCA: %lf %lf %lf\n", scale.x, scale.y, scale.z);*/
 
-	INS_COM_REP<diffusion::TransformComponent>(GetFirstEntity(), diffusion::create_matrix(loc, rotRad, scale));
+	INS_COM_REP<diffusion::TransformComponent>(m_Selection, diffusion::create_matrix(loc, rotRad, scale));
 	m_AlreadyAppliedChanges = true;
 }

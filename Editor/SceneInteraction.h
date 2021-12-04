@@ -49,4 +49,11 @@ namespace Editor {
 	using SceneEventDispatcherSrc	= eventpp::EventDispatcher<SceneInteractType, SceneInteractFunc, SceneInteractEventPolicies>;
 	using SceneEventDispatcher		= diffusion::Ref<SceneEventDispatcherSrc>;
 
+	class SceneInteractionSingleTon {
+	public:
+		static SceneEventDispatcher GetDispatcher();
+	private:
+		static SceneEventDispatcher s_Dispatcher;
+	};
+
 }

@@ -2,12 +2,11 @@
 
 #include <Engine.h>
 #include <Core/Base.h>
+#include <BaseComponents/PointLightComponent.h>
 
 #include "imgui_internal.h"
 
 #include <vector>
-
-#include "SceneInteraction.h"
 
 #pragma region Widgets
 #include "ContentBrowser.h"
@@ -48,6 +47,9 @@ namespace Editor {
 		LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
+
+		// TODO: IT'S TEMP SOLUTION!!!
+		void ImportScene();
 	private:
 		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags m_WindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -63,8 +65,6 @@ namespace Editor {
 		EditorViewport m_Viewport;
 
 		bool m_IsDockspaceInitialized = false;
-
-		SceneEventDispatcher m_SceneEventDispatcher;
 	};
 
 }

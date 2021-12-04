@@ -39,7 +39,7 @@ LuaConsole::LuaConsole(diffusion::Ref<Game>& vulkan)
 
     getGlobalNamespace(m_State)
         .beginClass<entt::entity>("entity")
-        .endClass()
+        .endClass();
         /*
         .beginClass<diffusion::TransformComponent>("transform")
         .endClass()
@@ -58,7 +58,7 @@ LuaConsole::LuaConsole(diffusion::Ref<Game>& vulkan)
             });
         })
         */
-        .addFunction("global_translate", [this](entt::entity& entity, float x, float y, float z) {
+        /*.addFunction("global_translate", [this](entt::entity& entity, float x, float y, float z) {
             m_vulkan->get_registry().patch<diffusion::TransformComponent>(entity, [x, y, z](auto& transform) {
                 transform.m_world_matrix = glm::translate(glm::mat4(1), glm::vec3(x, y, z));
             });
@@ -98,7 +98,7 @@ LuaConsole::LuaConsole(diffusion::Ref<Game>& vulkan)
         .addFunction("import_mesh", [this](entt::entity& entity, const char* path) {
             diffusion::import_mesh(std::filesystem::path(path), m_vulkan->get_registry(), entity);
         })
-        .addFunction("get_entity_by_name", [this](const char* name) { return get_entity_by_name(name); });
+        .addFunction("get_entity_by_name", [this](const char* name) { return get_entity_by_name(name); });*/
 
     //lua_getglobal(m_State, "_G");
     //luaL_Reg luas[] = {

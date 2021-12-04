@@ -21,7 +21,6 @@ namespace Editor {
 		explicit BaseComponentInspector(const diffusion::Ref<Game>& ctx);
 
 		void SetContext(const diffusion::Ref<Game>& game);
-		virtual void OnEvent(const SceneInteractEvent& e);
 
 		void Render();
 
@@ -32,16 +31,13 @@ namespace Editor {
 		bool IsAvailable() const;
 		virtual bool IsRenderable() const;
 
-		entt::entity GetFirstEntity() const;
-
 		virtual void RenderContent() = 0;
 
 		inline virtual const char* GetTitle() const = 0;
 
 	protected:
 		diffusion::Ref<Game> m_Context;
-
-		SceneInteractEvent m_Selection;
+		entt::entity m_Selection;
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT		= false;
 	};

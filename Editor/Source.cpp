@@ -84,13 +84,13 @@ int main() {
 		diffusion::CreateRef<Editor::MainLayout>(vulkan);
 
 	diffusion::Ref <Editor::EditorWindow> container = 
-		diffusion::CreateRef<Editor::MainWindow>(layout, vulkan);
+		diffusion::CreateRef<Editor::MainWindow>(layout);
 
 	if (!container->Create()) {
 		return 1;
 	}
 
-	import_scene(*vulkan);
+	layout->ImportScene();
 
 	container->StartMainLoop();
 

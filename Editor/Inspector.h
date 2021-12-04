@@ -21,13 +21,6 @@ namespace Editor {
 		Inspector() = delete;
 		Inspector(const Ref<Game>& game);
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
-
-		void SetDispatcher(const SceneEventDispatcher& dispatcher);
-		void SetSnapDispatcher(const ViewportEventDispatcher& dispatcher);
-
-	private:
-		void OnEvent(const SceneInteractEvent& sEvent);
-
 	public:
 		static inline constexpr const char* TITLE	= "Inspector";
 	private:
@@ -38,7 +31,6 @@ namespace Editor {
 		TagComponentInspector m_TagInspector;
 		TransformComponentInspector m_TransformInspector;
 #pragma endregion
-
 		SceneEventDispatcher m_SingleDispatcher;
 	};
 

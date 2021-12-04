@@ -12,7 +12,6 @@ namespace Editor {
 		TagComponentInspector() = delete;
 		explicit TagComponentInspector(const diffusion::Ref<Game>& ctx);
 
-		void OnEvent(const SceneInteractEvent& e) override;
 		void RenderContent() override;
 
 	private:
@@ -24,6 +23,8 @@ namespace Editor {
 
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT	= false;
+
+		SceneEventDispatcher m_SceneDispatcher;
 
 		char m_RenameBuf[Constants::ACTOR_NAME_LENGTH]				= "";
 		diffusion::TagComponent* m_TagComponent						= nullptr;
