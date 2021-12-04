@@ -112,10 +112,6 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	m_TopLeftPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
 	auto click = ImGui::IsMouseClicked(0);
 
-	if (click) {
-		ClickHandler();
-	}
-
 #pragma region Viewport Overlay.
 	ImGui::SetNextWindowPos(m_TopLeftPoint);
 	ImGui::SetNextWindowSize(m_SceneSize);
@@ -393,6 +389,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 #pragma endregion // Overlay.
 
 	DrawGizmo();
+
+	if (click && !ImGuizmo::IsUsing()) {
+		ClickHandler();
+	}
 
 	ImGui::End();
 	ImGui::PopStyleVar();
