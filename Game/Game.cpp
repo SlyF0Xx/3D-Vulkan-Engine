@@ -4,6 +4,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vk_mem_alloc.hpp>
 
+#pragma comment ( lib, "Winmm.Lib")
 
 #include "framework.h"
 #include "Game.h"
@@ -12,6 +13,7 @@
 #include "PlaneEntity.h"
 #include "KitamoriMovingSystem.h"
 #include "RotateSystem.h"
+#include "PhysicsSystem.h"
 #include "CameraComponent.h"
 #include "InputEvents.h"
 #include "PossessedComponent.h"
@@ -24,6 +26,8 @@
 #include "DirectionalLightEntity.h"
 #include "DirectionalLightComponent.h"
 #include "TagComponent.h"
+#include "edyn/edyn.hpp"
+#include <edyn/time/time.hpp>
 
 #include <Engine.h>
 
@@ -81,6 +85,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+    edyn::init();
+    edyn::attach(g_vulkan->get_registry());
+    edyn::set_fixed_dt(g_vulkan->get_registry(), 0.1);
+/**
+    auto def = edyn::rigidbody_def();
+    def.position = { 3, 0, 0 };
+    def.presentation = true;
+    def.mass = 10;
+    def.linvel = { 0, 0, / 0.041 0 };
+    def.gravity = edyn::vector3_z * -1;
+    edyn::make_rigidbody(g_vulkan->get_registry(), def);
+**/
+    
+    //edyn::set_paused(g_vulkan->get_registry(), true);
+
+    //g_vulkan->get_registry().on_construct<edyn::box_shape>().connect<>
+
     generate_scene();
     //import_scene();
 
@@ -103,12 +124,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     diffusion::RotateSystem rotate_system(vulkan.get_registry());
+    diffusion::PhysicsSystem phys(vulkan.get_registry());
 
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
     std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
-
+    
     MSG msg;
     while (TRUE) {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -120,9 +142,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            //if(std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100))
             if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
+               // edyn::set_paused(g_vulkan->get_registry(), true);
+                //edyn::step_simulation(g_vulkan->get_registry());
+              //  edyn::set_paused(g_vulkan->get_registry(), true);
                 rotate_system.tick();
+                //phys.tick();
                 time_point = std::chrono::steady_clock::now();
+
+               /* auto view = vulkan.get_registry().view<edyn::linvel, edyn::position, edyn::dynamic_tag>();
+                for (auto& entity : view)
+                {
+                    //vulkan.get_registry().get_or_emplace<edyn::dirty>(entity).updated<edyn::position, edyn::linvel>();
+                    vulkan.get_registry().get<edyn::position>(entity) += edyn::vector3_z * -2;
+                    edyn::position& pos = vulkan.get_registry().get<edyn::position>(entity);
+                    //pos ;
+                    edyn::linvel& vel = vulkan.get_registry().get<edyn::linvel>(entity);
+                }*/
+                edyn::update(g_vulkan->get_registry());
+                phys.tick();
             }
             vulkan.Draw();
         }
@@ -185,7 +224,8 @@ void generate_scene()
     g_vulkan->get_registry().emplace<diffusion::PossessedEntity>(main_entity, main_entity);
     g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_entity, main_entity);
 
-    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    auto test = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    g_vulkan->get_registry().set<diffusion::PhysTag>(test);
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
