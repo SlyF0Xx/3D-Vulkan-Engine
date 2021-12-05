@@ -206,6 +206,7 @@
     <ClCompile Include="BaseComponents\BoundingComponent.cpp" />
     <ClCompile Include="BaseComponents\CameraComponent.cpp" />
     <ClCompile Include="BaseComponents\MeshComponent.cpp" />
+    <ClCompile Include="BaseComponents\Relation.cpp" />
     <ClCompile Include="BaseComponents\ScriptComponent.cpp" />
     <ClCompile Include="BaseComponents\TransformComponent.cpp" />
     <ClCompile Include="BaseComponents\UnlitMaterial.cpp" />

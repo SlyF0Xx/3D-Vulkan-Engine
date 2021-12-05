@@ -135,9 +135,6 @@ Game::Game()
     m_allocator = vma::createAllocator(allocator_info);
 
     m_lua_state = diffusion::create_lua_state(m_registry);
-
-    m_executor.run_until(m_taskflow
-        , [cnt = 0]() mutable { return ++cnt == 10; });
 }
 
 void Game::InitializePresentationEngine(const PresentationEngine& presentation_engine)

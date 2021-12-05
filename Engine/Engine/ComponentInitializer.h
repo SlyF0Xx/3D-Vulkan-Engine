@@ -12,6 +12,7 @@ public:
 	ComponentInitializer(Game& game);
 
 	void add_childs_component(::entt::registry& registry, ::entt::entity parent_entity);
+	void add_state(::entt::registry& registry, ::entt::entity parent_entity);
 	void add_to_execution(::entt::registry& registry, ::entt::entity parent_entity);
 
 private:

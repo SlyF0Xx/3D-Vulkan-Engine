@@ -91,6 +91,9 @@ lua_State* create_lua_state(entt::registry& registry)
         })
         .addFunction("get_entity_by_name", [&registry](const char* name) {
             return get_entity_by_name(registry, name);
+        })
+        .addFunction("destroy_entity", [&registry](entt::entity& entity) {
+            return ;
         });
     return state;
 }

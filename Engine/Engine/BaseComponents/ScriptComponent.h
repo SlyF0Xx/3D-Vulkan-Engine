@@ -19,6 +19,10 @@ struct ScriptComponent {
 	std::string m_content;
 };
 
+struct ScriptComponentState {
+	lua_State* m_state;
+};
+
 lua_State* create_lua_state(entt::registry & registry);
 
 }

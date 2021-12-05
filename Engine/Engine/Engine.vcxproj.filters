@@ -206,5 +206,8 @@
     <ClCompile Include="BaseComponents\MeshComponent.cpp">
       <Filter>Source Files\BaseComponents</Filter>
     </ClCompile>
+    <ClCompile Include="BaseComponents\Relation.cpp">
+      <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

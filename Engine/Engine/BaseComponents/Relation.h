@@ -19,4 +19,6 @@ struct Childs
 	std::unordered_set<::entt::entity> m_childs;
 };
 
+void destroy_entity(entt::registry& registry, entt::entity & entity);
+
 }
