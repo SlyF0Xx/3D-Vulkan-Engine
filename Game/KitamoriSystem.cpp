@@ -3,6 +3,8 @@
 #include "BaseComponents/PossessedComponent.h"
 #include "BaseComponents/TransformComponent.h"
 
+#include <edyn/collision/contact_manifold.hpp>
+
 namespace diffusion {
 
 KitamoriSystem::KitamoriSystem(::entt::registry& registry)
@@ -18,13 +20,20 @@ void KitamoriSystem::update_components()
     const auto & possesed_transform_component = m_registry.get<const TransformComponent>(possesed_entity);
 
     auto potential_linked_components = m_registry.view<const BoundingComponent, const TransformComponent>(::entt::exclude<KitamoriLinkedTag>);
-    potential_linked_components.each([this, &possesed_bounding_component, &possesed_transform_component]
+   /* potential_linked_components.each([this, &possesed_bounding_component, &possesed_transform_component]
         (const BoundingComponent & bounding_component, const TransformComponent & transform_component) {
 
         if (intersect(m_registry, possesed_bounding_component, bounding_component, possesed_transform_component, transform_component)) {
             m_registry.emplace<KitamoriLinkedTag>(::entt::to_entity(m_registry, bounding_component));
         }
-    });
+    });*/
+/*
+    auto linkeds = m_registry.view<const edyn::contact_manifold>();
+    linkeds.each([this, &possesed_bounding_component, &possesed_transform_component]
+        (const edyn::contact_manifold &contact)
+    {
+        contact.body
+    });*/
 }
 
 } // namespace diffusion {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 
 namespace glm {
@@ -47,3 +48,13 @@ inline void from_json(const nlohmann::json& j, vec3& vector) {
 }
 
 } // namespace glm {
+
+namespace std::filesystem {
+    inline void to_json(nlohmann::json& j, const path& opt) {
+        j = opt.string();
+    }
+
+    inline void from_json(const nlohmann::json& j, path& opt) {
+        opt = j.get<std::string>();
+    }
+}
