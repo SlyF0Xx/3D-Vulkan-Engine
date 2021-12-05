@@ -1,3 +1,6 @@
 [submodule "vendor/LuaBridge"]
 	path = vendor/LuaBridge
 	url = https://github.com/kunitoki/LuaBridge3.git
+[submodule "vendor/Edyn"]
+	path = vendor/Edyn
+	url = https://github.com/xissburg/edyn.git
