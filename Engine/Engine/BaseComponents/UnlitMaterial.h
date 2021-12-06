@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../glm_printer.h"
+
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
 #include <entt/entt.hpp>

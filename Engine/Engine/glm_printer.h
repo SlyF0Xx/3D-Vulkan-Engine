@@ -57,4 +57,4 @@ namespace std::filesystem {
     inline void from_json(const nlohmann::json& j, path& opt) {
         opt = j.get<std::string>();
     }
-}
+} // namespace filesystem
