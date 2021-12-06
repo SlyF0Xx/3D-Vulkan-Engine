@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;VK_USE_PLATFORM_WIN32_KHR;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\vendor\Edyn\include;$(ProjectDir)..\..\vendor\LuaBridge\Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\vendor\Edyn\build\include;$(ProjectDir)..\..\vendor\Edyn\include;$(ProjectDir)..\..\vendor\LuaBridge\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

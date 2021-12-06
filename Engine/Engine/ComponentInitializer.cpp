@@ -38,21 +38,16 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 	m_game.get_tasks().push_back(m_game.get_taskflow().emplace(  // create four tasks
 		[this, &registry, parent_entity]() {
 			const auto& script = registry.get<ScriptComponent>(parent_entity);
-			const auto& lua_script = registry.get<ScriptComponentState>(parent_entity);
-			/*
-			auto* lua = diffusion::create_lua_state(registry);
-			const int ret = luaL_dostring(lua, script.m_content.c_str());
-			if (ret != LUA_OK) {
-				const char* str = lua_tostring(lua, -1);
-				lua_pop(lua, 1);
+			auto * lua_script = registry.try_get<ScriptComponentState>(parent_entity);
+			if (lua_script) {
+				registry.emplace<ScriptComponentState>(parent_entity, diffusion::create_lua_state(registry));
 			}
-			*/
 
 			// state is local
-			const int ret = luaL_dostring(lua_script.m_state, script.m_content.c_str());
+			const int ret = luaL_dostring(lua_script->m_state, script.m_content.c_str());
 			if (ret != LUA_OK) {
-				const char* str = lua_tostring(lua_script.m_state, -1);
-				lua_pop(lua_script.m_state, 1);
+				const char* str = lua_tostring(lua_script->m_state, -1);
+				lua_pop(lua_script->m_state, 1);
 			}
 		}
 	));

@@ -133,7 +133,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
-    std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point script_time_point = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point phys_time_point = std::chrono::steady_clock::now();
     
     MSG msg;
     tf::Task draw;
@@ -148,31 +149,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else
         {
             vulkan.get_taskflow().clear();
-            if (std::chrono::steady_clock::now() - time_point > std::chrono::milliseconds(100)) {
+            if (std::chrono::steady_clock::now() - script_time_point > std::chrono::milliseconds(100)) {
                 vulkan.get_registry().view<diffusion::ScriptComponent>().each([&vulkan](const diffusion::ScriptComponent & script) {
                     vulkan.get_component_initializer().add_to_execution(vulkan.get_registry(), entt::to_entity(vulkan.get_registry(), script));
                 });
 
                 rotate_system.tick();
-                //phys.tick();
-                time_point = std::chrono::steady_clock::now();
-
-               /* auto view = vulkan.get_registry().view<edyn::linvel, edyn::position, edyn::dynamic_tag>();
-                for (auto& entity : view)
-                {
-                    //vulkan.get_registry().get_or_emplace<edyn::dirty>(entity).updated<edyn::position, edyn::linvel>();
-                    vulkan.get_registry().get<edyn::position>(entity) += edyn::vector3_z * -2;
-                    edyn::position& pos = vulkan.get_registry().get<edyn::position>(entity);
-                    //pos ;
-                    edyn::linvel& vel = vulkan.get_registry().get<edyn::linvel>(entity);
-                }*/
-                edyn::update(g_vulkan->get_registry());
-                phys.tick();
+                script_time_point = std::chrono::steady_clock::now();
             }
 
-            draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
-            for (auto& task : vulkan.get_tasks()) {
-                draw.succeed(task);
+            tf::Task physics;
+            if (std::chrono::steady_clock::now() - phys_time_point > std::chrono::milliseconds(10)) {
+                physics = vulkan.get_taskflow().emplace([&vulkan, &phys]() {
+                    edyn::update(vulkan.get_registry());
+                    phys.tick();
+                });
+                for (auto& task : vulkan.get_tasks()) {
+                    physics.succeed(task);
+                }
+
+                draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
+                draw.succeed(physics);
+
+                script_time_point = std::chrono::steady_clock::now();
+            }
+            else {
+                draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
             }
 
             vulkan.get_executor().run(vulkan.get_taskflow());

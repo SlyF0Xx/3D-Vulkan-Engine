@@ -1,6 +1,6 @@
 #include "PhysicsSystem.h"
 
-#include "ImportableEntity.h"
+#include "Entities/ImportableEntity.h"
 #include "KitamoriSystem.h"
 //#include "edyn/collision/contact_point.hpp"
 
@@ -84,13 +84,13 @@ void diffusion::PhysicsSystem::add_phys_component(::entt::registry& registry, ::
 void diffusion::PhysicsSystem::on_detect_collision(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto& point = registry.get<edyn::contact_point>(parent_entity);
-    
+    /*
     if (registry.try_get<KitamoriLinkedTag>(point.body[0]) || registry.try_get<KitamoriLinkedTag>(point.body[1]))
     {
         registry.emplace_or_replace<KitamoriLinkedTag>(point.body[0]);
         registry.emplace_or_replace<KitamoriLinkedTag>(point.body[1]);
     }
-    
+    */
     /*auto [con_ent, constraint] = edyn::make_constraint<edyn::distance_constraint>(registry,point.body[1],point.body[0]);
 
     
@@ -98,5 +98,5 @@ void diffusion::PhysicsSystem::on_detect_collision(::entt::registry& registry, :
     constraint.pivot[0] = edyn::vector3_zero;
     constraint.pivot[1] = edyn::vector3_zero;
     constraint.distance = 0;*/
-    edyn::update(registry);
+    //edyn::update(registry);
 }

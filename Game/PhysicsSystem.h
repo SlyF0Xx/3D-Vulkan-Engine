@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TransformComponent.h"
+#include "BaseComponents/TransformComponent.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
