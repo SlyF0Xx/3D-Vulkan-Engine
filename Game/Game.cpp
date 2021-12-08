@@ -64,7 +64,6 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 Game* g_vulkan;
 
 void generate_scene();
-void import_scene();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -89,26 +88,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    edyn::init();
-    edyn::attach(g_vulkan->get_registry());
-    edyn::set_fixed_dt(g_vulkan->get_registry(), 0.1);
-/**
-    auto def = edyn::rigidbody_def();
-    def.position = { 3, 0, 0 };
-    def.presentation = true;
-    def.mass = 10;
-    def.linvel = { 0, 0, / 0.041 0 };
-    def.gravity = edyn::vector3_z * -1;
-    edyn::make_rigidbody(g_vulkan->get_registry(), def);
-**/
-    
-    //edyn::set_paused(g_vulkan->get_registry(), true);
-
-    //g_vulkan->get_registry().on_construct<edyn::box_shape>().connect<>
-
     generate_scene();
     //import_scene();
-
+    //g_vulkan->load_scene("scene.tmp");
 
     vulkan.SecondInitialize();
 
@@ -132,12 +114,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
-
-    std::chrono::steady_clock::time_point script_time_point = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point phys_time_point = std::chrono::steady_clock::now();
     
     MSG msg;
-    tf::Task draw;
     while (TRUE) {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
@@ -148,38 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            vulkan.get_taskflow().clear();
-            if (std::chrono::steady_clock::now() - script_time_point > std::chrono::milliseconds(100)) {
-                vulkan.get_registry().view<diffusion::ScriptComponent>().each([&vulkan](const diffusion::ScriptComponent & script) {
-                    vulkan.get_component_initializer().add_to_execution(vulkan.get_registry(), entt::to_entity(vulkan.get_registry(), script));
-                });
-
-                rotate_system.tick();
-                script_time_point = std::chrono::steady_clock::now();
-            }
-
-            tf::Task physics;
-            if (std::chrono::steady_clock::now() - phys_time_point > std::chrono::milliseconds(10)) {
-                physics = vulkan.get_taskflow().emplace([&vulkan, &phys]() {
-                    edyn::update(vulkan.get_registry());
-                    phys.tick();
-                });
-                for (auto& task : vulkan.get_tasks()) {
-                    physics.succeed(task);
-                }
-
-                draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
-                draw.succeed(physics);
-
-                script_time_point = std::chrono::steady_clock::now();
-            }
-            else {
-                draw = vulkan.get_taskflow().emplace([&vulkan]() { vulkan.Draw(); });
-            }
-
-            vulkan.get_executor().run(vulkan.get_taskflow());
-            vulkan.get_executor().wait_for_all();
-            vulkan.get_tasks().clear();
+            vulkan.render_tick();
         }
     }
     return (int) msg.wParam;
@@ -292,42 +239,9 @@ void generate_scene()
     });
     */
 
-    NJSONOutputArchive output;
-    entt::snapshot{ g_vulkan->get_registry() }
-        .entities(output)
-        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-                   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
-                   diffusion::debug_tag /* should be ignored in runtime*/, diffusion::RotateTag>(output);
-    output.Close();
-    std::string json_output = output.AsString();
-
-    // Scene is generated and exported in sample_scene.json
-    std::ofstream fout("sample_scene.json");
-    fout << json_output;
+    g_vulkan->save_scene();
 }
 
-void import_scene()
-{
-    std::ifstream fin("sample_scene.json");
-    std::string str{ std::istreambuf_iterator<char>(fin),
-                     std::istreambuf_iterator<char>() };
-
-    NJSONInputArchive json_in(str);
-    entt::basic_snapshot_loader loader(g_vulkan->get_registry());
-    loader.entities(json_in)
-        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-                   diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-                   diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::RotateTag>(json_in);
-
-    // restore serialized tags
-    auto cat = g_vulkan->get_registry().view<diffusion::RotateTag>().front();
-    g_vulkan->get_registry().set<diffusion::RotateTag>(cat);
-
-    auto main_entity = g_vulkan->get_registry().view<diffusion::PossessedEntity>().front();
-    g_vulkan->get_registry().set<diffusion::PossessedEntity>(main_entity);
-    g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_entity);
-}
 
 //
 //  FUNCTION: MyRegisterClass()
@@ -475,6 +389,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case VK_SHIFT:
         {
             diffusion::move_down();
+            break;
+        }
+        case 0x09:
+        {
+            g_vulkan->pause();
+            break;
+        }
+        case 0x08:
+        {
+            g_vulkan->stop();
+            break;
+        }
+        case 13:
+        {
+            g_vulkan->run();
             break;
         }
         default:

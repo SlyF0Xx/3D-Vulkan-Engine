@@ -39,7 +39,7 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 		[this, &registry, parent_entity]() {
 			const auto& script = registry.get<ScriptComponent>(parent_entity);
 			auto * lua_script = registry.try_get<ScriptComponentState>(parent_entity);
-			if (lua_script) {
+			if (!lua_script) {
 				registry.emplace<ScriptComponentState>(parent_entity, diffusion::create_lua_state(registry));
 			}
 

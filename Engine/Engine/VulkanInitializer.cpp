@@ -37,6 +37,14 @@ VulkanInitializer::VulkanInitializer(Game& game)
 
     //m_game.get_registry().on_construct<Relation>().connect<&VulkanInitializer::change_transform_component>(*this);
     m_game.get_registry().on_construct<Relation>().connect<&VulkanInitializer::change_transform_component>(*this);
+
+    m_game.get_registry().on_destroy<VulkanDirectionalLights>().connect<&VulkanInitializer::destroy_vulkan_lights_component>(*this);
+}
+
+void VulkanInitializer::destroy_vulkan_lights_component(::entt::registry& registry, ::entt::entity parent_entity)
+{
+    auto lights = registry.ctx<VulkanDirectionalLights>();
+    m_game.get_device().freeDescriptorSets(m_game.get_descriptor_pool(), { lights.m_lights_descriptor_set });
 }
 
 void VulkanInitializer::add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity)

@@ -112,6 +112,13 @@ public:
     int                 m_shadow_width = 1024;
     int                 m_shadow_height = 1024;
     bool m_stopped = false;
+
+    std::chrono::steady_clock::time_point m_script_time_point = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point m_phys_time_point = std::chrono::steady_clock::now();
+
+    bool m_paused = false;
+    std::mutex m_render_mutex;
+
 private:
     // Vulkan Common Data
     vk::Instance m_instance;
@@ -262,4 +269,13 @@ public:
 
     PresentationEngine create_default_presentation_engine(HINSTANCE hinstance, HWND hwnd);
     float get_depth(size_t x, size_t y);
+
+    void load_scene(const std::filesystem::path & path = "sample_scene.json");
+    void save_scene(const std::filesystem::path & path = "sample_scene.json");
+
+    void render_tick();
+    void run();
+    void pause();
+    void resume();
+    void stop();
 };

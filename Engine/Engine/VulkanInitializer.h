@@ -22,6 +22,8 @@ class VulkanInitializer
 public:
     VulkanInitializer(Game& game);
 
+    void destroy_vulkan_lights_component(::entt::registry& registry, ::entt::entity parent_entity);
+
     void add_vulkan_mesh_component(::entt::registry& registry, ::entt::entity parent_entity);
     void add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity);
     void transform_component_changed(::entt::registry& registry, ::entt::entity parent_entity);

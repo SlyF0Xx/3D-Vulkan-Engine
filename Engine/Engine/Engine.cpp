@@ -4,11 +4,26 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
 
+#include "Archiver.h"
 #include "Engine.h"
 #include "DeferredRender.h"
 #include "ForwardRender.h"
+#include "BaseComponents/BoundingComponent.h"
+#include "BaseComponents/CameraComponent.h"
+#include "BaseComponents/PossessedComponent.h"
+#include "BaseComponents/Relation.h"
+#include "BaseComponents/LitMaterial.h"
+#include "BaseComponents/UnlitMaterial.h"
+#include "BaseComponents/MeshComponent.h"
+#include "BaseComponents/DirectionalLightComponent.h"
+#include "BaseComponents/PointLightComponent.h"
+#include "BaseComponents/TagComponent.h"
+#include "BaseComponents/DebugComponent.h"
 
 #include "util.h"
+
+#include "edyn/edyn.hpp"
+#include <edyn/time/time.hpp>
 
 #include <array>
 #include <fstream>
@@ -135,6 +150,12 @@ Game::Game()
     m_allocator = vma::createAllocator(allocator_info);
 
     m_lua_state = diffusion::create_lua_state(m_registry);
+
+
+
+    edyn::init();
+    edyn::attach(m_registry);
+    edyn::set_fixed_dt(m_registry, 0.1);
 }
 
 void Game::InitializePresentationEngine(const PresentationEngine& presentation_engine)
@@ -508,6 +529,132 @@ float Game::get_depth(size_t x, size_t y)
     size_t index = y * m_presentation_engine.m_width + x;
     float texel = reinterpret_cast<float*>(mapped_data)[index];
     return texel;
+}
+
+void Game::load_scene(const std::filesystem::path& path)
+{
+    std::ifstream fin(path);
+    std::string str{ std::istreambuf_iterator<char>(fin),
+                     std::istreambuf_iterator<char>() };
+
+    NJSONInputArchive json_in(str);
+    entt::basic_snapshot_loader loader(m_registry);
+    loader.entities(json_in)
+        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+        diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
+        diffusion::ScriptComponent, diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
+
+    auto main_entity = m_registry.view<diffusion::PossessedEntity>().front();
+    m_registry.set<diffusion::PossessedEntity>(main_entity);
+    m_registry.set<diffusion::MainCameraTag>(main_entity);
+}
+
+void Game::save_scene(const std::filesystem::path& path)
+{
+    NJSONOutputArchive output;
+    entt::snapshot{ m_registry }
+        .entities(output)
+        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
+        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+        diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
+        diffusion::ScriptComponent, diffusion::debug_tag /* should be ignored in runtime*/>(output);
+    output.Close();
+    std::string json_output = output.AsString();
+
+    // Scene is generated and exported in sample_scene.json
+    std::ofstream fout(path);
+    fout << json_output;
+}
+
+void Game::render_tick()
+{
+    std::lock_guard lock(m_render_mutex);
+    m_taskflow.clear();
+    if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(100)) {
+        if (!m_paused) {
+            m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
+                m_component_initializer.add_to_execution(m_registry, entt::to_entity(m_registry, script));
+            });
+        }
+
+        m_script_time_point = std::chrono::steady_clock::now();
+    }
+
+    std::optional<tf::Task> physics;
+    if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(10)) {
+        if (!m_paused) {
+            physics = m_taskflow.emplace([this]() {
+                edyn::update(m_registry);
+                });
+            for (auto& task : m_tasks) {
+                physics->succeed(task);
+            }
+        }
+
+        m_phys_time_point = std::chrono::steady_clock::now();
+    }
+
+    auto draw = m_taskflow.emplace([this]() {
+        //Draw();
+        DrawRestruct();
+    });
+    if (physics) {
+        draw.succeed(*physics);
+    }
+
+    m_executor.run(m_taskflow);
+    m_executor.wait_for_all();
+    m_tasks.clear();
+}
+
+void Game::run()
+{
+    m_paused = false;
+    save_scene("scene.tmp");
+}
+
+void Game::pause()
+{
+    m_paused = true;
+}
+
+void Game::resume()
+{
+    m_paused = false;
+}
+
+void Game::stop()
+{
+    m_paused = true;
+    
+    while (m_registry.alive() != 0) {
+        const entt::entity* begin = m_registry.data();
+
+        for (int i = 0; i < m_registry.size(); ++i) {
+            if (m_registry.valid(begin[i])) {
+                m_registry.destroy(begin[i]);
+                break;
+            }
+        }
+    }
+    m_registry.clear();
+    m_registry.compact();
+
+    m_registry.unset<diffusion::PossessedEntity>();
+    m_registry.unset<diffusion::MainCameraTag>();
+
+    auto lights = m_registry.ctx<diffusion::VulkanDirectionalLights>();
+    m_device.freeDescriptorSets(m_descriptor_pool, { lights.m_lights_descriptor_set });
+    m_registry.unset<diffusion::VulkanDirectionalLights>();
+    //m_registry.unset<diffusion::RotateTag>();
+    
+    {
+        std::lock_guard lock(m_render_mutex);
+        m_initialized = false;
+        load_scene("scene.tmp");
+        m_initialized = true;
+    }
 }
 
 void Game::Exit()
