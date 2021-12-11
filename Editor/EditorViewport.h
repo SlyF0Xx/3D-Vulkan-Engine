@@ -72,7 +72,7 @@ namespace Editor {
 		RotationSnapSize m_RotationSnapSize = RotationSnapSize::FIVE;
 		ScaleSnapSize m_ScaleSnapSize = ScaleSnapSize::HALF;
 		ImGuizmo::OPERATION m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
-		ImGuizmo::MODE m_CurrentGizmoMode = ImGuizmo::LOCAL;
+		ImGuizmo::MODE m_CurrentGizmoMode = ImGuizmo::WORLD;
 
 		/// <summary>
 		/// Выбранная сущность.
