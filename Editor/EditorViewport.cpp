@@ -187,7 +187,19 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Location");
+		ImGui::Separator();
+
+		ImGui::Text("Gizmo mode");
 		ImGui::PopFont();
+
+		if (ImGui::RadioButton("WORLD", m_CurrentGizmoMode == ImGuizmo::WORLD)) {
+			m_CurrentGizmoMode = ImGuizmo::WORLD;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("LOCAL", m_CurrentGizmoMode == ImGuizmo::LOCAL)) {
+			m_CurrentGizmoMode = ImGuizmo::LOCAL;
+		}
+		ImGui::Separator();
 
 		ImGui::Checkbox("Snap enabled", &m_IsTransformSnap);
 		ImGui::Separator();
@@ -241,7 +253,19 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Rotation");
+		ImGui::Separator();
+
+		ImGui::Text("Gizmo mode");
 		ImGui::PopFont();
+
+		if (ImGui::RadioButton("WORLD", m_CurrentGizmoMode == ImGuizmo::WORLD)) {
+			m_CurrentGizmoMode = ImGuizmo::WORLD;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("LOCAL", m_CurrentGizmoMode == ImGuizmo::LOCAL)) {
+			m_CurrentGizmoMode = ImGuizmo::LOCAL;
+		}
+		ImGui::Separator();
 
 		ImGui::Checkbox("Snap enabled", &m_IsRotationSnap);
 		ImGui::Separator();
@@ -432,6 +456,32 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist(drawlist);
 
+		bool isSnapUsing = false;
+		static float snap[3] = {1.f, 1.f, 1.f};
+		switch (m_CurrentGizmoOperation) {
+			case ImGuizmo::TRANSLATE:
+			case ImGuizmo::TRANSLATE_X:
+			case ImGuizmo::TRANSLATE_Y:
+			case ImGuizmo::TRANSLATE_Z:
+				isSnapUsing = m_IsTransformSnap;
+				snap[0] = snap[1] = snap[2] = GetTransformSpeedBySnapSize(isSnapUsing, m_TransformSnapSize);
+				break;
+			case ImGuizmo::ROTATE:
+			case ImGuizmo::ROTATE_X:
+			case ImGuizmo::ROTATE_Y:
+			case ImGuizmo::ROTATE_Z:
+				isSnapUsing = m_IsRotationSnap;
+				snap[0] = GetRotationSpeedBySnapSize(isSnapUsing, m_RotationSnapSize);
+				break;
+			case ImGuizmo::SCALE:
+			case ImGuizmo::SCALE_X:
+			case ImGuizmo::SCALE_Y:
+			case ImGuizmo::SCALE_Z:
+				isSnapUsing = m_IsScaleSnap;
+				snap[0] = GetScaleSpeedBySnapSize(isSnapUsing, m_ScaleSnapSize);
+				break;
+		}
+
 		auto pos = m_TopLeftPoint;
 		ImGuizmo::SetRect(pos.x, pos.y, m_SceneSize.x, m_SceneSize.y);
 
@@ -451,7 +501,10 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 		//auto view = cameraComponent.m_camera_matrix;
 		//auto perspective = cameraComponent.m_projection_matrix;
 
-#if _DEBUG && 1
+		glm::mat4 global_matrix = diffusion::calculate_global_world_matrix(m_Context->get_registry(), *transformComponent);
+		glm::mat4 original = glm::mat4(global_matrix);
+
+#if _DEBUG && 0
 		ImGuizmo::DrawGrid(
 			glm::value_ptr(view),
 			glm::value_ptr(perspective),
@@ -459,25 +512,23 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			200.f
 		);
 
-		glm::mat4 global_matrix = diffusion::calculate_global_world_matrix(m_Context->get_registry(), *transformComponent);
-		glm::mat4 original = global_matrix;
-
 		ImGuizmo::DrawCubes(glm::value_ptr(view),
 			glm::value_ptr(perspective), glm::value_ptr(global_matrix), 1);
 
 		// CAMERA.
 		/*ImGuizmo::DrawCubes(
 			glm::value_ptr(view),
-			glm::value_ptr(perspective), 
+			glm::value_ptr(perspective),
 			glm::value_ptr(
 				diffusion::create_matrix(
-					cameraComponent.m_camera_position, 
-					glm::vec3(0, 0, 0), 
+					cameraComponent.m_camera_position,
+					glm::vec3(0, 0, 0),
 					glm::vec3(0.5f, 0.5f, 0.5f)
 				)
-			), 
+			),
 			1);*/
 #endif
+
 		ImGuizmo::Manipulate(
 			glm::value_ptr(view),
 			glm::value_ptr(perspective),
@@ -485,13 +536,13 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			m_CurrentGizmoMode,
 			glm::value_ptr(global_matrix),
 			NULL,
-			NULL);
+			isSnapUsing ? snap : NULL);
 
 		ImGuizmo::ViewManipulate(glm::value_ptr(view), 10.f, {m_SceneSize.x + m_TopLeftPoint.x - 128, m_SceneSize.y + m_TopLeftPoint.y - 128}, {128.f, 128.f}, Constants::OVERLAY_DEFAULT_COLOR);
 
 
 		if (ImGuizmo::IsUsing()) {
-			m_Context->get_registry().patch<diffusion::TransformComponent>((entt::entity)m_Selection, [global_matrix, &original](diffusion::TransformComponent & transform) {
+			m_Context->get_registry().patch<diffusion::TransformComponent>((entt::entity) m_Selection, [global_matrix, &original](diffusion::TransformComponent& transform) {
 				glm::mat4 new_end = global_matrix / original;
 
 				transform.m_world_matrix *= new_end;
