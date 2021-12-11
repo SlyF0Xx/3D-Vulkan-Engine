@@ -8,6 +8,7 @@
 #include <BaseComponents/PossessedComponent.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "GameWidget.h"
 #include "Constants.h"
@@ -34,8 +35,11 @@ namespace Editor {
 
 		void ClickHandler();
 
-		ViewportEventDispatcher GetDispatcher() const;
 		void DrawGizmo(ImDrawList* drawlist = nullptr);
+
+	private:
+		void RightClickHandler();
+
 	private:
 		const float STEP = 30.f;
 		const ImVec2 ASPECT_RATIO = {16.f, 9.f};
@@ -79,6 +83,9 @@ namespace Editor {
 		/// Сущность может быть выбрана через Viewport или SceneHierarchy.
 		/// </summary>
 		ENTT_ID_TYPE m_Selection = -1;
+
+		float m_CameraYaw = 90.f, m_CameraPitch = 0.f;
+		glm::vec3 m_TargetPosition;
 
 		SceneEventDispatcher m_SceneDispatcher;
 		ViewportEventDispatcher m_SnapDispatcher;
