@@ -154,21 +154,3 @@ void Editor::MainLayout::InitDockspace() {
 
 	m_IsDockspaceInitialized = true;
 }
-
-void Editor::MainLayout::ImportScene() {
-	std::ifstream fin("sample_scene.json");
-	std::string str {std::istreambuf_iterator<char>(fin),
-					 std::istreambuf_iterator<char>()};
-
-	NJSONInputArchive json_in(str);
-	entt::basic_snapshot_loader loader(m_Context->get_registry());
-	loader.entities(json_in)
-		.component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-		diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
-		diffusion::MainCameraTag, diffusion::DirectionalLightComponent, diffusion::TagComponent, diffusion::PointLightComponent,
-		diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
-
-	auto main_entity = m_Context->get_registry().view<diffusion::PossessedEntity>().front();
-	m_Context->get_registry().set<diffusion::PossessedEntity>(main_entity);
-	m_Context->get_registry().set<diffusion::MainCameraTag>(main_entity);
-}

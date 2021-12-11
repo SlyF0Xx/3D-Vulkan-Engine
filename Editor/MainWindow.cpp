@@ -1,7 +1,88 @@
 #include "MainWindow.h"
+#include "InputEvents.h"
+#include "Systems/CameraSystem.h"
+#include "BaseComponents/DebugComponent.h"
+
+void Editor::MainWindow::DispatchCameraMovement() {
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
+		diffusion::move_forward();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_S]) {
+		diffusion::move_backward();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_A]) {
+		diffusion::move_left();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_D]) {
+		diffusion::move_right();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_SPACE]) {
+		diffusion::move_up();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_SHIFT]) {
+		diffusion::move_down();
+	}
+}
+void Editor::MainWindow::DispatchScriptControl() {
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+		if (m_Context->get_registry().ctx<diffusion::MainCameraTag>().m_entity == m_edittor_camera) {
+			m_Context->get_registry().set<diffusion::MainCameraTag>(m_camera);
+		}
+
+		m_Context->run();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_BACKSPACE]) {
+		if (m_Context->get_registry().ctx<diffusion::MainCameraTag>().m_entity == m_camera) {
+			m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
+		}
+
+		m_Context->pause();
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_ESCAPE]) {
+		m_Context->stop();
+
+		m_Context->get_registry().view<diffusion::CameraComponent, diffusion::debug_tag>().each([this](const diffusion::CameraComponent& camera) {
+			entt::entity camera_entity = entt::to_entity(m_Context->get_registry(), camera);
+			m_Context->get_registry().set<diffusion::MainCameraTag>(camera_entity);
+			m_edittor_camera = camera_entity;
+		});
+	}
+}
+
+void Editor::MainWindow::DispatchKeyInputs() {
+	DispatchCameraMovement();
+	DispatchScriptControl();
+}
 
 void Editor::MainWindow::StartMainLoop() {
 	if (!m_IsInitialized) return;
+
+	auto& main_camera = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	m_camera = main_camera.m_entity;
+
+	m_edittor_camera = m_Context->get_registry().create();
+	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_edittor_camera);
+	m_Context->get_registry().emplace<diffusion::CameraComponent>(m_edittor_camera);
+	m_Context->get_registry().emplace<diffusion::debug_tag>(m_edittor_camera);
+	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
+
+	// Systems Initialization
+	diffusion::CameraSystem camera_system(m_Context->get_registry());
+	diffusion::move_forward.append([&camera_system]() {camera_system.move_forward(0.1f); });
+	diffusion::move_backward.append([&camera_system]() {camera_system.move_backward(0.1f); });
+	diffusion::move_left.append([&camera_system]() {camera_system.move_left(0.1f); });
+	diffusion::move_right.append([&camera_system]() {camera_system.move_right(0.1f); });
+	diffusion::move_up.append([&camera_system]() {camera_system.move_up(0.1f); });
+	diffusion::move_down.append([&camera_system]() {camera_system.move_down(0.1f); });
+
+
 	// Main loop
 	while (!glfwWindowShouldClose(m_Window)) {
 		// Poll and handle events (inputs, window resize, etc.)
@@ -10,6 +91,8 @@ void Editor::MainWindow::StartMainLoop() {
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfwPollEvents();
+
+		DispatchKeyInputs();
 
 		// Resize swap chain?
 		if (m_SwapChainRebuild) {

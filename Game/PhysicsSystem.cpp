@@ -84,6 +84,18 @@ void diffusion::PhysicsSystem::add_phys_component(::entt::registry& registry, ::
 void diffusion::PhysicsSystem::on_detect_collision(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto& point = registry.get<edyn::contact_point>(parent_entity);
+
+    for (auto& body : point.body) {
+        auto* script = registry.try_get<diffusion::ScriptComponentState>(body);
+        if (script) {
+            auto ref = luabridge::getGlobal(script->m_state, "on_trigger");
+            auto ret = ref();
+            if (!ret.wasOk()) {
+                std::string err = ret.errorMessage();
+                std::cerr << err;
+            }
+        }
+    }
     /*
     if (registry.try_get<KitamoriLinkedTag>(point.body[0]) || registry.try_get<KitamoriLinkedTag>(point.body[1]))
     {

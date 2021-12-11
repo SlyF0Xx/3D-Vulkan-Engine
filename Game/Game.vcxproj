@@ -157,10 +157,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="InputEvents.h" />
     <ClInclude Include="KitamoriMovingSystem.h" />
     <ClInclude Include="KitamoriSystem.h" />
     <ClInclude Include="PhysicsSystem.h" />
@@ -169,7 +167,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="KitamoriMovingSystem.cpp" />
     <ClCompile Include="KitamoriSystem.cpp" />

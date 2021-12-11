@@ -1,6 +1,6 @@
 #include "CameraSystem.h"
 
-#include "BaseComponents/CameraComponent.h"
+#include "../BaseComponents/CameraComponent.h"
 
 namespace diffusion {
 

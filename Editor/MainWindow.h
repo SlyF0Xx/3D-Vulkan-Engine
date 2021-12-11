@@ -13,6 +13,14 @@ namespace Editor {
 
 		void StartMainLoop() override;
 		const char* GetWindowTitle() const override;
+
+	private:
+		void DispatchCameraMovement();
+		void DispatchScriptControl();
+		void DispatchKeyInputs();
+
+		entt::entity m_camera;
+		entt::entity m_edittor_camera;
 	};
 
 }

@@ -198,7 +198,9 @@
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="glm_printer.h" />
     <ClInclude Include="IMenuRenderer.h" />
+    <ClInclude Include="InputEvents.h" />
     <ClInclude Include="IRender.h" />
+    <ClInclude Include="Systems\CameraSystem.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VulkanInitializer.h" />
   </ItemGroup>
@@ -221,6 +223,7 @@
     <ClCompile Include="Entities\PlaneEntity.cpp" />
     <ClCompile Include="Entities\PrimitiveEntity.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="Systems\CameraSystem.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>

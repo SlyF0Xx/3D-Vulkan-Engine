@@ -34,6 +34,12 @@
     <Filter Include="Source Files\BaseComponents\VulkanComponents">
       <UniqueIdentifier>{7b7df3e8-7146-43ed-80e2-861d02edcd94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Systems">
+      <UniqueIdentifier>{c80307b1-d128-4b59-92c8-55eb7c1002c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Systems">
+      <UniqueIdentifier>{3cae3123-7948-4c03-a30e-f075a4b26696}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -147,6 +153,12 @@
     <ClInclude Include="BaseComponents\ScriptComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
+    <ClInclude Include="InputEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\CameraSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -208,6 +220,9 @@
     </ClCompile>
     <ClCompile Include="BaseComponents\Relation.cpp">
       <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\CameraSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,8 +19,6 @@ namespace Editor {
 		EditorLayout(const diffusion::Ref<Game>& game);
 		virtual LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
-		// TODO: IT'S TEMP SOLUTION!!!
-		virtual void ImportScene() = 0;
 
 		void SetContext(const diffusion::Ref<Game>& game);
 

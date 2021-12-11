@@ -17,7 +17,7 @@
 #include "PhysicsSystem.h"
 #include "InputEvents.h"
 #include "BaseComponents/PossessedComponent.h"
-#include "CameraSystem.h"
+#include "Systems/CameraSystem.h"
 #include "Archiver.h"
 #include "BaseComponents/Relation.h"
 #include "BaseComponents/LitMaterial.h"
@@ -162,7 +162,7 @@ void generate_scene()
         glm::vec3(glm::pi<float>() / 2, 0, 0),
         glm::vec3(0.01, 0.01, 0.01));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(tv_1, "tv 1 - small");
-    g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(tv_1, "tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 5);");
+    //g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(tv_1, "tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 5);");
 
     auto tv_2 = diffusion::import_entity(
         g_vulkan->get_registry(),
@@ -194,10 +194,40 @@ void generate_scene()
     g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_entity, main_entity);
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(main_entity, "main cube");
 
+    /*
     auto right_kitamori_cube = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(right_kitamori_cube, "right kitamori cube");
+    g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(right_kitamori_cube, "function on_trigger () tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 50); end");
+    */
+
+
+    auto trigger = diffusion::create_debug_cube_entity(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
+    g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(trigger, "function on_trigger () tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 50); end");
+
+    auto def = edyn::rigidbody_def();
+    def.kind = edyn::rigidbody_kind::rb_dynamic;
+    def.position = { 3, 0, 0 };
+    //def.orientation = {rotation.x, rotation.y, rotation.z};
+    //def.linvel = edyn::vector3_z;
+    //def.angvel = {0, 0.314, 0};
+    def.mass = 50;
+    def.shape = edyn::box_shape{ 0.5f, 0.5f, 0.6f }; // Shape is optional.
+    def.update_inertia();
+    def.material = std::nullopt;
+    //def.material->restitution = 0.2;
+    //def.material->friction = 0.9;
+    def.presentation = true;
+    def.gravity = edyn::vector3_zero;// edyn::vector3_z * -1;
+    edyn::make_rigidbody(trigger, g_vulkan->get_registry(), def);
+
+
+
+
+
+
     auto left_kitamori_cube = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(left_kitamori_cube, "left kitamori cube");
+
     auto right_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(right_wall, "right wall");
     auto left_wall = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
@@ -212,11 +242,13 @@ void generate_scene()
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(point_light, "point light");
     //diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f));
 
+    /*
     auto test = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
     g_vulkan->get_registry().set<diffusion::PhysTag>(test);
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
+    */
 
     /*
     diffusion::create_debug_sphere_entity(
