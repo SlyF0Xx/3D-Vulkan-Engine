@@ -133,10 +133,12 @@ void Editor::TransformComponentInspector::ApplyTransform() {
 	glm::vec3 rotRad = glm::radians(glm::make_vec3(m_Rotation));
 	glm::vec3 scale = glm::make_vec3(m_Scale);
 
-	/*printf("Applied\n");
+#if _DEBUG
+	printf("Applied Transform via Inspector\n");
 	printf("LOC: %lf %lf %lf\n", loc.x, loc.y, loc.z);
-	printf("ROT: %lf %lf %lf\n", rot.x, rot.y, rot.z);
-	printf("SCA: %lf %lf %lf\n", scale.x, scale.y, scale.z);*/
+	printf("ROT: %lf %lf %lf\n", rotRad.x, rotRad.y, rotRad.z);
+	printf("SCA: %lf %lf %lf\n", scale.x, scale.y, scale.z);
+#endif
 
 	INS_COM_REP<diffusion::TransformComponent>(m_Selection, diffusion::create_matrix(loc, rotRad, scale));
 	m_AlreadyAppliedChanges = true;
