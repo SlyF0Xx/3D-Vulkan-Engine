@@ -524,7 +524,7 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 		//auto perspective = cameraComponent.m_projection_matrix;
 
 		glm::mat4 global_matrix = diffusion::calculate_global_world_matrix(m_Context->get_registry(), *transformComponent);
-		glm::mat4 original = glm::mat4(global_matrix);
+		glm::mat4 original = global_matrix * glm::inverse(transformComponent->m_world_matrix);
 
 #if _DEBUG && 0
 		ImGuizmo::DrawGrid(
@@ -565,9 +565,9 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 
 		if (ImGuizmo::IsUsing()) {
 			m_Context->get_registry().patch<diffusion::TransformComponent>((entt::entity) m_Selection, [global_matrix, &original](diffusion::TransformComponent& transform) {
-				glm::mat4 new_end = global_matrix / original;
+				glm::mat4 new_end = glm::inverse(original) * global_matrix;
 
-				transform.m_world_matrix *= new_end;
+				transform.m_world_matrix = new_end;
 			});
 		}
 	}

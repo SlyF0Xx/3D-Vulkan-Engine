@@ -125,14 +125,14 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)\..\vendor\Edyn\include;$(ProjectDir)\..\vendor\LuaBridge\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\ImGuiFileDialog;$(ProjectDir)vendor\ImGuizmo;..\Engine\Engine</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib;..\vendor\Edyn\build\lib\Debug;$(ProjectDir)vendor\glfw\lib-vc2019;..\Game1\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>WinMM.Lib;Engine.lib;vulkan-1.lib;glfw3.lib;Edyn_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.lib;vulkan-1.lib;glfw3.lib;Edyn_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
