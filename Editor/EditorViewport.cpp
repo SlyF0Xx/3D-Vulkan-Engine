@@ -116,6 +116,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::SetNextWindowPos(m_TopLeftPoint);
 	ImGui::SetNextWindowSize(m_SceneSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 	ImGui::BeginChild("##Overlay", m_SceneSize, false,
 		ImGuiWindowFlags_NoBackground
 		| ImGuiWindowFlags_NoTitleBar
@@ -317,6 +318,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
 		ImGui::Text("Scale");
 		ImGui::PopFont();
+		ImGui::Separator();
 
 		ImGui::Checkbox("Snap enabled", &m_IsScaleSnap);
 		ImGui::Separator();
@@ -403,6 +405,17 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		ImGui::Text(ImGuizmo::IsOver(ImGuizmo::SCALE) ? "Over scale gizmo" : "");
 	}
 
+	ImGui::Text(("Camera YAW: " + std::to_string(m_CameraYaw)).c_str());
+	ImGui::Text(("Camera PITCH: " + std::to_string(m_CameraPitch)).c_str());
+	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	std::string targetPosCoordsStr =
+		"Target position: [X: " + std::to_string(cameraComponent.m_camera_target.x) +
+		" Y: " + std::to_string(cameraComponent.m_camera_target.y) +
+		" Z: " + std::to_string(cameraComponent.m_camera_target.z) +
+		"]";
+	ImGui::Text(targetPosCoordsStr.c_str());
+
 	ImGui::PopStyleColor();
 #endif // _DEBUG.
 
@@ -410,12 +423,21 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PopStyleColor();
 	ImGui::EndChild();
 	ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 #pragma endregion // Overlay.
 
 	DrawGizmo();
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+		auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+		auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
 
-	if (click && !ImGuizmo::IsUsing()) {
+		m_TargetPosition = cameraComponent.m_camera_target;
+	} else if (!ImGuizmo::IsUsing() && click) {
 		ClickHandler();
+	}
+
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+		RightClickHandler();
 	}
 
 	ImGui::End();
@@ -549,4 +571,101 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 			});
 		}
 	}
+}
+
+void Editor::EditorViewport::RightClickHandler() {
+	if (!ImGui::IsMousePosValid()) {
+		return;
+	}
+	float scaleMultiplier = -2.5f;
+	float moveMultiplier = 1.f;
+	float sensitivity = 5.f;
+
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	auto& cameraComp = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+
+	if (io.MouseWheel != 0.f) {
+		m_Context->get_registry().patch<diffusion::CameraComponent>(
+			mainCameraEntity.m_entity, [&](diffusion::CameraComponent& camera) {
+			camera.fov_y += glm::radians(io.MouseWheel * scaleMultiplier);
+
+			float fov = glm::degrees(camera.fov_y);
+			if (fov <= 1.f) {
+				camera.fov_y = glm::radians(1.f);
+			} else if (fov >= 75.f) {
+				camera.fov_y = glm::radians(75.f);
+			}
+
+			camera.fov_x = atan(tan(camera.fov_y / 2) * camera.aspect) * 2;
+
+			camera.m_projection_matrix = glm::perspective(
+				camera.fov_y,
+				camera.aspect,
+				camera.min_distance,
+				camera.max_distance
+			);
+
+			camera.m_view_projection_matrix = camera.m_projection_matrix * camera.m_camera_matrix;
+		});
+		return;
+	}
+
+	bool isMoving = false;
+	glm::vec3 deltaPosition = {0, 0, 0};
+	if (ImGui::IsKeyPressed('W')) {
+		deltaPosition = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position) * moveMultiplier;
+		isMoving = true;
+	} else if (ImGui::IsKeyPressed('S')) {
+		deltaPosition = -glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position) * moveMultiplier;
+		isMoving = true;
+	} else if (ImGui::IsKeyPressed('A')) {
+		glm::vec3 forwardVec = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position);
+		deltaPosition = -glm::cross(forwardVec, cameraComp.m_up_vector) * moveMultiplier;
+		isMoving = true;
+	} else if (ImGui::IsKeyPressed('D')) {
+		glm::vec3 forwardVec = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position);
+		deltaPosition = glm::cross(forwardVec, cameraComp.m_up_vector) * moveMultiplier;
+		isMoving = true;
+	} else if (ImGui::IsKeyPressed('Q')) {
+		deltaPosition = cameraComp.m_up_vector * moveMultiplier;
+		isMoving = true;
+	} else if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
+		deltaPosition = -cameraComp.m_up_vector * moveMultiplier;
+	}
+	else {
+		deltaPosition = {0, 0, 0};
+		isMoving = false;
+	}
+
+	float dx = io.MouseDelta.x * sensitivity * io.DeltaTime;
+	float dy = io.MouseDelta.y * sensitivity * io.DeltaTime;
+
+	m_CameraPitch += dy;
+	m_CameraYaw += dx;
+
+	if (m_CameraPitch > 89.f) {
+		m_CameraPitch = 89.f;
+	} else if (m_CameraPitch < -89.f) {
+		m_CameraPitch = -89.f;
+	}
+
+	glm::vec3 front;
+	float yaw = glm::radians(m_CameraYaw);
+	float pitch = glm::radians(m_CameraPitch);
+	front.x = cosf(yaw) * cos(pitch);
+	front.y = sin(yaw) * cos(pitch);
+	front.z = -sin(pitch);
+	
+	//front = glm::normalize(front);
+	m_Context->get_registry().patch<diffusion::CameraComponent>(
+		mainCameraEntity.m_entity, [&](diffusion::CameraComponent& camera) {
+		if (isMoving) {
+			camera.m_camera_position += deltaPosition;
+			camera.m_camera_target += deltaPosition;
+		}
+		camera.m_camera_target = camera.m_camera_position + front;
+	});
 }
