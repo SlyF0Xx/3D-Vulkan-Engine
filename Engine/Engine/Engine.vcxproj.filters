@@ -147,6 +147,12 @@
     <ClInclude Include="BaseComponents\ScriptComponent.h">
       <Filter>Header Files\BaseComponents</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScaleComponent.h">
+      <Filter>Header Files\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -208,6 +214,9 @@
     </ClCompile>
     <ClCompile Include="BaseComponents\Relation.cpp">
       <Filter>Source Files\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsUtils.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -26,10 +26,14 @@ namespace diffusion {
 
         void tick();
 
-        void add_phys_component(::entt::registry& registry, ::entt::entity parent_entity);
+        void addTranslation(glm::vec3 translation);
+        
+        void update_phys_component(::entt::registry& registry, ::entt::entity parent_entity);
         void on_detect_collision(::entt::registry& registry, ::entt::entity parent_entity);
+
     
     private:
+        glm::vec3 translation{};
         ::entt::registry& m_registry;
     };
 

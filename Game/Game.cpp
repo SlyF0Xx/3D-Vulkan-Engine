@@ -47,6 +47,8 @@
 #include <map>
 #include <fstream>
 
+#include "PhysicsUtils.h"
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -91,7 +93,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     edyn::init();
     edyn::attach(g_vulkan->get_registry());
-    edyn::set_fixed_dt(g_vulkan->get_registry(), 0.1);
+    edyn::set_fixed_dt(g_vulkan->get_registry(), 0.014);
 /**
     auto def = edyn::rigidbody_def();
     def.position = { 3, 0, 0 };
@@ -130,6 +132,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     diffusion::RotateSystem rotate_system(vulkan.get_registry());
     diffusion::PhysicsSystem phys(vulkan.get_registry());
 
+    kitamori.linkedSystem = &phys;
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
@@ -159,7 +162,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             }
 
             tf::Task physics;
-            if (std::chrono::steady_clock::now() - phys_time_point > std::chrono::milliseconds(10)) {
+            if (std::chrono::steady_clock::now() - phys_time_point > std::chrono::milliseconds(1)) {
                 physics = vulkan.get_taskflow().emplace([&vulkan, &phys]() {
                     edyn::update(vulkan.get_registry());
                     phys.tick();
@@ -268,6 +271,9 @@ void generate_scene()
     auto test = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
     g_vulkan->get_registry().set<diffusion::PhysTag>(test);
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
+    ColliderDefinition def = {};
+    def.CollisionType = ECollisionType::Blocker;
+    diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 0, 0, -5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 50, 50, 1 }, def);
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 15.0,  0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -15.0, 0, 5 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 5, 40,20 });
 
