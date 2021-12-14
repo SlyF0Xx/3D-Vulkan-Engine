@@ -131,6 +131,10 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
         auto& lights = registry.ctx<VulkanDirectionalLights>();
         update_lights_buffer(registry, &lights);
     }
+
+    if (registry.try_get<CameraComponent>(parent_entity)) {
+        camera_changed(registry, parent_entity);
+    }
 }
 
 void VulkanInitializer::add_vulkan_mesh_component(::entt::registry& registry, ::entt::entity parent_entity)
@@ -149,9 +153,23 @@ void VulkanInitializer::add_vulkan_mesh_component(::entt::registry& registry, ::
     registry.emplace<VulkanSubMesh>(parent_entity, vertex_memory.m_buffer, vertex_memory.m_allocation, index_memory.m_buffer, index_memory.m_allocation);
 }
 
+void VulkanInitializer::calculate_view_matrix(::entt::registry& registry, CameraComponent& camera, TransformComponent& transform)
+{
+    auto camera_view = calculate_camera_view(registry, camera, transform);
+
+    camera.m_camera_matrix = glm::lookAt(
+        camera_view.position, // Позиция камеры в мировом пространстве
+        camera_view.target,   // Указывает куда вы смотрите в мировом пространстве
+        camera_view.up        // Вектор, указывающий направление вверх. Обычно (0, 1, 0)
+    );
+    camera.m_view_projection_matrix = camera.m_projection_matrix * camera.m_camera_matrix;
+}
+
 void VulkanInitializer::add_vulkan_camera_component(::entt::registry& registry, ::entt::entity parent_entity)
 {
     auto& camera = registry.get<CameraComponent>(parent_entity);
+    auto& transform = registry.get<TransformComponent>(parent_entity);
+    calculate_view_matrix(registry, camera, transform);
 
     std::array pool_size{ vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1) };
 
@@ -170,14 +188,9 @@ void VulkanInitializer::add_vulkan_camera_component(::entt::registry& registry, 
 
 void VulkanInitializer::camera_changed(::entt::registry& registry, ::entt::entity parent_entity)
 {
-    auto camera_component = registry.get<CameraComponent>(parent_entity);
-    camera_component.m_camera_matrix = glm::lookAt(
-        camera_component.m_camera_position, // ������� ������ � ������� ������������
-        camera_component.m_camera_target,   // ��������� ���� �� �������� � ������� ������������
-        camera_component.m_up_vector        // ������, ����������� ����������� �����. ������ (0, 1, 0)
-    );
-
-    camera_component.m_view_projection_matrix = camera_component.m_projection_matrix * camera_component.m_camera_matrix;
+    auto& camera_component = registry.get<CameraComponent>(parent_entity);
+    auto& transform = registry.get<TransformComponent>(parent_entity);
+    calculate_view_matrix(registry, camera_component, transform);
 
     auto vulkan_camera_component = registry.get<VulkanCameraComponent>(parent_entity);
     std::memcpy(vulkan_camera_component.m_world_view_projection_mapped_memory, &camera_component.m_view_projection_matrix, sizeof(glm::mat4));
@@ -612,7 +625,10 @@ void VulkanInitializer::update_lights_buffer(::entt::registry& registry, VulkanD
     lights.point_light_buffer_size = lights_ptr->m_point_light_entities.size();
     for (int i = 0; i < lights_ptr->m_directional_light_entities.size(); ++i) {
         auto& light_camera = registry.get<CameraComponent>(lights_ptr->m_directional_light_entities[i]);
-        lights.lights[i].m_direction = light_camera.m_camera_target - light_camera.m_camera_position;
+        auto& transform = registry.get<TransformComponent>(lights_ptr->m_directional_light_entities[i]);
+        auto camera_view = calculate_camera_view(registry, light_camera, transform);
+
+        lights.lights[i].m_direction = camera_view.target - camera_view.position;
         lights.lights[i].m_ViewProjection = light_camera.m_view_projection_matrix;
     }
     for (int i = 0; i < lights_ptr->m_point_light_entities.size(); ++i) {

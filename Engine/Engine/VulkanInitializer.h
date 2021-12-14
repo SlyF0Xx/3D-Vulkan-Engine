@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseComponents/VulkanComponents/VulkanDirectionalLightComponent.h"
+#include "BaseComponents/TransformComponent.h"
 
 #include <entt/entt.hpp>
 #include <vulkan/vulkan.hpp>
@@ -11,6 +12,8 @@
 class Game;
 
 namespace diffusion {
+
+struct CameraComponent;
 
 struct ImageData {
     vk::Image m_image;
@@ -28,6 +31,7 @@ public:
     void add_vulkan_transform_component(::entt::registry& registry, ::entt::entity parent_entity);
     void transform_component_changed(::entt::registry& registry, ::entt::entity parent_entity);
     void change_transform_component(::entt::registry& registry, ::entt::entity parent_entity);
+    void calculate_view_matrix(::entt::registry& registry, CameraComponent& camera, TransformComponent& transform);
     void add_vulkan_camera_component(::entt::registry& registry, ::entt::entity parent_entity);
     void camera_changed(::entt::registry& registry, ::entt::entity parent_entity);
     void search_for_unlit_material(::entt::registry& registry, ::entt::entity parent_entity);

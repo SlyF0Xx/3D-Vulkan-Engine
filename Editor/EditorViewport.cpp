@@ -409,10 +409,13 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::Text(("Camera PITCH: " + std::to_string(m_CameraPitch)).c_str());
 	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	auto& transform = m_Context->get_registry().get<diffusion::TransformComponent>(mainCameraEntity.m_entity);
+	auto camera_view = calculate_camera_view(m_Context->get_registry(), cameraComponent, transform);
+
 	std::string targetPosCoordsStr =
-		"Target position: [X: " + std::to_string(cameraComponent.m_camera_target.x) +
-		" Y: " + std::to_string(cameraComponent.m_camera_target.y) +
-		" Z: " + std::to_string(cameraComponent.m_camera_target.z) +
+		"Target position: [X: " + std::to_string(camera_view.target.x) +
+		" Y: " + std::to_string(camera_view.target.y) +
+		" Z: " + std::to_string(camera_view.target.z) +
 		"]";
 	ImGui::Text(targetPosCoordsStr.c_str());
 
@@ -431,7 +434,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 		auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
 
-		m_TargetPosition = cameraComponent.m_camera_target;
+		m_TargetPosition = camera_view.target;
 	} else if (!ImGuizmo::IsUsing() && click) {
 		ClickHandler();
 	}
@@ -471,6 +474,9 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 
 	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	auto& camera_transform = m_Context->get_registry().get<diffusion::TransformComponent>(mainCameraEntity.m_entity);
+	auto camera_view = calculate_camera_view(m_Context->get_registry(), cameraComponent, camera_transform);
+
 	auto transformComponent = m_Context->get_registry().try_get<diffusion::TransformComponent>((entt::entity) m_Selection);
 
 
@@ -508,9 +514,9 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 		ImGuizmo::SetRect(pos.x, pos.y, m_SceneSize.x, m_SceneSize.y);
 
 		auto view = glm::lookAtLH(
-			cameraComponent.m_camera_position,
-			cameraComponent.m_camera_target,
-			-cameraComponent.m_up_vector
+			camera_view.position,
+			camera_view.target,
+			-camera_view.up
 		);
 
 		auto perspective = glm::perspectiveLH(
@@ -586,6 +592,8 @@ void Editor::EditorViewport::RightClickHandler() {
 
 	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	auto& cameraComp = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
+	auto& camera_transform = m_Context->get_registry().get<diffusion::TransformComponent>(mainCameraEntity.m_entity);
+	auto camera_view = calculate_camera_view(m_Context->get_registry(), cameraComp, camera_transform);
 
 	if (io.MouseWheel != 0.f) {
 		m_Context->get_registry().patch<diffusion::CameraComponent>(
@@ -616,24 +624,24 @@ void Editor::EditorViewport::RightClickHandler() {
 	bool isMoving = false;
 	glm::vec3 deltaPosition = {0, 0, 0};
 	if (ImGui::IsKeyPressed('W')) {
-		deltaPosition = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position) * moveMultiplier;
+		deltaPosition = glm::normalize(camera_view.target - camera_view.position) * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('S')) {
-		deltaPosition = -glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position) * moveMultiplier;
+		deltaPosition = -glm::normalize(camera_view.target - camera_view.position) * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('A')) {
-		glm::vec3 forwardVec = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position);
-		deltaPosition = -glm::cross(forwardVec, cameraComp.m_up_vector) * moveMultiplier;
+		glm::vec3 forwardVec = glm::normalize(camera_view.target - camera_view.position);
+		deltaPosition = -glm::cross(forwardVec, camera_view.up) * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('D')) {
-		glm::vec3 forwardVec = glm::normalize(cameraComp.m_camera_target - cameraComp.m_camera_position);
-		deltaPosition = glm::cross(forwardVec, cameraComp.m_up_vector) * moveMultiplier;
+		glm::vec3 forwardVec = glm::normalize(camera_view.target - camera_view.position);
+		deltaPosition = glm::cross(forwardVec, camera_view.up) * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('Q')) {
-		deltaPosition = cameraComp.m_up_vector * moveMultiplier;
+		deltaPosition = camera_view.up * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
-		deltaPosition = -cameraComp.m_up_vector * moveMultiplier;
+		deltaPosition = -camera_view.up * moveMultiplier;
 	}
 	else {
 		deltaPosition = {0, 0, 0};
@@ -652,20 +660,23 @@ void Editor::EditorViewport::RightClickHandler() {
 		m_CameraPitch = -89.f;
 	}
 
+	/*
 	glm::vec3 front;
 	float yaw = glm::radians(m_CameraYaw);
 	float pitch = glm::radians(m_CameraPitch);
 	front.x = cosf(yaw) * cos(pitch);
 	front.y = sin(yaw) * cos(pitch);
 	front.z = -sin(pitch);
-	
+	*/
+	glm::mat4 rotation_matrix;
+
 	//front = glm::normalize(front);
-	m_Context->get_registry().patch<diffusion::CameraComponent>(
-		mainCameraEntity.m_entity, [&](diffusion::CameraComponent& camera) {
+	m_Context->get_registry().patch<diffusion::TransformComponent>(
+		mainCameraEntity.m_entity, [&](diffusion::TransformComponent & transform) {
 		if (isMoving) {
-			camera.m_camera_position += deltaPosition;
-			camera.m_camera_target += deltaPosition;
+			transform.m_world_matrix = glm::translate(transform.m_world_matrix, deltaPosition);
 		}
-		camera.m_camera_target = camera.m_camera_position + front;
+		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, glm::vec3(0, 0, 1));
+		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, glm::vec3(-1, 0, 0));
 	});
 }

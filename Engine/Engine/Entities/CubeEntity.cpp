@@ -69,7 +69,6 @@ namespace diffusion {
 {
     auto cube_entity = create_cube_entity(registry, translation, rotation, scale);
     add_default_unlit_material_component(registry, cube_entity);
-    registry.emplace<CameraComponent>(cube_entity);
     registry.emplace<BoundingComponent>(cube_entity, glm::vec3(-0.5f, 0.5f, 0.6f), 0.25f);
 
     auto def = edyn::rigidbody_def();

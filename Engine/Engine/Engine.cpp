@@ -540,14 +540,16 @@ void Game::load_scene(const std::filesystem::path& path)
     NJSONInputArchive json_in(str);
     entt::basic_snapshot_loader loader(m_registry);
     loader.entities(json_in)
-        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+        .component<diffusion::TransformComponent, diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh,
+        diffusion::PossessedEntity, diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent,
         diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
         diffusion::ScriptComponent, diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
 
     auto main_entity = m_registry.view<diffusion::PossessedEntity>().front();
     m_registry.set<diffusion::PossessedEntity>(main_entity);
-    m_registry.set<diffusion::MainCameraTag>(main_entity);
+
+    auto main_camera = m_registry.view<diffusion::MainCameraTag>().front();
+    m_registry.set<diffusion::MainCameraTag>(main_camera);
 }
 
 void Game::save_scene(const std::filesystem::path& path)
@@ -555,8 +557,8 @@ void Game::save_scene(const std::filesystem::path& path)
     NJSONOutputArchive output;
     entt::snapshot{ m_registry }
         .entities(output)
-        .component<diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh, diffusion::PossessedEntity,
-        diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent, diffusion::TransformComponent,
+        .component<diffusion::TransformComponent, diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh,
+        diffusion::PossessedEntity, diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent,
         diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
         diffusion::ScriptComponent, diffusion::debug_tag /* should be ignored in runtime*/>(output);
     output.Close();
@@ -570,7 +572,6 @@ void Game::save_scene(const std::filesystem::path& path)
 void Game::render_tick()
 {
     std::lock_guard lock(m_render_mutex);
-    m_taskflow.clear();
     if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(100)) {
         if (!m_paused) {
             m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
@@ -606,6 +607,7 @@ void Game::render_tick()
     m_executor.run(m_taskflow);
     m_executor.wait_for_all();
     m_tasks.clear();
+    m_taskflow.clear();
 }
 
 void Game::run()
@@ -626,8 +628,8 @@ void Game::resume()
 
 void Game::stop()
 {
+    std::lock_guard lock(m_render_mutex);
     m_paused = true;
-    
     while (m_registry.alive() != 0) {
         const entt::entity* begin = m_registry.data();
 
@@ -649,12 +651,9 @@ void Game::stop()
     m_registry.unset<diffusion::VulkanDirectionalLights>();
     //m_registry.unset<diffusion::RotateTag>();
     
-    {
-        std::lock_guard lock(m_render_mutex);
-        m_initialized = false;
-        load_scene("scene.tmp");
-        m_initialized = true;
-    }
+    m_initialized = false;
+    load_scene("scene.tmp");
+    m_initialized = true;
 }
 
 void Game::Exit()

@@ -4,6 +4,7 @@
 #include "BaseComponents/DebugComponent.h"
 
 void Editor::MainWindow::DispatchCameraMovement() {
+	/*
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
 		diffusion::move_forward();
 	}
@@ -27,6 +28,7 @@ void Editor::MainWindow::DispatchCameraMovement() {
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_SHIFT]) {
 		diffusion::move_down();
 	}
+	*/
 }
 void Editor::MainWindow::DispatchScriptControl() {
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
@@ -68,7 +70,7 @@ void Editor::MainWindow::StartMainLoop() {
 	m_camera = main_camera.m_entity;
 
 	m_edittor_camera = m_Context->get_registry().create();
-	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_edittor_camera);
+	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_edittor_camera, diffusion::create_matrix());
 	m_Context->get_registry().emplace<diffusion::CameraComponent>(m_edittor_camera);
 	m_Context->get_registry().emplace<diffusion::debug_tag>(m_edittor_camera);
 	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
@@ -140,7 +142,7 @@ void Editor::MainWindow::StartMainLoop() {
 			m_MainWindowData.ClearValue.color.float32[3] = m_BackgroundColor.w;
 
 			try {
-				m_Context->DrawRestruct();
+				m_Context->render_tick();
 			} catch (vk::OutOfDateKHRError& out_of_date) {
 				m_SwapChainRebuild = true;
 			}

@@ -18,8 +18,8 @@ struct TransformComponent
 glm::mat4 calculate_global_world_matrix(::entt::registry & registry, const TransformComponent & component);
 
 glm::mat4 create_matrix(
-	const glm::vec3& position,
-	const glm::vec3& rotation,
-	const glm::vec3& scale);
+	const glm::vec3& position = glm::vec3(0),
+	const glm::vec3& rotation = glm::vec3(0),
+	const glm::vec3& scale = glm::vec3(1));
 
 } // namespace diffusion {

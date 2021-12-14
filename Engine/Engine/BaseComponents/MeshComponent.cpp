@@ -73,10 +73,10 @@ bool is_in_bounding_box(const SubMesh::AABB& bounding_box, const glm::vec3& poin
 
 	return bounding_box.min.x - point.x <= x_precision &&
 		   bounding_box.min.y - point.y <= y_precision &&
-		   bounding_box.min.z - (-point.z) <= z_precision &&
+		   bounding_box.min.z - point.z <= z_precision &&
 		   point.x - bounding_box.max.x <= x_precision &&
 		   point.y - bounding_box.max.y <= y_precision &&
-		   (-point.z) - bounding_box.max.z <= z_precision;
+		   point.z - bounding_box.max.z <= z_precision;
 }
 
 } // namespace diffusion

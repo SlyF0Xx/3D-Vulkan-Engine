@@ -11,11 +11,12 @@
 
 namespace diffusion {
 
-::entt::entity create_directional_light_entity(::entt::registry& registry, const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector)
+::entt::entity create_directional_light_entity(::entt::registry& registry, const glm::vec3& position, const glm::vec3& rotation/*, const glm::vec3& position, const glm::vec3& cameraTarget, const glm::vec3& upVector*/)
 {
 	auto entity = registry.create();
 	// TODO: ortho projection
-	registry.emplace<CameraComponent>(entity, position, cameraTarget, upVector/*, glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f)*/);
+	registry.emplace<TransformComponent>(entity, create_matrix(position, rotation, glm::vec3(1)));
+	registry.emplace<CameraComponent>(entity/*, position, cameraTarget, upVector*//*, glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f)*/);
 	registry.emplace<DirectionalLightComponent>(entity);
 	return entity;
 }

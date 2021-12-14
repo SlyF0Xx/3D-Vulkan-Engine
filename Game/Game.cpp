@@ -188,11 +188,17 @@ void generate_scene()
 
     auto main_entity = diffusion::create_cube_entity_unlit(g_vulkan->get_registry());
     g_vulkan->get_registry().set<diffusion::PossessedEntity>(main_entity);
-    g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_entity);
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(main_entity, "main cube");
+
+    auto main_camera = g_vulkan->get_registry().create();
+    g_vulkan->get_registry().emplace<diffusion::TransformComponent>(main_camera, diffusion::create_matrix(glm::vec3(0, -10, 0)));
+    g_vulkan->get_registry().emplace<diffusion::CameraComponent>(main_camera);
+    g_vulkan->get_registry().set<diffusion::MainCameraTag>(main_camera);
+    g_vulkan->get_registry().emplace<diffusion::TagComponent>(main_camera, "main camera");
+
     // for serialization prposes only
     g_vulkan->get_registry().emplace<diffusion::PossessedEntity>(main_entity, main_entity);
-    g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_entity, main_entity);
-    g_vulkan->get_registry().emplace<diffusion::TagComponent>(main_entity, "main cube");
+    g_vulkan->get_registry().emplace<diffusion::MainCameraTag>(main_camera, main_camera);
 
     /*
     auto right_kitamori_cube = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
@@ -236,7 +242,7 @@ void generate_scene()
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(4.0f, 2.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     //diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(8.0f, 3.0f, -3.0f), glm::vec3(4.0f, 3.0f, -4.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
-    auto directional_light = diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(3.0f, -4.0f, -3.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    auto directional_light = diffusion::create_directional_light_entity(g_vulkan->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(glm::pi<float>() / 2, 0.0f, 0.0f));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(directional_light, "directional light");
     auto point_light = diffusion::create_point_light_entity(g_vulkan->get_registry(), glm::vec3(0.0f, -4.0f, -1.0f));
     g_vulkan->get_registry().emplace<diffusion::TagComponent>(point_light, "point light");
