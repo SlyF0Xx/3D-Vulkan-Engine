@@ -44,6 +44,7 @@
 #include "EditorLayout.h"
 #include "ImGUIBasedPresentationEngine.h"
 #include "Constants.h"
+#include "GameProject.h"
 
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -63,7 +64,7 @@ namespace Editor {
 
 	class EditorWindow {
 	public:
-		EditorWindow() = default;
+		EditorWindow() = delete;
 		EditorWindow(Ref<EditorLayout>&layout);
 		~EditorWindow();
 
@@ -76,9 +77,13 @@ namespace Editor {
 		void SetLayout(Ref<EditorLayout>& layout);
 		void SetContext(Ref<Game>& context);
 
+		void UpdateTitle();
+
 		// TODO: Add resize listener.
 
-		virtual const char* GetWindowTitle() const;
+		virtual std::string GetWindowTitle() const;
+
+		static Ref<GameProject> GetGameProject();
 	protected:
 		bool GLFWInit();
 		void SetupVulkan();
@@ -111,6 +116,9 @@ namespace Editor {
 		Ref<Game> m_Context;
 		Ref<EditorLayout> m_Layout;
 		Ref<ImGUIBasedPresentationEngine> m_PresentationEngine;
+
+	private:
+		static inline Ref<GameProject> s_GameProject;
 	};
 
 	static void GLFWErrorCallback(int error, const char* description) {

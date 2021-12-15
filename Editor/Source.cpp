@@ -38,14 +38,18 @@ int main() {
 	diffusion::Ref<Editor::EditorLayout> layout =
 		diffusion::CreateRef<Editor::MainLayout>(vulkan);
 
-	diffusion::Ref <Editor::EditorWindow> container = 
+	diffusion::Ref<Editor::EditorWindow> container =
 		diffusion::CreateRef<Editor::MainWindow>(layout);
 
 	if (!container->Create()) {
 		return 1;
 	}
 
-	vulkan->load_scene();
+	//vulkan->load_scene();
+
+	// TODO: Replace for reading .ini and load latest project.
+	Editor::EditorWindow::GetGameProject()->CreateEmpty();
+	container->UpdateTitle();
 
 	container->StartMainLoop();
 

@@ -35,8 +35,9 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	ImGui::End();
 
 	if (ImGui::BeginMainMenuBar()) {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 		if (ImGui::BeginMenu("File")) {
-			ImGui::MenuItem("New");
+			ImGui::MenuItem("New Scene");
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
 				GetParent()->Destroy();
@@ -72,6 +73,19 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Scenes")) {
+			for (const Scene& scene : EditorWindow::GetGameProject()->GetScenes()) {
+				ImGui::MenuItem(
+					scene.GetTitle().c_str(), 
+					NULL, 
+					scene.GetID() == EditorWindow::GetGameProject()->GetActiveScene()->GetID()
+				);
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::PopStyleVar();
 		ImGui::EndMainMenuBar();
 	}
 

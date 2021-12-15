@@ -21,6 +21,9 @@
 #include "EditorLayout.h"
 #include "MainWindow.h"
 
+#include "Scene.h"
+#include "GameProject.h"
+
 namespace Editor {
 
 	struct LayoutDock {

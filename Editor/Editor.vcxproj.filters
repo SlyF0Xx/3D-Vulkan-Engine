@@ -55,6 +55,12 @@
     <Filter Include="imguizmo">
       <UniqueIdentifier>{0c8d741e-5545-4238-9f49-cc02254833bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\GameProject">
+      <UniqueIdentifier>{c3a71e44-f65e-4128-aa09-a66b7dbc7144}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\GameProject">
+      <UniqueIdentifier>{7db123ab-dead-4a9a-acb6-4dd03e2d1658}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -161,6 +167,12 @@
     </ClCompile>
     <ClCompile Include="vendor\ImGuizmo\ImSequencer.cpp">
       <Filter>imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="GameProject.cpp">
+      <Filter>Исходные файлы\GameProject</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Исходные файлы\GameProject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -283,6 +295,12 @@
     </ClInclude>
     <ClInclude Include="vendor\ImGuizmo\ImZoomSlider.h">
       <Filter>imguizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="GameProject.h">
+      <Filter>Файлы заголовков\GameProject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Файлы заголовков\GameProject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

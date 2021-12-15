@@ -12,7 +12,7 @@ namespace Editor {
 		MainWindow(Ref<EditorLayout>& layout) : EditorWindow(layout) {};
 
 		void StartMainLoop() override;
-		const char* GetWindowTitle() const override;
+		std::string GetWindowTitle() const override;
 
 	private:
 		void DispatchCameraMovement();

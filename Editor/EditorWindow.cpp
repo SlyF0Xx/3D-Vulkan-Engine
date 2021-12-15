@@ -1,8 +1,12 @@
 #include "EditorWindow.h"
 
+// LNK2001.
+// Editor::GameProject Editor::EditorWindow::s_GameProject;
+
 Editor::EditorWindow::EditorWindow(Ref<EditorLayout>& layout) {
 	SetLayout(layout);
 	SetContext(layout->m_Context);
+	s_GameProject = CreateRef<GameProject>(layout->m_Context);
 }
 
 Editor::EditorWindow::~EditorWindow() {
@@ -58,7 +62,7 @@ bool Editor::EditorWindow::GLFWInit() {
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
-	m_Window = glfwCreateWindow(1280, 720, GetWindowTitle(), nullptr, NULL);
+	m_Window = glfwCreateWindow(1280, 720, GetWindowTitle().c_str(), nullptr, NULL);
 	GLFWimage images[1];
 	images[0].pixels = stbi_load(FAVICON_PATH, &images[0].width, &images[0].height, 0, 4); //rgba channels 
 	glfwSetWindowIcon(m_Window, 1, images);
@@ -228,8 +232,16 @@ void Editor::EditorWindow::SetContext(Ref<Game>& context) {
 	m_Context = context;
 }
 
-const char* Editor::EditorWindow::GetWindowTitle() const {
+void Editor::EditorWindow::UpdateTitle() {
+	glfwSetWindowTitle(m_Window, GetWindowTitle().c_str());
+}
+
+std::string Editor::EditorWindow::GetWindowTitle() const {
 	return "Awesome Editor Window";
+}
+
+diffusion::Ref<Editor::GameProject> Editor::EditorWindow::GetGameProject() {
+	return s_GameProject;
 }
 
 void Editor::EditorWindow::SetupStyle() {

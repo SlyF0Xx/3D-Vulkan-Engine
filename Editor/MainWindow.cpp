@@ -66,14 +66,14 @@ void Editor::MainWindow::DispatchKeyInputs() {
 void Editor::MainWindow::StartMainLoop() {
 	if (!m_IsInitialized) return;
 
-	auto& main_camera = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	/*auto& main_camera = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	m_camera = main_camera.m_entity;
 
 	m_edittor_camera = m_Context->get_registry().create();
 	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_edittor_camera, diffusion::create_matrix());
 	m_Context->get_registry().emplace<diffusion::CameraComponent>(m_edittor_camera);
 	m_Context->get_registry().emplace<diffusion::debug_tag>(m_edittor_camera);
-	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
+	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);*/
 
 	// Systems Initialization
 	diffusion::CameraSystem camera_system(m_Context->get_registry());
@@ -150,7 +150,11 @@ void Editor::MainWindow::StartMainLoop() {
 	}
 }
 
-const char* Editor::MainWindow::GetWindowTitle() const {
+std::string Editor::MainWindow::GetWindowTitle() const {
+	auto gameProject = GetGameProject();
+	if (gameProject->IsReady()) {
+		return gameProject->GetTitle() + " - " + gameProject->GetActiveScene()->GetTitle();
+	}
 	return "Main Window";
 }
 
