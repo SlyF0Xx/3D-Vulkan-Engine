@@ -117,7 +117,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     kitamori.linkedSystem = &phys;
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
-    
+
+    std::chrono::steady_clock::time_point m_phys_time_point = std::chrono::steady_clock::now();
+
     MSG msg;
     while (TRUE) {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -129,6 +131,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(100)) {
+                vulkan.get_tasks().emplace_back(vulkan.get_taskflow().emplace([&phys]() {
+                    phys.tick();
+                }));
+
+                m_phys_time_point = std::chrono::steady_clock::now();
+            }
+
             vulkan.render_tick();
         }
     }
@@ -212,7 +222,7 @@ void generate_scene()
 
     auto trigger = diffusion::create_debug_cube_entity(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
     g_vulkan->get_registry().emplace<diffusion::ScriptComponent>(trigger, "function on_trigger () tv = get_entity_by_name(\"tv 1 - small\"); local_translate(tv, 0, 0, 50); end");
-
+    /*
     auto def = edyn::rigidbody_def();
     def.kind = edyn::rigidbody_kind::rb_dynamic;
     def.position = { 3, 0, 0 };
@@ -228,7 +238,7 @@ void generate_scene()
     def.presentation = true;
     def.gravity = edyn::vector3_zero;// edyn::vector3_z * -1;
     edyn::make_rigidbody(trigger, g_vulkan->get_registry(), def);
-
+    */
 
 
 

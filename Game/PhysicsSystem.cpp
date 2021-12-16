@@ -17,12 +17,17 @@ void diffusion::PhysicsSystem::tick()
     auto saveTranslation = translation;
     auto potential_linked_components = m_registry.view<const KitamoriLinkedTag>();
     potential_linked_components.each([this](const KitamoriLinkedTag& tag) {
+        /*
         m_registry.patch<edyn::position>(::entt::to_entity(m_registry, tag), [this](edyn::position& pos) {
             pos += {translation.x,translation.y,translation.z};
         });
-        //m_registry.get<edyn::position>(::entt::to_entity(m_registry, tag)) += {direction.x,direction.y,direction.z};
-        m_registry.get_or_emplace<edyn::dirty>(::entt::to_entity(m_registry, tag)).updated<edyn::position>();
+        */
+        m_registry.get<edyn::position>(::entt::to_entity(m_registry, tag)) += {translation.x, translation.y, translation.z};
+        //m_registry.get_or_emplace<edyn::dirty>(::entt::to_entity(m_registry, tag)).updated<edyn::position>();
+        edyn::refresh<edyn::position>(m_registry, ::entt::to_entity(m_registry, tag));
     });
+
+    //edyn::refresh<edyn::position>(m_registry, ::entt::to_entity(m_registry, potential_linked_components.front()));
     //edyn::update(m_registry);
 
     

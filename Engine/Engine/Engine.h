@@ -116,7 +116,7 @@ public:
     std::chrono::steady_clock::time_point m_script_time_point = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point m_phys_time_point = std::chrono::steady_clock::now();
 
-    bool m_paused = true;
+    bool m_paused = false;
     std::mutex m_render_mutex;
 
 private:

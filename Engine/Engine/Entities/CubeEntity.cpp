@@ -81,7 +81,7 @@ namespace diffusion {
     auto cube_entity = create_cube_entity(registry, translation, rotation, scale);
     add_default_unlit_material_component(registry, cube_entity);
     collider.transform = { translation, rotation, scale };
-    collider.mass = 0;
+    collider.mass = 1;
 
     auto extend = glm::vec3{ 0.5f, 0.5f, 0.6f } * scale;
     collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z};
