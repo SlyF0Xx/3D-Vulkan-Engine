@@ -155,7 +155,7 @@ Game::Game()
 
     edyn::init();
     edyn::attach(m_registry);
-    edyn::set_fixed_dt(m_registry, 0.1);
+    edyn::set_fixed_dt(m_registry, 0.014);
 }
 
 void Game::InitializePresentationEngine(const PresentationEngine& presentation_engine)
@@ -583,7 +583,7 @@ void Game::render_tick()
     }
 
     std::optional<tf::Task> physics;
-    if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(10)) {
+    if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(1)) {
         if (!m_paused) {
             physics = m_taskflow.emplace([this]() {
                 edyn::update(m_registry);
