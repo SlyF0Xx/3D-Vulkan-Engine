@@ -2,82 +2,72 @@
 
 #include "Entities/ImportableEntity.h"
 #include "KitamoriSystem.h"
+#include "BaseComponents/ScaleComponent.h"
 //#include "edyn/collision/contact_point.hpp"
 
 diffusion::PhysicsSystem::PhysicsSystem(::entt::registry& registry) 
 	: m_registry(registry)
 {
-    m_registry.on_update<edyn::position>().connect<&PhysicsSystem::add_phys_component>(*this);
+    m_registry.on_update<edyn::position>().connect<&PhysicsSystem::update_phys_component>(*this);
     m_registry.on_construct<edyn::contact_point>().connect<&PhysicsSystem::on_detect_collision>(*this);
 }
 
 void diffusion::PhysicsSystem::tick()
 {
-    
-  /*  auto view2 = m_registry.view<edyn::position, TransformComponent>();
-    for (auto& entity : view2)
-    {
-        edyn::position& pos = m_registry.get<edyn::position>(entity);
-        TransformComponent& tc = m_registry.get<TransformComponent>(entity);
-
-        tc.m_world_matrix = create_matrix(glm::vec3(pos.x,pos.y,pos.z),glm::vec3(0), glm::vec3(1));
-    }*/
-    
-    //edyn::linvel vel = edyn::vector3_z * 3;
-    /*auto view = m_registry.view<edyn::position, edyn::dynamic_tag>();
-    for (auto& entity : view)
-    {
-        //m_registry.get_or_emplace<edyn::dirty>(entity).updated<edyn::position>();
-      //m_registry.emplace<edyn::dirty>(entity).updated<edyn::position>();
-        m_registry.patch<edyn::position>(entity,[this](edyn::position& pos)
-        {
-            pos += edyn::vector3_z * -.5;
+    auto saveTranslation = translation;
+    auto potential_linked_components = m_registry.view<const KitamoriLinkedTag>();
+    potential_linked_components.each([this](const KitamoriLinkedTag& tag) {
+        /*
+        m_registry.patch<edyn::position>(::entt::to_entity(m_registry, tag), [this](edyn::position& pos) {
+            pos += {translation.x,translation.y,translation.z};
         });
-        
-      edyn::position& pos = m_registry.get<edyn::position>(entity);*/
-      //pos ;
-      /*edyn::linvel& vel = m_registry.get<edyn::linvel>(entity);
-      vel *= -1;*/
-        //
-        //m_registry.get_or_emplace<edyn::dirty>(entity).updated<edyn::position, edyn::linvel>();
-      //vel += edyn::vector3_z * -2;
-      //edyn::refresh<edyn::position>(m_registry,entity);
-      //m_registry.get_or_emplace<edyn::dirty>(entity).updated<edyn::present_position>();
-      // m_registry.emplace<edyn::dirty>(entity);
-       /* m_registry.patch<TransformComponent>(entity,[this, &pos](TransformComponent& trans)
-      {
-          trans.m_world_matrix = create_matrix(glm::vec3(pos.x,pos.y,pos.z),glm::vec3(0), glm::vec3(1));
-      });*/
-        
-      /*TransformComponent& trans = m_registry.get<TransformComponent>(entity);
-      trans.m_world_matrix = create_matrix(glm::vec3(pos.x,pos.y,pos.z),glm::vec3(0), glm::vec3(1));*/
-    //}
-    //edyn::update
-   //edyn::update(m_registry);
-    /*
-    view.each([] (edyn::linvel &pos, edyn::position&pos1) {
-      pos += {0,0,10};
-      
-      pos1 = pos;
+        */
+        m_registry.get<edyn::position>(::entt::to_entity(m_registry, tag)) += {translation.x, translation.y, translation.z};
+        //m_registry.get_or_emplace<edyn::dirty>(::entt::to_entity(m_registry, tag)).updated<edyn::position>();
+        edyn::refresh<edyn::position>(m_registry, ::entt::to_entity(m_registry, tag));
     });
-   /* auto view = m_registry.view<const edyn::position, const edyn::present_position>();
-    view.each([this](auto ent, const auto& pos, const auto& curpos) {
-        auto& entity = m_registry.ctx<PhysTag>().m_entity;
-        m_registry.patch<TransformComponent>(entity, [this, &pos](TransformComponent& transform) {
-            transform.m_world_matrix = create_matrix(glm::vec3{ pos.x, pos.y, pos.z }, glm::vec3{0,0,0}, glm::vec3{ 1,1,1 });
-                /*rotation_matrix = glm::rotate(glm::mat4(1.0f), 0.01f, RotationZ);
-            transform.m_world_matrix = transform.m_world_matrix * rotation_matrix;
-            });
-        });*/
+
+    //edyn::refresh<edyn::position>(m_registry, ::entt::to_entity(m_registry, potential_linked_components.front()));
+    //edyn::update(m_registry);
+
+    
+    translation -= saveTranslation;
+
 }
 
-void diffusion::PhysicsSystem::add_phys_component(::entt::registry& registry, ::entt::entity parent_entity)
+void diffusion::PhysicsSystem::addTranslation(glm::vec3 translation)
 {
-    auto& pos = registry.get<edyn::position>(parent_entity);
+    this->translation += translation;// + translation + translation;
+}
+
+void diffusion::PhysicsSystem::update_phys_component(::entt::registry& registry, ::entt::entity parent_entity)
+{
+    auto& pos = registry.get<edyn::present_position>(parent_entity);
+    auto& orient = registry.get<edyn::orientation>(parent_entity);
+    auto& scaleComp = registry.get<ScaleComponent>(parent_entity);
+    
+    //auto& bound = registry.get<BoundingComponent>(parent_entity);
    // auto& trans = registry.get<TransformComponent>(parent_entity);
-    registry.patch<TransformComponent>(parent_entity,[this, &pos](TransformComponent& trans)
+    registry.patch<TransformComponent>(parent_entity,[this, &pos, scale = scaleComp.Scale, &orient](TransformComponent& trans)
     {
-        trans.m_world_matrix = create_matrix(glm::vec3(pos.x,pos.y,pos.z),glm::vec3(0), glm::vec3(1));
+        auto ans = glm::translate(glm::mat4(1), {pos.x,pos.y,pos.z}) *
+        ([](glm::vec4 q)
+        {
+            float qx = q.x;
+            float qy = q.y;
+            float qz = q.z;
+            float qw = -q.w;
+            return glm::mat4{
+                1.0f - 2.0f*qy*qy - 2.0f*qz*qz, 2.0f*qx*qy - 2.0f*qz*qw, 2.0f*qx*qz + 2.0f*qy*qw, 0.0f,
+        2.0f*qx*qy + 2.0f*qz*qw, 1.0f - 2.0f*qx*qx - 2.0f*qz*qz, 2.0f*qy*qz - 2.0f*qx*qw, 0.0f,
+        2.0f*qx*qz - 2.0f*qy*qw, 2.0f*qy*qz + 2.0f*qx*qw, 1.0f - 2.0f*qx*qx - 2.0f*qy*qy, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+            };
+        })({orient.x,orient.y,orient.z,orient.w}) *
+        glm::scale(scale);
+        
+        //auto quat = glm::quat{orient.x,orient.y, orient.z, orient.w};
+        trans.m_world_matrix = ans;
     });
 }
 
@@ -103,6 +93,7 @@ void diffusion::PhysicsSystem::on_detect_collision(::entt::registry& registry, :
         registry.emplace_or_replace<KitamoriLinkedTag>(point.body[1]);
     }
     */
+    
     /*auto [con_ent, constraint] = edyn::make_constraint<edyn::distance_constraint>(registry,point.body[1],point.body[0]);
 
     

@@ -175,6 +175,7 @@
     <ClInclude Include="BaseComponents\PointLightComponent.h" />
     <ClInclude Include="BaseComponents\PossessedComponent.h" />
     <ClInclude Include="BaseComponents\Relation.h" />
+    <ClInclude Include="BaseComponents\ScaleComponent.h" />
     <ClInclude Include="BaseComponents\ScriptComponent.h" />
     <ClInclude Include="BaseComponents\TagComponent.h" />
     <ClInclude Include="BaseComponents\TransformComponent.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="InputEvents.h" />
     <ClInclude Include="IRender.h" />
     <ClInclude Include="Systems\CameraSystem.h" />
+    <ClInclude Include="PhysicsUtils.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VulkanInitializer.h" />
   </ItemGroup>
@@ -224,6 +226,7 @@
     <ClCompile Include="Entities\PrimitiveEntity.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="Systems\CameraSystem.cpp" />
+    <ClCompile Include="PhysicsUtils.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>

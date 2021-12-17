@@ -1,5 +1,7 @@
 #include "PlaneEntity.h"
 
+#include "../PhysicsUtils.h"
+
 namespace diffusion {
 
 ::entt::entity create_plane_entity(::entt::registry& registry, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
@@ -29,6 +31,16 @@ namespace diffusion {
 {
     auto plane_entity = create_plane_entity(registry, translation, rotation, scale);
     diffusion::add_default_lit_material_component(registry, plane_entity);
+
+    ColliderDefinition collider{ ECollisionType::Static };
+    collider.transform = { translation, rotation, scale };
+    collider.mass = 1;
+
+    auto extend = glm::vec3{ 0.5f, 0.5f, 0.6f } *scale;
+    collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z };
+
+    add_collider(plane_entity, registry, collider);
+
     return plane_entity;
 }
 
@@ -36,6 +48,16 @@ namespace diffusion {
 {
     auto plane_entity = create_plane_entity(registry, translation, rotation, scale);
     add_default_unlit_material_component(registry, plane_entity);
+
+    ColliderDefinition collider{ ECollisionType::Static };
+    collider.transform = { translation, rotation, scale };
+    collider.mass = 1;
+
+    auto extend = glm::vec3{ 0.5f, 0.5f, 0.6f } *scale;
+    collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z };
+
+    add_collider(plane_entity, registry, collider);
+
     return plane_entity;
 }
 
