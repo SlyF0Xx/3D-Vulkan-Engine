@@ -84,7 +84,7 @@ namespace Editor {
 		/// </summary>
 		ENTT_ID_TYPE m_Selection = -1;
 
-		float m_CameraYaw = 90.f, m_CameraPitch = 0.f;
+		float m_CameraYaw = 0.f, m_CameraPitch = 0.f;
 		glm::vec3 m_TargetPosition;
 
 		SceneEventDispatcher m_SceneDispatcher;

@@ -329,6 +329,8 @@ void VulkanInitializer::search_for_lit_material(::entt::registry& registry, ::en
 
 ImageData VulkanInitializer::prepare_image_for_copy(const vk::CommandBuffer& command_buffer, const std::filesystem::path& filepath)
 {
+    std::cout << "LOADING Texture - " << filepath << std::endl;
+
     std::array<uint32_t, 1> queues{ 0 };
 
     int tex_width, tex_height, n;
