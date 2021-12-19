@@ -442,6 +442,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		RightClickHandler();
 	}
+	else {
+		m_CameraYaw = 0.0f;
+		m_CameraPitch = 0.0f;
+	}
 
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -626,19 +630,20 @@ void Editor::EditorViewport::RightClickHandler() {
 
 	bool isMoving = false;
 	glm::vec3 deltaPosition = {0, 0, 0};
+	glm::vec3 forward = glm::normalize(camera_view.target - camera_view.position);
+	glm::vec3 right = glm::cross(forward, camera_view.up);
+
 	if (ImGui::IsKeyPressed('W')) {
-		deltaPosition = glm::normalize(camera_view.target - camera_view.position) * moveMultiplier;
+		deltaPosition = forward * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('S')) {
-		deltaPosition = -glm::normalize(camera_view.target - camera_view.position) * moveMultiplier;
+		deltaPosition = -forward * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('A')) {
-		glm::vec3 forwardVec = glm::normalize(camera_view.target - camera_view.position);
-		deltaPosition = -glm::cross(forwardVec, camera_view.up) * moveMultiplier;
+		deltaPosition = -right * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('D')) {
-		glm::vec3 forwardVec = glm::normalize(camera_view.target - camera_view.position);
-		deltaPosition = glm::cross(forwardVec, camera_view.up) * moveMultiplier;
+		deltaPosition = right * moveMultiplier;
 		isMoving = true;
 	} else if (ImGui::IsKeyPressed('Q')) {
 		deltaPosition = camera_view.up * moveMultiplier;
@@ -663,23 +668,26 @@ void Editor::EditorViewport::RightClickHandler() {
 		m_CameraPitch = -89.f;
 	}
 
-	/*
-	glm::vec3 front;
-	float yaw = glm::radians(m_CameraYaw);
-	float pitch = glm::radians(m_CameraPitch);
-	front.x = cosf(yaw) * cos(pitch);
-	front.y = sin(yaw) * cos(pitch);
-	front.z = -sin(pitch);
-	*/
-	glm::mat4 rotation_matrix;
+	if (std::abs(m_CameraPitch) > std::abs(m_CameraYaw)) {
+		m_CameraYaw = 0.0f;
+	}
+	else {
+		m_CameraPitch = 0.0f;
+	}
 
 	//front = glm::normalize(front);
 	m_Context->get_registry().patch<diffusion::TransformComponent>(
 		mainCameraEntity.m_entity, [&](diffusion::TransformComponent & transform) {
 		if (isMoving) {
-			transform.m_world_matrix = glm::translate(transform.m_world_matrix, deltaPosition);
+			glm::mat4 translate = glm::translate(glm::mat4(1), deltaPosition);
+			transform.m_world_matrix = translate * transform.m_world_matrix;
 		}
+		glm::vec3 up = camera_view.up;
+		up.z = -up.z;
+
+		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
+		// do not work normally, when delta z != 0
 		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, glm::vec3(0, 0, 1));
-		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, glm::vec3(-1, 0, 0));
+		
 	});
 }
