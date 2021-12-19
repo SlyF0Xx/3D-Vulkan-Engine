@@ -14,6 +14,7 @@
 #include "Inspector.h"
 #include "widgets/TextEditor.h"
 #include "EditorViewport.h"
+#include "SceneActionsWidget.h"
 #pragma endregion
 
 #include "FontUtils.h"
@@ -63,11 +64,12 @@ namespace Editor {
 		SceneHierarchy m_SceneHierarchy;
 		Inspector m_Inspector;
 		EditorViewport m_Viewport;
+		LuaConsole m_LuaConsole;
+		SceneActionsWidget m_ActionsWidget;
 #pragma endregion
 
 #pragma region Widgets.
 		TextEditor m_TextEditor;
-		LuaConsole m_LuaConsole;
 #pragma endregion
 
 		bool m_IsDockspaceInitialized = false;

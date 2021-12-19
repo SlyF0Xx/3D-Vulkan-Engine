@@ -173,6 +173,7 @@
     <ClCompile Include="LuaConsole.cpp" />
     <ClCompile Include="MainLayout.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneActionsWidget.cpp" />
     <ClCompile Include="SceneHierarchy.cpp" />
     <ClCompile Include="SceneInteraction.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="MainLayout.h" />
     <ClInclude Include="MenuRender.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneActionsWidget.h" />
     <ClInclude Include="SceneHierarchy.h" />
     <ClInclude Include="SceneInteraction.h" />
     <ClInclude Include="TagComponentInspector.h" />

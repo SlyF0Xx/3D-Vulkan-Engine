@@ -6,7 +6,8 @@ Editor::MainLayout::MainLayout() :
 	m_SceneHierarchy(m_Context),
 	m_Inspector(m_Context),
 	m_Viewport(m_Context),
-	m_LuaConsole(m_Context) {
+	m_LuaConsole(m_Context),
+	m_ActionsWidget(m_Context) {
 
 	m_TextEditor = TextEditor();
 	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -126,6 +127,8 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	ImGui::End();
 
 	if (m_WindowStates.isViewportOpen) {
+		ImGui::SetNextWindowDockID(m_DockIDs.TopDock, ImGuiCond_Once);
+		m_ActionsWidget.Render(0, 0);
 		m_Viewport.Render(&m_WindowStates.isViewportOpen, 0, engine);
 	}
 
@@ -149,6 +152,7 @@ void Editor::MainLayout::InitDockspace() {
 		return;
 	}
 
+	m_ActionsWidget.InitContexed();
 	m_ContentBrowser.InitContexed();
 	m_Viewport.InitContexed();
 
@@ -172,10 +176,10 @@ void Editor::MainLayout::InitDockspace() {
 	// Order important!
 	m_DockIDs.RightDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Right, 0.2f, nullptr, &m_DockIDs.MainDock);
 	m_DockIDs.DownDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Down, 0.2f, nullptr, &m_DockIDs.MainDock);
-	m_DockIDs.TopDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Up, 0.05f, nullptr, &m_DockIDs.MainDock);
 	m_DockIDs.LeftDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Left, 0.2f, nullptr, &m_DockIDs.MainDock);
+	m_DockIDs.TopDock = ImGui::DockBuilderSplitNode(m_DockIDs.MainDock, ImGuiDir_Up, 0.05f, nullptr, &m_DockIDs.MainDock);
 
-	ImGui::DockBuilderDockWindow("Actions", m_DockIDs.TopDock);
+	ImGui::DockBuilderDockWindow(Editor::SceneActionsWidget::TITLE, m_DockIDs.TopDock);
 	ImGui::DockBuilderDockWindow(Editor::SceneHierarchy::TITLE, m_DockIDs.LeftDock);
 	ImGui::DockBuilderDockWindow(Editor::Inspector::TITLE, m_DockIDs.RightDock);
 	ImGui::DockBuilderDockWindow(Editor::ContentBrowser::TITLE, m_DockIDs.DownDock);
@@ -187,16 +191,11 @@ void Editor::MainLayout::InitDockspace() {
 
 void Editor::MainLayout::OnContextChanged() {
 	m_Context = GameProject::Instance()->GetCurrentContext();
+
 	m_ContentBrowser.SetContext(m_Context);
 	m_SceneHierarchy.SetContext(m_Context);
 	m_Inspector.SetContext(m_Context);
 	m_Viewport.SetContext(m_Context);
 	m_LuaConsole.SetContext(m_Context);
-
-	//m_ContentBrowser = ContentBrowser(m_Context);
-	//m_SceneHierarchy = SceneHierarchy(m_Context);
-	//m_Inspector = Inspector(m_Context);
-	//m_Viewport.SetContext(m_Context);
-	////m_Viewport = EditorViewport(m_Context);
-	//m_LuaConsole = LuaConsole(m_Context);
+	m_ActionsWidget.SetContext(m_Context);
 }

@@ -177,6 +177,9 @@
     <ClCompile Include="WindowTitleInteraction.cpp">
       <Filter>Исходные файлы\Utils\Interaction</Filter>
     </ClCompile>
+    <ClCompile Include="SceneActionsWidget.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -307,6 +310,9 @@
     </ClInclude>
     <ClInclude Include="WindowTitleInteraction.h">
       <Filter>Файлы заголовков\Utils\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneActionsWidget.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
