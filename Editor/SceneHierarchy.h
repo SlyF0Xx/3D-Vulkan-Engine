@@ -32,9 +32,11 @@ namespace Editor {
 			PRIMITIVE_CUBE,
 			PRIMITIVE_PLANE,
 
+			LIGHT_POINT,
 			LIGHT_DIRECTIONAL,
 
 			DEBUG_CUBE,
+			DEBUG_SPHERE,
 
 			IMPORTABLE
 		};
@@ -81,14 +83,16 @@ namespace Editor {
 				},
 			2),
 			EditorCreatableEntity("Lights", 
-				new EditorCreatableEntity[1] {
+				new EditorCreatableEntity[2] {
+					EditorCreatableEntity("Point Light", EditorCreatableEntity::EditorCreatableEntityType::LIGHT_POINT),
 					EditorCreatableEntity("Directional Light", EditorCreatableEntity::EditorCreatableEntityType::LIGHT_DIRECTIONAL),
 				},
-			1),
-			EditorCreatableEntity("Debug", new EditorCreatableEntity[1] {
+			2),
+			EditorCreatableEntity("Debug", new EditorCreatableEntity[2] {
 					EditorCreatableEntity("Cube", EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE),
+					EditorCreatableEntity("Sphere", EditorCreatableEntity::EditorCreatableEntityType::DEBUG_SPHERE),
 				},
-			1),
+			2),
 			EditorCreatableEntity("Import...", EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE),
 		};
 		

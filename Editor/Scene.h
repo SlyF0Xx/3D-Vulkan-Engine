@@ -12,16 +12,17 @@
 #include <BaseComponents/PointLightComponent.h>
 #include <BaseComponents/DirectionalLightComponent.h>
 
+#include <Entities/CubeEntity.h>
 #include <Entities/DirectionalLightEntity.h>
 
 namespace Editor {
+
+	class GameProject;
 
 	class Scene {
 	public:
 		Scene() = delete;
 		explicit Scene(uint32_t id = 0);
-
-		static Scene GetEmpty(uint32_t id = 0);
 
 		void SetData(nlohmann::json& data);
 
@@ -57,6 +58,7 @@ namespace Editor {
 
 		bool m_IsEmpty = true;
 		bool m_HasData = false;
+		friend class GameProject;
 	};
 
 }

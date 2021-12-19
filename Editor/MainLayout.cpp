@@ -45,7 +45,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rename Scene")) {
-				// ..
+				Editor::GameProject::Instance()->RenameScene();
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Save Project")) {

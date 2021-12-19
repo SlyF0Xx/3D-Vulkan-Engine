@@ -32,6 +32,10 @@ void Editor::GameProject::NewScene() {
 	m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::TITLE_UPDATED);
 }
 
+void Editor::GameProject::RenameScene() {
+	m_IsRenamingScene = true;
+}
+
 void Editor::GameProject::Render() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
@@ -39,6 +43,33 @@ void Editor::GameProject::Render() {
 	// Always center this window when appearing.
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+	if (m_IsRenamingScene) {
+		ImGui::OpenPopup("Scene Title");
+		ImGui::BeginPopupModal("Scene Title", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Text("Enter new scene title...");
+		ImGui::Separator();
+
+		static char nameBuf[64] = "";
+		ImGui::InputText("Scene title", nameBuf, 64);
+
+		if (ImGui::Button("OK", ImVec2(120, 0))) {
+			if (strlen(nameBuf) != 0) {
+				m_IsRenamingScene = false;
+				ImGui::CloseCurrentPopup();
+				GetActiveScene()->m_Title = nameBuf;
+
+				m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::TITLE_UPDATED);
+			}
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+			m_IsRenamingScene = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 
 	if (m_IsSavingAs) {
 		ImGui::OpenPopup("Save Project");
@@ -180,6 +211,10 @@ void Editor::GameProject::Refresh() {
 	GetActiveScene()->Load(m_SourcePath);
 }
 
+const bool Editor::GameProject::HasSourceRoot() const {
+	return !m_SourcePath.empty();
+}
+
 const std::string Editor::GameProject::GetTitle() const {
 	return m_Title;
 }
@@ -204,6 +239,10 @@ const std::filesystem::path Editor::GameProject::GetMetaPath() const {
 		return m_SourcePath / (m_Title + ".diffusion");
 	}
 	return std::filesystem::path();
+}
+
+const std::filesystem::path Editor::GameProject::GetSourceRoot() const {
+	return m_SourcePath;
 }
 
 void Editor::GameProject::ParseMetaFile(std::filesystem::path path) {

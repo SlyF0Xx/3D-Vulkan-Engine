@@ -27,6 +27,8 @@ namespace Editor {
 
 		void NewScene();
 
+		void RenameScene();
+
 		void Render();
 
 		void Load();
@@ -39,6 +41,8 @@ namespace Editor {
 
 		void Refresh();
 
+		const bool HasSourceRoot() const;
+
 		const std::string GetTitle() const;
 
 		Scene* GetActiveScene() const;
@@ -46,6 +50,8 @@ namespace Editor {
 		const std::vector<Scene> GetScenes() const;
 
 		const std::filesystem::path GetMetaPath() const;
+
+		const std::filesystem::path GetSourceRoot() const;
 
 		static inline diffusion::Ref<GameProject> Instance() {
 			if (!GameProject::s_GameProject) {
@@ -72,6 +78,7 @@ namespace Editor {
 		std::filesystem::path m_SourcePath;
 
 		bool m_IsSavingAs = false;
+		bool m_IsRenamingScene = false;
 		bool m_IsSourceFolderChoosing = false;
 		bool m_IsProjectFileChoosing = false;
 

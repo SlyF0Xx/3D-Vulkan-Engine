@@ -171,8 +171,15 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 				created = create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f));
 				break;
 			}
+			case EditorCreatableEntity::EditorCreatableEntityType::LIGHT_POINT: {
+				created = create_point_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f));
+				break;
+			}
 			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE:
 				created = create_debug_cube_entity(m_Context->get_registry());
+				break;
+			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_SPHERE:
+				created = create_debug_sphere_entity(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE: {
 				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Model", ".fbx,.obj", ".");
