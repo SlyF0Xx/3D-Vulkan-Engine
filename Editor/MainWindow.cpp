@@ -3,6 +3,15 @@
 #include "Systems/CameraSystem.h"
 #include "BaseComponents/DebugComponent.h"
 
+Editor::MainWindow::MainWindow() : Editor::EditorWindow::EditorWindow() {
+	// ..
+}
+
+//void Editor::MainWindow::OnContextChanged() {
+//	Editor::EditorWindow::OnContextChanged();
+//	StartMainLoop();
+//}
+
 void Editor::MainWindow::DispatchCameraMovement() {
 	/*
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
@@ -66,14 +75,14 @@ void Editor::MainWindow::DispatchKeyInputs() {
 void Editor::MainWindow::StartMainLoop() {
 	if (!m_IsInitialized) return;
 
-	auto& main_camera = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
+	/*auto& main_camera = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	m_camera = main_camera.m_entity;
 
 	m_edittor_camera = m_Context->get_registry().create();
 	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_edittor_camera, diffusion::create_matrix());
 	m_Context->get_registry().emplace<diffusion::CameraComponent>(m_edittor_camera);
 	m_Context->get_registry().emplace<diffusion::debug_tag>(m_edittor_camera);
-	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
+	m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);*/
 
 	// Systems Initialization
 	diffusion::CameraSystem camera_system(m_Context->get_registry());
@@ -127,9 +136,13 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 
+		//if (GameProject::Instance()->IsReady()) {
 		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != LayoutRenderStatus::SUCCESS) {
 			break;
 		}
+		//}
+
+		GameProject::Instance()->Render();
 
 		ImGui::Render();
 		ImGui::EndFrame();
@@ -150,7 +163,12 @@ void Editor::MainWindow::StartMainLoop() {
 	}
 }
 
-const char* Editor::MainWindow::GetWindowTitle() const {
+std::string Editor::MainWindow::GetWindowTitle() const {
+	auto gameProject = GameProject::Instance();
+	auto scene = gameProject->GetActiveScene();
+	if (scene) {
+		return gameProject->GetTitle() + " - " + gameProject->GetActiveScene()->GetTitle();
+	}
 	return "Main Window";
 }
 

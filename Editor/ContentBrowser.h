@@ -6,19 +6,22 @@
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#include "Constants.h"
+#include "GameProject.h"
 
 namespace Editor {
 
-	class ContentBrowser : GameWidget {
+	class ContentBrowser : public GameWidget {
 
 	public:
 		static inline constexpr const char* TITLE = "Content Browser";
 
 		ContentBrowser() = delete;
-		ContentBrowser(const diffusion::Ref<Game>& game);
+		ContentBrowser(EDITOR_GAME_TYPE game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 		void InitContexed() override;
+		void SetContext(EDITOR_GAME_TYPE ctx) override;
 
 	private:
 		static inline constexpr const char* GRID_ICON_PATH		= "./misc/icons/file_icon.png";

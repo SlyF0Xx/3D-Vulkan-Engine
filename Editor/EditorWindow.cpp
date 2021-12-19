@@ -1,8 +1,17 @@
 #include "EditorWindow.h"
 
-Editor::EditorWindow::EditorWindow(Ref<EditorLayout>& layout) {
-	SetLayout(layout);
-	SetContext(layout->m_Context);
+Editor::EditorWindow::EditorWindow() {
+	m_WindowDispatcher = WindowTitleInteractionSingleTon::GetDispatcher();
+	m_WindowDispatcher->appendListener(Editor::WindowTitleInteractionType::TITLE_UPDATED, [&](void) {
+		glfwSetWindowTitle(m_Window, GetWindowTitle().c_str());
+	});
+
+	m_WindowDispatcher->appendListener(Editor::WindowTitleInteractionType::CONTEXT_CHANGED, [&](void) {
+		OnContextChanged();
+	});
+
+	// TODO: Deprecated.
+	m_Context = GameProject::Instance()->GetCurrentContext();
 }
 
 Editor::EditorWindow::~EditorWindow() {
@@ -20,16 +29,15 @@ bool Editor::EditorWindow::Create() {
 	SetupVulkan();
 
 	// Create Window Surface
-	VkSurfaceKHR surface;
-	VkResult err = glfwCreateWindowSurface(m_Context->get_instance(), m_Window, m_Allocator, &surface);
+	VkResult err = glfwCreateWindowSurface(m_Context->get_instance(), m_Window, m_Allocator, &m_Surface);
 	check_vk_result(err);
 
 	// Create Framebuffers
 	glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
 	ImGui_ImplVulkanH_Window* wd = &m_MainWindowData;
-	SetupVulkanWindow(wd, surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
+	SetupVulkanWindow(wd, m_Surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
 
-	m_PresentationEngine = std::make_shared<ImGUIBasedPresentationEngine>(*m_Context, wd, 100, 100);
+	m_PresentationEngine = diffusion::CreateRef<ImGUIBasedPresentationEngine>(*m_Context, wd, 100, 100);
 	m_Context->InitializePresentationEngine(m_PresentationEngine->get_presentation_engine());
 
 	SetupImGuiContext();
@@ -58,7 +66,7 @@ bool Editor::EditorWindow::GLFWInit() {
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
-	m_Window = glfwCreateWindow(1280, 720, GetWindowTitle(), nullptr, NULL);
+	m_Window = glfwCreateWindow(1280, 720, GetWindowTitle().c_str(), nullptr, NULL);
 	GLFWimage images[1];
 	images[0].pixels = stbi_load(FAVICON_PATH, &images[0].width, &images[0].height, 0, 4); //rgba channels 
 	glfwSetWindowIcon(m_Window, 1, images);
@@ -191,10 +199,32 @@ void Editor::EditorWindow::UploadFonts() {
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
+void Editor::EditorWindow::OnContextChanged() {
+#if _DEBUG
+	printf("------- Context changed (EditorWindow) -------");
+#endif
+	Destroy();
+
+	m_Context = GameProject::Instance()->GetCurrentContext();
+
+	if (!Create()) {
+		throw;
+	}
+	m_Layout->OnContextChanged();
+
+	GameProject::Instance()->Refresh();
+
+	glfwSetWindowTitle(m_Window, GetWindowTitle().c_str());
+
+	StartMainLoop();
+}
+
 void Editor::EditorWindow::Destroy() {
 	if (!m_IsInitialized) return;
 
 	m_IsInitialized = false;
+
+	FontUtils::ReleaseFonts();
 
 	// Cleanup
 	VkResult err = vkDeviceWaitIdle(m_Context->get_device());
@@ -224,11 +254,7 @@ void Editor::EditorWindow::SetLayout(Ref<EditorLayout>& layout) {
 	m_Layout->m_Parent = this;
 }
 
-void Editor::EditorWindow::SetContext(Ref<Game>& context) {
-	m_Context = context;
-}
-
-const char* Editor::EditorWindow::GetWindowTitle() const {
+std::string Editor::EditorWindow::GetWindowTitle() const {
 	return "Awesome Editor Window";
 }
 

@@ -10,7 +10,7 @@ namespace Editor {
 	class TagComponentInspector : public BaseComponentInspector {
 	public:
 		TagComponentInspector() = delete;
-		explicit TagComponentInspector(const diffusion::Ref<Game>& ctx);
+		explicit TagComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		void RenderContent() override;
 

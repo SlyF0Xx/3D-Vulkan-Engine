@@ -44,6 +44,8 @@
 #include "EditorLayout.h"
 #include "ImGUIBasedPresentationEngine.h"
 #include "Constants.h"
+#include "GameProject.h"
+#include "WindowTitleInteraction.h"
 
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -63,8 +65,7 @@ namespace Editor {
 
 	class EditorWindow {
 	public:
-		EditorWindow() = default;
-		EditorWindow(Ref<EditorLayout>&layout);
+		EditorWindow();
 		~EditorWindow();
 
 		bool Create();
@@ -74,11 +75,13 @@ namespace Editor {
 
 		void Destroy();
 		void SetLayout(Ref<EditorLayout>& layout);
-		void SetContext(Ref<Game>& context);
+		// void SetContext(Ref<Game>& context);
 
 		// TODO: Add resize listener.
 
-		virtual const char* GetWindowTitle() const;
+		virtual std::string GetWindowTitle() const;
+
+//		static Ref<GameProject> GetGameProject();
 	protected:
 		bool GLFWInit();
 		void SetupVulkan();
@@ -90,6 +93,8 @@ namespace Editor {
 		void SetupImGuiContext();
 		void UploadFonts();		
 
+		virtual void OnContextChanged();
+
 	protected:
 		static inline constexpr const char* FAVICON_PATH = "./misc/icons/toolbar_icon.png";
 
@@ -100,7 +105,8 @@ namespace Editor {
 		bool						m_SwapChainRebuild = false;
 		int							m_MinImageCount = 3;
 
-		VkAllocationCallbacks* m_Allocator = NULL;
+		VkSurfaceKHR				m_Surface = NULL;
+		VkAllocationCallbacks*		m_Allocator = NULL;
 		VkPipelineCache				m_PipelineCache = VK_NULL_HANDLE;
 		VkDescriptorPool			m_DescriptorPool = VK_NULL_HANDLE;
 		ImGui_ImplVulkanH_Window	m_MainWindowData;
@@ -108,9 +114,16 @@ namespace Editor {
 		ImVec4 m_BackgroundColor = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
 
 		GLFWwindow* m_Window;
-		Ref<Game> m_Context;
+		// TODO: Deprecated.
+		// Ref<Game> m_Context;
+		Game* m_Context;
 		Ref<EditorLayout> m_Layout;
 		Ref<ImGUIBasedPresentationEngine> m_PresentationEngine;
+
+	private:
+//		static inline Ref<GameProject> s_GameProject;
+
+		WindowTitleDispatcher m_WindowDispatcher;
 	};
 
 	static void GLFWErrorCallback(int error, const char* description) {

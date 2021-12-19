@@ -164,6 +164,7 @@
     <ClCompile Include="EditorLayout.cpp" />
     <ClCompile Include="EditorViewport.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
+    <ClCompile Include="GameProject.cpp" />
     <ClCompile Include="GameWidget.cpp" />
     <ClCompile Include="Inspector.cpp" />
     <ClCompile Include="MainWindow.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="ImGUIBasedPresentationEngine.cpp" />
     <ClCompile Include="LuaConsole.cpp" />
     <ClCompile Include="MainLayout.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneHierarchy.cpp" />
     <ClCompile Include="SceneInteraction.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -193,6 +195,7 @@
     <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp" />
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp" />
     <ClCompile Include="ViewportSnapInteraction.cpp" />
+    <ClCompile Include="WindowTitleInteraction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponentInspector.h" />
@@ -202,6 +205,7 @@
     <ClInclude Include="EditorLayout.h" />
     <ClInclude Include="EditorViewport.h" />
     <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="GameProject.h" />
     <ClInclude Include="GameWidget.h" />
     <ClInclude Include="Inspector.h" />
     <ClInclude Include="MainWindow.h" />
@@ -210,6 +214,7 @@
     <ClInclude Include="LuaConsole.h" />
     <ClInclude Include="MainLayout.h" />
     <ClInclude Include="MenuRender.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneHierarchy.h" />
     <ClInclude Include="SceneInteraction.h" />
     <ClInclude Include="TagComponentInspector.h" />
@@ -235,6 +240,7 @@
     <ClInclude Include="vendor\imgui\widgets\GroupPanel.h" />
     <ClInclude Include="vendor\imgui\widgets\TextEditor.h" />
     <ClInclude Include="ViewportSnapInteraction.h" />
+    <ClInclude Include="WindowTitleInteraction.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">

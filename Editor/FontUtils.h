@@ -16,6 +16,8 @@ namespace Editor {
 	public:
 		static ImFont* GetFont(Editor::FONT_TYPE type);
 
+		static void ReleaseFonts();
+
 	private:
 		static void LoadFonts();
 

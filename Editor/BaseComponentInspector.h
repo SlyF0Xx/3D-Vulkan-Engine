@@ -7,6 +7,7 @@
 #include <Core/Base.h>
 
 #include "SceneInteraction.h"
+#include "Constants.h"
 
 namespace Editor {
 
@@ -18,9 +19,9 @@ namespace Editor {
 	class BaseComponentInspector {
 	public:
 		BaseComponentInspector() = delete;
-		explicit BaseComponentInspector(const diffusion::Ref<Game>& ctx);
+		explicit BaseComponentInspector(EDITOR_GAME_TYPE ctx);
 
-		void SetContext(const diffusion::Ref<Game>& game);
+		void SetContext(EDITOR_GAME_TYPE game);
 
 		void Render();
 
@@ -36,7 +37,7 @@ namespace Editor {
 		inline virtual const char* GetTitle() const = 0;
 
 	protected:
-		diffusion::Ref<Game> m_Context;
+		EDITOR_GAME_TYPE m_Context;
 		entt::entity m_Selection;
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT		= false;

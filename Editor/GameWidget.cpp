@@ -1,18 +1,20 @@
 #include "GameWidget.h"
 
-Editor::GameWidget::GameWidget(const diffusion::Ref<Game>& ctx) {
+Editor::GameWidget::GameWidget(Game* ctx) {
 	SetContext(ctx);
 }
 
-void Editor::GameWidget::SetContext(const diffusion::Ref<Game>& game) {
+void Editor::GameWidget::SetContext(Game* game) {
 	m_Context = game;
+	Reset();
+	InitContexed();
 }
 
 void Editor::GameWidget::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
 	// ..
 }
 
-ImTextureID Editor::GameWidget::GenerateTextureID(diffusion::Ref<Game>& ctx, diffusion::ImageData& imData, const std::filesystem::path& path) {
+ImTextureID Editor::GameWidget::GenerateTextureID(EDITOR_GAME_TYPE ctx, diffusion::ImageData& imData, const std::filesystem::path& path) {
 	auto command_buffer = ctx->get_device().allocateCommandBuffers(vk::CommandBufferAllocateInfo(ctx->get_command_pool(), vk::CommandBufferLevel::ePrimary, 1))[0];
 
 	command_buffer.begin(vk::CommandBufferBeginInfo());

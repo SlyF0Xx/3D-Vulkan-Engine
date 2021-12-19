@@ -1,12 +1,18 @@
 #include "SceneHierarchy.h"
 
-Editor::SceneHierarchy::SceneHierarchy(const Ref<Game>& game) : GameWidget(game) {
+Editor::SceneHierarchy::SceneHierarchy(EDITOR_GAME_TYPE game) : GameWidget(game) {
 	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
 }
 
 void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::Begin(TITLE, p_open, flags);
+
+#if _DEBUG
+	ImGui::Text("Only Debug:");
+	ImGui::Text("Addr: %p", m_Context);
+	ImGui::Text("Entities count: %d", m_Context->get_registry().alive());
+#endif
 
 	m_Context->get_registry().each([&](auto entity) {
 		const auto& relation = m_Context->get_registry().try_get<Relation>(entity);
@@ -28,7 +34,7 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	}
 
 	if (ImGui::BeginPopup(POPUP_ADD_ENTITY)) {
-		for (EditorCreatableEntity entity : m_CreatableEntities) {
+		for (const EditorCreatableEntity& entity : m_CreatableEntities) {
 			DrawCreatableEntityNode(entity);
 		}
 		ImGui::EndPopup();
@@ -131,9 +137,11 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	}
 
 	if (isEntityDeleted) {
-		// TODO: delete entity from scene.
 		if (m_SelectionContext == entity)
 			ResetSelectionNotify();
+		if (m_Context->get_registry().valid((entt::entity) entity)) {
+			m_Context->get_registry().destroy((entt::entity) entity);
+		}
 	}
 
 
@@ -151,25 +159,40 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 	bool isOpened = ImGui::TreeNodeEx(entity.Title, treeNodeFlags);
 
 	if (ImGui::IsItemClicked() && !entity.Children) {
+		entt::entity created = entt::null;
 		switch (entity.Type) {
 			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_CUBE:
-				create_cube_entity_lit(m_Context->get_registry());
+				created = create_cube_entity_unlit(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_PLANE:
-				create_plane_entity_lit(m_Context->get_registry());
+				created = create_plane_entity_lit(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::LIGHT_DIRECTIONAL: {
-				create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f));
+				created = create_directional_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f));
+				break;
+			}
+			case EditorCreatableEntity::EditorCreatableEntityType::LIGHT_POINT: {
+				created = create_point_light_entity(m_Context->get_registry(), glm::vec3(0.0f, 0.0f, 3.0f));
 				break;
 			}
 			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE:
-				create_debug_cube_entity(m_Context->get_registry());
+				created = create_debug_cube_entity(m_Context->get_registry());
+				break;
+			case EditorCreatableEntity::EditorCreatableEntityType::DEBUG_SPHERE:
+				created = create_debug_sphere_entity(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE: {
 				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Model", ".fbx,.obj", ".");
 				break;
 			}
 		}
+
+		if (m_Context->get_registry().valid(created)) {
+			std::string title = 
+				std::string(entity.Title) + std::string(" #") + std::to_string((ENTT_ID_TYPE) created);
+			m_Context->get_registry().emplace_or_replace<diffusion::TagComponent>(created, title);
+		}
+
 		ImGui::CloseCurrentPopup();
 	}
 
@@ -204,4 +227,12 @@ void Editor::SceneHierarchy::ResetSelectionNotify() {
 	m_SelectionContext = ENTT_ID_TYPE(-1);
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
 	m_SingleDispatcher->dispatch({ SceneInteractType::RESET_SELECTION });
+}
+
+void Editor::SceneHierarchy::InitContexed() {
+	Editor::GameWidget::InitContexed();
+
+	m_SelectionContext = -1;
+	m_IsRenameInputFocused = false;
+	m_IsRenaming = false;
 }

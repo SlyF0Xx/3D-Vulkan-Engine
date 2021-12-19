@@ -13,7 +13,7 @@ namespace Editor {
 	class TransformComponentInspector : public BaseComponentInspector {
 	public:
 		TransformComponentInspector() = delete;
-		explicit TransformComponentInspector(const diffusion::Ref<Game>& ctx);
+		explicit TransformComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		void RenderContent() override;
 	private:

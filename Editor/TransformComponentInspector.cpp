@@ -1,6 +1,6 @@
 #include "TransformComponentInspector.h"
 
-Editor::TransformComponentInspector::TransformComponentInspector(const diffusion::Ref<Game>& ctx) 
+Editor::TransformComponentInspector::TransformComponentInspector(EDITOR_GAME_TYPE ctx)
 	: BaseComponentInspector(ctx) {
 	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
 	IM_ASSERT(&m_SceneDispatcher != nullptr);

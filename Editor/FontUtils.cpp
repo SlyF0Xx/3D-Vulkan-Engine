@@ -10,6 +10,10 @@ ImFont* Editor::FontUtils::GetFont(Editor::FONT_TYPE type) {
 	return nullptr;
 }
 
+void Editor::FontUtils::ReleaseFonts() {
+	s_Fonts.clear();
+}
+
 void Editor::FontUtils::LoadFonts() {
 	ImGuiIO& io = ImGui::GetIO();
 	if (GetFont(FONT_TYPE::PRIMARY_TEXT) == NULL) {

@@ -32,9 +32,11 @@ namespace Editor {
 			PRIMITIVE_CUBE,
 			PRIMITIVE_PLANE,
 
+			LIGHT_POINT,
 			LIGHT_DIRECTIONAL,
 
 			DEBUG_CUBE,
+			DEBUG_SPHERE,
 
 			IMPORTABLE
 		};
@@ -48,10 +50,10 @@ namespace Editor {
 		EditorCreatableEntity(const char* T, EditorCreatableEntity* C, uint32_t S) : Title(T), Children(C), Size(S) {};
 	};
 
-	class SceneHierarchy : GameWidget {
+	class SceneHierarchy : public GameWidget {
 	public:
 		SceneHierarchy() = delete;
-		SceneHierarchy(const Ref<Game>& game);
+		SceneHierarchy(EDITOR_GAME_TYPE game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 
@@ -64,6 +66,8 @@ namespace Editor {
 
 		void SelectOneNotify(const ENTT_ID_TYPE& entity);
 		void ResetSelectionNotify();
+
+		void InitContexed() override;
 
 	public:
 		static inline constexpr const char* TITLE = "Hierarchy";
@@ -79,14 +83,16 @@ namespace Editor {
 				},
 			2),
 			EditorCreatableEntity("Lights", 
-				new EditorCreatableEntity[1] {
+				new EditorCreatableEntity[2] {
+					EditorCreatableEntity("Point Light", EditorCreatableEntity::EditorCreatableEntityType::LIGHT_POINT),
 					EditorCreatableEntity("Directional Light", EditorCreatableEntity::EditorCreatableEntityType::LIGHT_DIRECTIONAL),
 				},
-			1),
-			EditorCreatableEntity("Debug", new EditorCreatableEntity[1] {
+			2),
+			EditorCreatableEntity("Debug", new EditorCreatableEntity[2] {
 					EditorCreatableEntity("Cube", EditorCreatableEntity::EditorCreatableEntityType::DEBUG_CUBE),
+					EditorCreatableEntity("Sphere", EditorCreatableEntity::EditorCreatableEntityType::DEBUG_SPHERE),
 				},
-			1),
+			2),
 			EditorCreatableEntity("Import...", EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE),
 		};
 		
