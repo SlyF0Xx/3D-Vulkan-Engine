@@ -75,6 +75,7 @@ Game::Game()
     : m_initializer(*this),
     m_component_initializer(*this)
 {
+    m_registry.clear();
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
 
     std::vector<vk::LayerProperties> enlayers = vk::enumerateInstanceLayerProperties();

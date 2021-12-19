@@ -2,6 +2,7 @@
 
 #include "MainLayout.h"
 #include "MainWindow.h"
+#include "GameProject.h"
 
 #include "Entities/ImportableEntity.h"
 #include "Entities/CubeEntity.h"
@@ -20,8 +21,6 @@
 #include "BaseComponents/DebugComponent.h"
 #include "Entities/DebugCube.h"
 
-#include <Engine.h>
-
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -33,25 +32,28 @@
 #include <fstream>
 
 int main() {
-	diffusion::Ref<Game> vulkan = diffusion::CreateRef<Game>();
+	// TODO: Scene должна создавать свой собственный контекст, поэтому передавать его нельзя.
+	// TODO: GameProject должен получать контекст от текущей сцены.
+	// diffusion::Ref<Game> vulkan = diffusion::CreateRef<Game>();
+
+	Editor::GameProject::Instance()->CreateContext();
+
+	diffusion::Ref<Editor::EditorWindow> mainWindow =
+		diffusion::CreateRef<Editor::MainWindow>();
 
 	diffusion::Ref<Editor::EditorLayout> layout =
-		diffusion::CreateRef<Editor::MainLayout>(vulkan);
+		diffusion::CreateRef<Editor::MainLayout>();
 
-	diffusion::Ref<Editor::EditorWindow> container =
-		diffusion::CreateRef<Editor::MainWindow>(layout);
+	mainWindow->SetLayout(layout);
 
-	if (!container->Create()) {
+	if (!mainWindow->Create()) {
 		return 1;
 	}
 
-	//vulkan->load_scene();
-
 	// TODO: Replace for reading .ini and load latest project.
-	Editor::EditorWindow::GetGameProject()->CreateEmpty();
-	container->UpdateTitle();
+	Editor::GameProject::Instance()->CreateEmpty();
 
-	container->StartMainLoop();
+	mainWindow->StartMainLoop();
 
 	return 0;
 }

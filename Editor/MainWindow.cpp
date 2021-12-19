@@ -3,6 +3,15 @@
 #include "Systems/CameraSystem.h"
 #include "BaseComponents/DebugComponent.h"
 
+Editor::MainWindow::MainWindow() : Editor::EditorWindow::EditorWindow() {
+	// ..
+}
+
+//void Editor::MainWindow::OnContextChanged() {
+//	Editor::EditorWindow::OnContextChanged();
+//	StartMainLoop();
+//}
+
 void Editor::MainWindow::DispatchCameraMovement() {
 	/*
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
@@ -127,9 +136,13 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 
+		//if (GameProject::Instance()->IsReady()) {
 		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != LayoutRenderStatus::SUCCESS) {
 			break;
 		}
+		//}
+
+		GameProject::Instance()->Render();
 
 		ImGui::Render();
 		ImGui::EndFrame();
@@ -151,8 +164,9 @@ void Editor::MainWindow::StartMainLoop() {
 }
 
 std::string Editor::MainWindow::GetWindowTitle() const {
-	auto gameProject = GetGameProject();
-	if (gameProject->IsReady()) {
+	auto gameProject = GameProject::Instance();
+	auto scene = gameProject->GetActiveScene();
+	if (scene) {
 		return gameProject->GetTitle() + " - " + gameProject->GetActiveScene()->GetTitle();
 	}
 	return "Main Window";

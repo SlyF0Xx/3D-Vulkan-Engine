@@ -19,8 +19,9 @@ namespace Editor {
 	class Inspector : public GameWidget {
 	public:
 		Inspector() = delete;
-		Inspector(const Ref<Game>& game);
+		Inspector(EDITOR_GAME_TYPE game);
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
+		void SetContext(EDITOR_GAME_TYPE ctx) override;
 	public:
 		static inline constexpr const char* TITLE	= "Inspector";
 	private:

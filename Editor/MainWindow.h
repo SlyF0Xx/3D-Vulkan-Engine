@@ -8,11 +8,14 @@ namespace Editor {
 
 	class MainWindow : public EditorWindow {
 	public:
-		MainWindow() = default;
-		MainWindow(Ref<EditorLayout>& layout) : EditorWindow(layout) {};
+		MainWindow();
 
 		void StartMainLoop() override;
 		std::string GetWindowTitle() const override;
+
+	protected:
+
+		// void OnContextChanged() override;
 
 	private:
 		void DispatchCameraMovement();

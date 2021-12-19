@@ -1,11 +1,12 @@
 #include "BaseComponentInspector.h"
 
-Editor::BaseComponentInspector::BaseComponentInspector(const diffusion::Ref<Game>& ctx) {
+Editor::BaseComponentInspector::BaseComponentInspector(EDITOR_GAME_TYPE ctx) {
 	SetContext(ctx);
 }
 
-void Editor::BaseComponentInspector::SetContext(const diffusion::Ref<Game>& game) {
+void Editor::BaseComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 	m_Context = game;
+	m_Selection = entt::entity();
 }
 
 void Editor::BaseComponentInspector::Render() {

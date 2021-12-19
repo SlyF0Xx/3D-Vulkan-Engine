@@ -1,14 +1,12 @@
 #include "MainLayout.h"
-#include <BaseComponents/DebugComponent.h>
 
-Editor::MainLayout::MainLayout(diffusion::Ref<Game>& vulkan) :
-	EditorLayout(vulkan),
-	m_ContentBrowser(vulkan), 
-	m_SceneHierarchy(vulkan), 
-	m_Inspector(vulkan),
-	m_Viewport(vulkan),
-	m_LuaConsole(vulkan)
-{
+Editor::MainLayout::MainLayout() :
+	EditorLayout(),
+	m_ContentBrowser(m_Context),
+	m_SceneHierarchy(m_Context),
+	m_Inspector(m_Context),
+	m_Viewport(m_Context),
+	m_LuaConsole(m_Context) {
 
 	m_TextEditor = TextEditor();
 	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -36,8 +34,26 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 
 	if (ImGui::BeginMainMenuBar()) {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		if (ImGui::BeginMenu("File")) {
-			ImGui::MenuItem("New Scene");
+			if (ImGui::MenuItem("New Scene")) {
+				Editor::GameProject::Instance()->NewScene();
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Load project")) {
+				Editor::GameProject::Instance()->Load();
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Rename Scene")) {
+				// ..
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Save Project")) {
+				Editor::GameProject::Instance()->Save();
+			}
+			if (ImGui::MenuItem("Save Project as...")) {
+				Editor::GameProject::Instance()->SaveAs();
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
 				GetParent()->Destroy();
@@ -47,7 +63,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			ImGui::EndMenu();
 		}
 
-	
+
 
 		if (ImGui::BeginMenu("Windows")) {
 			if (ImGui::MenuItem("Content Browser", NULL, m_WindowStates.isContentBrowserOpen)) {
@@ -74,17 +90,17 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		}
 
 		if (ImGui::BeginMenu("Scenes")) {
-			for (const Scene& scene : EditorWindow::GetGameProject()->GetScenes()) {
-				ImGui::MenuItem(
-					scene.GetTitle().c_str(), 
-					NULL, 
-					scene.GetID() == EditorWindow::GetGameProject()->GetActiveScene()->GetID()
-				);
+			for (const Scene& scene : GameProject::Instance()->GetScenes()) {
+				if (ImGui::MenuItem((std::to_string(scene.GetID()) + ") " + scene.GetTitle()).c_str(), NULL,
+					scene.GetID() == GameProject::Instance()->GetActiveScene()->GetID())) {
+					GameProject::Instance()->SetActiveScene(scene.GetID());
+				}
 			}
 
 			ImGui::EndMenu();
 		}
 
+		ImGui::PopStyleVar();
 		ImGui::PopStyleVar();
 		ImGui::EndMainMenuBar();
 	}
@@ -167,4 +183,20 @@ void Editor::MainLayout::InitDockspace() {
 	ImGui::DockBuilderFinish(m_DockIDs.MainDock);
 
 	m_IsDockspaceInitialized = true;
+}
+
+void Editor::MainLayout::OnContextChanged() {
+	m_Context = GameProject::Instance()->GetCurrentContext();
+	m_ContentBrowser.SetContext(m_Context);
+	m_SceneHierarchy.SetContext(m_Context);
+	m_Inspector.SetContext(m_Context);
+	m_Viewport.SetContext(m_Context);
+	m_LuaConsole.SetContext(m_Context);
+
+	//m_ContentBrowser = ContentBrowser(m_Context);
+	//m_SceneHierarchy = SceneHierarchy(m_Context);
+	//m_Inspector = Inspector(m_Context);
+	//m_Viewport.SetContext(m_Context);
+	////m_Viewport = EditorViewport(m_Context);
+	//m_LuaConsole = LuaConsole(m_Context);
 }

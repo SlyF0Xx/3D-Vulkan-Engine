@@ -2,7 +2,6 @@
 
 #include <Engine.h>
 #include <Core/Base.h>
-#include <BaseComponents/PointLightComponent.h>
 
 #include "imgui_internal.h"
 
@@ -45,11 +44,12 @@ namespace Editor {
 
 	class MainLayout : public EditorLayout {
 	public:
-		MainLayout(diffusion::Ref<Game>& vulkan);
+		MainLayout();
 
 		LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
+		virtual void OnContextChanged() override;
 
 	private:
 		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -58,12 +58,17 @@ namespace Editor {
 		WindowStates m_WindowStates = {};
 		LayoutDock m_DockIDs = {};
 
+#pragma region Context sensitive widgets.
 		ContentBrowser m_ContentBrowser;
-		LuaConsole m_LuaConsole;
 		SceneHierarchy m_SceneHierarchy;
 		Inspector m_Inspector;
-		TextEditor m_TextEditor;
 		EditorViewport m_Viewport;
+#pragma endregion
+
+#pragma region Widgets.
+		TextEditor m_TextEditor;
+		LuaConsole m_LuaConsole;
+#pragma endregion
 
 		bool m_IsDockspaceInitialized = false;
 	};

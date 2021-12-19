@@ -3,6 +3,7 @@
 #include <Engine.h>
 #include <Core/Base.h>
 
+#include "GameProject.h"
 #include "ImGUIBasedPresentationEngine.h"
 
 namespace Editor {
@@ -15,17 +16,19 @@ namespace Editor {
 
 	class EditorLayout {
 	public:
-		EditorLayout() = delete;
-		EditorLayout(const diffusion::Ref<Game>& game);
+		EditorLayout();
 		virtual LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
+		virtual void OnContextChanged() = 0;
 
-		void SetContext(const diffusion::Ref<Game>& game);
+		// void SetContext(const diffusion::Ref<Game>& game);
 
 	protected:
 		EditorWindow* GetParent();
 
-		diffusion::Ref<Game> m_Context;
+		// TODO: Deprecated.
+		// diffusion::Ref<Game> m_Context;
+		Game* m_Context;
 
 	private:
 		EditorWindow* m_Parent;

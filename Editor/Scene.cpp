@@ -1,44 +1,92 @@
 #include "Scene.h"
 
-Editor::Scene::Scene(const diffusion::Ref<Game>& game, uint32_t id) {
-    m_Context = game;
-    m_ID = id;
+Editor::Scene::Scene(uint32_t id) {
+	m_ID = id;
+
+	// m_Context = diffusion::CreateRef<Game>();
+	m_Context = new Game();
 }
 
-Editor::Scene Editor::Scene::GetEmpty(const diffusion::Ref<Game>& game, uint32_t id) {
-    Scene scene = Scene(game, id);
-    auto mainEntity = scene.m_Context->get_registry().create();
-    scene.m_Context->get_registry().set<diffusion::PossessedEntity>(mainEntity);
-    scene.m_Context->get_registry().emplace<diffusion::TagComponent>(mainEntity, "Main Entity");
+void Editor::Scene::FillBasic() {
+	auto mainEntity = m_Context->get_registry().create();
+	m_Context->get_registry().set<diffusion::PossessedEntity>(mainEntity);
+	m_Context->get_registry().emplace<diffusion::TagComponent>(mainEntity, "Main Entity");
 
-    auto mainCamera = scene.m_Context->get_registry().create();
-    scene.m_Context->get_registry().set<diffusion::MainCameraTag>(mainCamera);
-    scene.m_Context->get_registry().emplace<diffusion::TagComponent>(mainCamera, "Main Camera");
+	//auto mainCamera = m_Context->get_registry().create();
+	//m_Context->get_registry().emplace<diffusion::TransformComponent>(
+	//	mainCamera, diffusion::create_matrix());
+	//m_Context->get_registry().emplace<diffusion::CameraComponent>(mainCamera);
+	//m_Context->get_registry().set<diffusion::MainCameraTag>(mainCamera);
+	//m_Context->get_registry().emplace<diffusion::TagComponent>(mainCamera, "Main Camera");
 
-    auto directionalLight = diffusion::create_point_light_entity(
-        scene.m_Context->get_registry(), 
-        glm::vec3(0, 0, 4)
-    );
-    scene.m_Context->get_registry().emplace<diffusion::TagComponent>(directionalLight, "Point Light");
+	auto directionalLight = diffusion::create_point_light_entity(
+		m_Context->get_registry(),
+		glm::vec3(0, 0, 4)
+	);
+	m_Context->get_registry().emplace<diffusion::TagComponent>(directionalLight, "Point Light");
 
-    scene.CreateEditorCamera();
-    return scene;
+	CreateEditorCamera();
+}
+
+Editor::Scene Editor::Scene::GetEmpty(uint32_t id) {
+	Scene scene = Scene(id);
+	/**/
+	return scene;
+}
+
+void Editor::Scene::SetData(nlohmann::json& data) {
+	m_SceneData = data;
+
+	m_Title = data["Title"];
+	m_ID = data["ID"];
+
+	m_HasData = true;
+}
+
+void Editor::Scene::Save(std::filesystem::path& source) {
+	m_Context->save_scene(source / GetFileName());
+}
+
+void Editor::Scene::Load(std::filesystem::path& source) {
+	if (!m_IsEmpty) {
+		return;
+	}
+
+	if (m_HasData) {
+		std::string fileName = m_SceneData["FileName"];
+		m_Context->load_scene(source / fileName);
+	} else {
+		FillBasic();
+	}
+	m_IsEmpty = false;
+}
+
+std::string Editor::Scene::GetFileName() const {
+	return "Source_" + GetTitle() + "_" + std::to_string(GetID()) + ".json";
 }
 
 const std::string Editor::Scene::GetTitle() const {
-    return m_Title;
+	return m_Title;
+}
+
+//const diffusion::Ref<Game> Editor::Scene::GetContext() const {
+//    return m_Context;
+//}
+
+Game* Editor::Scene::GetContext() const {
+	return m_Context;
 }
 
 const uint32_t Editor::Scene::GetID() const {
-    return m_ID;
+	return m_ID;
 }
 
 void Editor::Scene::CreateEditorCamera() {
-    // TODO: Hide it from scene hierarchy.
-    m_EditorCamera = m_Context->get_registry().create();
-    m_Context->get_registry().emplace<diffusion::TransformComponent>(m_EditorCamera, diffusion::create_matrix());
-    m_Context->get_registry().emplace<diffusion::CameraComponent>(m_EditorCamera);
-    m_Context->get_registry().emplace<diffusion::debug_tag>(m_EditorCamera);
-    m_Context->get_registry().set<diffusion::MainCameraTag>(m_EditorCamera);
-    m_Context->get_registry().emplace<diffusion::TagComponent>(m_EditorCamera, "Editor Camera");
+	// TODO: Hide it from scene hierarchy.
+	m_EditorCamera = m_Context->get_registry().create();
+	m_Context->get_registry().emplace<diffusion::TransformComponent>(m_EditorCamera, diffusion::create_matrix());
+	m_Context->get_registry().emplace<diffusion::CameraComponent>(m_EditorCamera);
+	m_Context->get_registry().emplace<diffusion::debug_tag>(m_EditorCamera);
+	m_Context->get_registry().set<diffusion::MainCameraTag>(m_EditorCamera);
+	m_Context->get_registry().emplace<diffusion::TagComponent>(m_EditorCamera, "Editor Camera");
 }

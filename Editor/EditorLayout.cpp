@@ -1,11 +1,8 @@
 #include "EditorLayout.h"
 
-Editor::EditorLayout::EditorLayout(const diffusion::Ref<Game>& game) {
-	SetContext(game);
-}
-
-void Editor::EditorLayout::SetContext(const diffusion::Ref<Game>& game) {
-	m_Context = game;
+Editor::EditorLayout::EditorLayout() {
+	// TODO: Deprecated.
+	m_Context = GameProject::Instance()->GetCurrentContext();
 }
 
 Editor::EditorWindow* Editor::EditorLayout::GetParent() {

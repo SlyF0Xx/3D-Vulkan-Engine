@@ -6,20 +6,25 @@
 #include <Core/Base.h>
 
 #include "BaseWidget.h"
+#include "Constants.h"
 
 namespace Editor {
 
+	/// <summary>
+	/// Контекстно-зависимый виджет.
+	/// </summary>
 	class GameWidget : public Widget {
 	public:
 		GameWidget() = delete;
-		explicit GameWidget(const diffusion::Ref<Game>& ctx);
+		explicit GameWidget(EDITOR_GAME_TYPE ctx);
 
-		void SetContext(const diffusion::Ref<Game>& game);
+		virtual void SetContext(EDITOR_GAME_TYPE game);
 		virtual void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine);
 
-		static ImTextureID GenerateTextureID(diffusion::Ref<Game>& ctx, diffusion::ImageData& imData, const std::filesystem::path& path);
+		static ImTextureID GenerateTextureID(EDITOR_GAME_TYPE ctx, diffusion::ImageData& imData, const std::filesystem::path& path);
 	protected:
-		diffusion::Ref<Game> m_Context;
+		// diffusion::Ref<Game> m_Context;
+		EDITOR_GAME_TYPE m_Context;
 	};
 
 }

@@ -4,6 +4,10 @@
 
 namespace Editor {
 
+#ifndef EDITOR_GAME_TYPE
+#define EDITOR_GAME_TYPE Game*
+#endif
+
 	namespace Constants {
 
 #ifndef EDITOR_CONSTEXPR

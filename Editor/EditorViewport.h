@@ -25,7 +25,7 @@ namespace Editor {
 		static inline constexpr const char* TITLE = "Viewport";
 
 		EditorViewport() = delete;
-		EditorViewport(const diffusion::Ref<Game>& game);
+		EditorViewport(EDITOR_GAME_TYPE game);
 
 		void Render() override;
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;

@@ -4,7 +4,7 @@ namespace Editor {
 
 	extern const std::filesystem::path g_AssetPath = ".";
 
-	ContentBrowser::ContentBrowser(const diffusion::Ref<Game>& game) : GameWidget(game) {
+	ContentBrowser::ContentBrowser(EDITOR_GAME_TYPE game) : GameWidget(game) {
 		m_CurrentDirectory = ".";
 	};
 

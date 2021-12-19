@@ -1,6 +1,6 @@
 #include "TagComponentInspector.h"
 
-Editor::TagComponentInspector::TagComponentInspector(const diffusion::Ref<Game>& ctx) 
+Editor::TagComponentInspector::TagComponentInspector(EDITOR_GAME_TYPE ctx)
 	: BaseComponentInspector(ctx) {
 	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
 	IM_ASSERT(&m_SceneDispatcher != nullptr);

@@ -1,12 +1,18 @@
 #include "SceneHierarchy.h"
 
-Editor::SceneHierarchy::SceneHierarchy(const Ref<Game>& game) : GameWidget(game) {
+Editor::SceneHierarchy::SceneHierarchy(EDITOR_GAME_TYPE game) : GameWidget(game) {
 	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
 }
 
 void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::Begin(TITLE, p_open, flags);
+
+#if _DEBUG
+	ImGui::Text("Only Debug:");
+	ImGui::Text("Addr: %p", m_Context);
+	ImGui::Text("Entities count: %d", m_Context->get_registry().alive());
+#endif
 
 	m_Context->get_registry().each([&](auto entity) {
 		const auto& relation = m_Context->get_registry().try_get<Relation>(entity);
@@ -153,10 +159,10 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 	bool isOpened = ImGui::TreeNodeEx(entity.Title, treeNodeFlags);
 
 	if (ImGui::IsItemClicked() && !entity.Children) {
-		entt::entity created;
+		entt::entity created = entt::null;
 		switch (entity.Type) {
 			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_CUBE:
-				created = create_cube_entity_lit(m_Context->get_registry());
+				created = create_cube_entity_unlit(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_PLANE:
 				created = create_plane_entity_lit(m_Context->get_registry());
@@ -214,4 +220,12 @@ void Editor::SceneHierarchy::ResetSelectionNotify() {
 	m_SelectionContext = ENTT_ID_TYPE(-1);
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
 	m_SingleDispatcher->dispatch({ SceneInteractType::RESET_SELECTION });
+}
+
+void Editor::SceneHierarchy::InitContexed() {
+	Editor::GameWidget::InitContexed();
+
+	m_SelectionContext = -1;
+	m_IsRenameInputFocused = false;
+	m_IsRenaming = false;
 }

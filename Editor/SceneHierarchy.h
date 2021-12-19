@@ -48,10 +48,10 @@ namespace Editor {
 		EditorCreatableEntity(const char* T, EditorCreatableEntity* C, uint32_t S) : Title(T), Children(C), Size(S) {};
 	};
 
-	class SceneHierarchy : GameWidget {
+	class SceneHierarchy : public GameWidget {
 	public:
 		SceneHierarchy() = delete;
-		SceneHierarchy(const Ref<Game>& game);
+		SceneHierarchy(EDITOR_GAME_TYPE game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 
@@ -64,6 +64,8 @@ namespace Editor {
 
 		void SelectOneNotify(const ENTT_ID_TYPE& entity);
 		void ResetSelectionNotify();
+
+		void InitContexed() override;
 
 	public:
 		static inline constexpr const char* TITLE = "Hierarchy";

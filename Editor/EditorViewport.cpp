@@ -14,7 +14,7 @@
 
 #include <set>
 
-Editor::EditorViewport::EditorViewport(const diffusion::Ref<Game>& game) : GameWidget(game) {
+Editor::EditorViewport::EditorViewport(EDITOR_GAME_TYPE game) : GameWidget(game) {
 	m_SnapDispatcher = ViewportSnapInteractionSingleTon::GetDispatcher();
 	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
 
@@ -462,6 +462,9 @@ void Editor::EditorViewport::OnResize(Game& vulkan, ImGUIBasedPresentationEngine
 
 void Editor::EditorViewport::InitContexed() {
 	GameWidget::InitContexed();
+
+	m_Selection = -1;
+	m_TexIDs.clear();
 
 	m_GridTex = GenerateTextureID(m_Context, m_GridTexData, GRID_ICON_PATH);
 	m_RotationTex = GenerateTextureID(m_Context, m_RotationTexData, ROTATION_ICON_PATH);

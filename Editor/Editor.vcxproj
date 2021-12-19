@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)\..\vendor\Edyn\include;$(ProjectDir)\..\vendor\LuaBridge\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\ImGuiFileDialog;$(ProjectDir)vendor\ImGuizmo;..\Engine\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(ProjectDir)vendor;$(ProjectDir)vendor\glfw\include;$(ProjectDir)vendor\imgui\;$(ProjectDir)\..\vendor\Edyn\build\include;$(ProjectDir)\..\vendor\Edyn\include;$(ProjectDir)\..\vendor\LuaBridge\Source;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\imgui\widgets;$(ProjectDir)vendor\ImGuiFileDialog;$(ProjectDir)vendor\ImGuizmo;..\Engine\Engine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
@@ -195,6 +195,7 @@
     <ClCompile Include="vendor\imgui\widgets\GroupPanel.cpp" />
     <ClCompile Include="vendor\imgui\widgets\TextEditor.cpp" />
     <ClCompile Include="ViewportSnapInteraction.cpp" />
+    <ClCompile Include="WindowTitleInteraction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseComponentInspector.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="vendor\imgui\widgets\GroupPanel.h" />
     <ClInclude Include="vendor\imgui\widgets\TextEditor.h" />
     <ClInclude Include="ViewportSnapInteraction.h" />
+    <ClInclude Include="WindowTitleInteraction.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">

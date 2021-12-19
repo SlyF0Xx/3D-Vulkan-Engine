@@ -10,3 +10,7 @@ void Editor::Widget::InitContexed() {
 	}
 	m_IsInitContexed = true;
 }
+
+void Editor::Widget::Reset() {
+	m_IsInitContexed = false;
+}

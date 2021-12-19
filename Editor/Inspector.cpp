@@ -1,6 +1,6 @@
 #include "Inspector.h"
 
-Editor::Inspector::Inspector(const Ref<Game>& game) 
+Editor::Inspector::Inspector(EDITOR_GAME_TYPE game)
 	: GameWidget(game), m_TagInspector(game), m_TransformInspector(game) {
 	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
 
@@ -34,4 +34,12 @@ void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::End();
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
+}
+
+void Editor::Inspector::SetContext(EDITOR_GAME_TYPE ctx) {
+	Editor::GameWidget::SetContext(ctx);
+	m_TagInspector.SetContext(ctx);
+	m_TransformInspector.SetContext(ctx);
+
+	m_IsSelected = false;
 }

@@ -6,16 +6,17 @@
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#include "Constants.h"
 
 namespace Editor {
 
-	class ContentBrowser : GameWidget {
+	class ContentBrowser : public GameWidget {
 
 	public:
 		static inline constexpr const char* TITLE = "Content Browser";
 
 		ContentBrowser() = delete;
-		ContentBrowser(const diffusion::Ref<Game>& game);
+		ContentBrowser(EDITOR_GAME_TYPE game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 		void InitContexed() override;

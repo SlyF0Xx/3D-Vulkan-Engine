@@ -19,6 +19,8 @@ namespace Editor {
 		// Initialization with ImGui Context.
 		virtual void InitContexed();
 
+		virtual void Reset();
+
 	private:
 		bool m_IsInitContexed = false;
 	};
