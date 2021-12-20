@@ -151,6 +151,8 @@ private:
     std::vector<vk::DescriptorSetLayout> m_descriptor_set_layouts;
     lua_State* m_lua_state;
 
+    bool m_SwapChainRebuild;
+
     tf::Executor m_executor;
     tf::Taskflow m_taskflow;
     std::vector<tf::Task> m_tasks;

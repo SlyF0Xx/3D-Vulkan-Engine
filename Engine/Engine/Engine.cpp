@@ -573,6 +573,9 @@ void Game::save_scene(const std::filesystem::path& path)
 void Game::render_tick()
 {
     std::lock_guard lock(m_render_mutex);
+
+    m_SwapChainRebuild = false;
+
     if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(100)) {
         if (!m_paused) {
             m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
@@ -598,8 +601,13 @@ void Game::render_tick()
     }
 
     auto draw = m_taskflow.emplace([this]() {
-        //Draw();
-        DrawRestruct();
+        try {
+            //Draw();
+            DrawRestruct();
+        }
+        catch (vk::OutOfDateKHRError& out_of_date) {
+            m_SwapChainRebuild = true;
+        }
     });
     if (physics) {
         draw.succeed(*physics);
@@ -609,11 +617,16 @@ void Game::render_tick()
     m_executor.wait_for_all();
     m_tasks.clear();
     m_taskflow.clear();
+
+    if (m_SwapChainRebuild) {
+        throw vk::OutOfDateKHRError("rebuild");
+    }
 }
 
 void Game::run()
 {
     m_paused = false;
+    m_stopped = false;
     save_scene("scene.tmp");
 }
 
@@ -631,6 +644,7 @@ void Game::stop()
 {
     std::lock_guard lock(m_render_mutex);
     m_paused = true;
+    m_stopped = true;
     while (m_registry.alive() != 0) {
         const entt::entity* begin = m_registry.data();
 
