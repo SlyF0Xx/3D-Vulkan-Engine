@@ -147,6 +147,10 @@ void Editor::EditorWindow::SetupImGuiContext() {
 	ImGuiIO& io = ImGui::GetIO(); (void) io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+	if (io.BackendPlatformUserData != NULL) {
+		return;
+	}
+
 	SetupStyle();
 
 	// Setup Platform/Renderer backends
@@ -252,6 +256,10 @@ void Editor::EditorWindow::SetLayout(Ref<EditorLayout>& layout) {
 
 	m_Layout = layout;
 	m_Layout->m_Parent = this;
+}
+
+void Editor::EditorWindow::SetContext(EDITOR_GAME_TYPE context) {
+	m_Context = context;
 }
 
 std::string Editor::EditorWindow::GetWindowTitle() const {

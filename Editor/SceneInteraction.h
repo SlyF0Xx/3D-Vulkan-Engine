@@ -13,11 +13,14 @@ namespace Editor {
 		SELECTED_ONE,
 		RESET_SELECTION,
 		SELECTED_MANY,
+		EDIT_SCRIPT_COMPONENT,
+		REMOVE_SCRIPT_COMPONENT,
 	};
 
 	struct SceneInteractEvent {
 		SceneInteractType Type;
 		int Length;
+		// Better use entt::entity.
 		ENTT_ID_TYPE* Entities;
 
 		SceneInteractEvent() {
