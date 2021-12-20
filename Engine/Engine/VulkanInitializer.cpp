@@ -108,32 +108,32 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
         }
     }
 
-    const auto * light_comp_ptr = registry.try_get<VulkanDirectionalLightComponent>(parent_entity);
+    if (registry.try_get<CameraComponent>(parent_entity)) {
+        camera_changed(registry, parent_entity);
+    }
 
-    if (light_comp_ptr) {
-        registry.patch<diffusion::VulkanPointLightCamera>(parent_entity, [&registry, &parent_entity, &transform, this] (const diffusion::VulkanPointLightCamera & vulkan_camera) {
-            auto& camera = registry.get<PointLightComponent>(parent_entity);
-            glm::vec3 scale;
-            glm::quat rotation;
-            glm::vec3 translation;
-            glm::vec3 skew;
-            glm::vec4 perspective;
-            glm::decompose(transform.m_world_matrix, scale, rotation, translation, skew, perspective);
-            
-            std::vector<PointCamera> matrixes{ PointCamera{ translation, 0, camera.m_projection_matrix } };
-            auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
-            std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(out2.m_buffer, {}, VK_WHOLE_SIZE) };
-            
-            std::array write_descriptors{ vk::WriteDescriptorSet(vulkan_camera.m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, descriptor_buffer_infos, {}) };
-            m_game.get_device().updateDescriptorSets(write_descriptors, {});
-        });
+    if (registry.try_get<VulkanDirectionalLightComponent>(parent_entity)) {
+        if (registry.try_get<VulkanPointLightCamera>(parent_entity)) {
+            registry.patch<diffusion::VulkanPointLightCamera>(parent_entity, [&registry, &parent_entity, &transform, this](const diffusion::VulkanPointLightCamera& vulkan_camera) {
+                auto& camera = registry.get<PointLightComponent>(parent_entity);
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(transform.m_world_matrix, scale, rotation, translation, skew, perspective);
+
+                std::vector<PointCamera> matrixes{ PointCamera{ translation, 0, camera.m_projection_matrix } };
+                auto out2 = create_buffer(m_game, matrixes, vk::BufferUsageFlagBits::eUniformBuffer, 0, false);
+                std::array descriptor_buffer_infos{ vk::DescriptorBufferInfo(out2.m_buffer, {}, VK_WHOLE_SIZE) };
+
+                std::array write_descriptors{ vk::WriteDescriptorSet(vulkan_camera.m_descriptor_set, 0, 0, vk::DescriptorType::eUniformBuffer, {}, descriptor_buffer_infos, {}) };
+                m_game.get_device().updateDescriptorSets(write_descriptors, {});
+                });
+        }
 
         auto& lights = registry.ctx<VulkanDirectionalLights>();
         update_lights_buffer(registry, &lights);
-    }
-
-    if (registry.try_get<CameraComponent>(parent_entity)) {
-        camera_changed(registry, parent_entity);
     }
 }
 
