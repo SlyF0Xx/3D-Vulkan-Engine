@@ -5,9 +5,10 @@
 
 #include "imgui_internal.h"
 
-#include <vector>
+#include <map>
 
 #pragma region Widgets
+#include "CodeEditor.h"
 #include "ContentBrowser.h"
 #include "LuaConsole.h"
 #include "SceneHierarchy.h"
@@ -23,6 +24,8 @@
 
 #include "Scene.h"
 #include "GameProject.h"
+
+#include "SceneInteraction.h"
 
 namespace Editor {
 
@@ -41,6 +44,8 @@ namespace Editor {
 		bool isSceneHierarchyOpen = true;
 		bool isViewportOpen = true;
 		bool isInspectorOpen = true;
+
+		std::map<entt::entity, bool> ScriptEditorStates;
 	};
 
 	class MainLayout : public EditorLayout {
@@ -52,6 +57,8 @@ namespace Editor {
 		void InitDockspace();
 		virtual void OnContextChanged() override;
 
+		void MakeTabVisible(const char* window_name);
+		bool IsTabSelected(ImGuiID id);
 	private:
 		ImGuiDockNodeFlags m_DockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags m_WindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -60,6 +67,7 @@ namespace Editor {
 		LayoutDock m_DockIDs = {};
 
 #pragma region Context sensitive widgets.
+		std::map<entt::entity, CodeEditor*> m_CodeEditors;
 		ContentBrowser m_ContentBrowser;
 		SceneHierarchy m_SceneHierarchy;
 		Inspector m_Inspector;
@@ -68,11 +76,10 @@ namespace Editor {
 		SceneActionsWidget m_ActionsWidget;
 #pragma endregion
 
-#pragma region Widgets.
-		TextEditor m_TextEditor;
-#pragma endregion
-
+		SceneEventDispatcher m_SceneDispatcher;
 		bool m_IsDockspaceInitialized = false;
+		bool m_IsScriptEditing = false;
+		entt::entity m_ScriptEditingEntity = entt::null;
 	};
 
 }

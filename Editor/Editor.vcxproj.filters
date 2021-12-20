@@ -180,6 +180,12 @@
     <ClCompile Include="SceneActionsWidget.cpp">
       <Filter>Исходные файлы\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="ScriptComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeEditor.cpp">
+      <Filter>Исходные файлы\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -312,6 +318,12 @@
       <Filter>Файлы заголовков\Utils\Interaction</Filter>
     </ClInclude>
     <ClInclude Include="SceneActionsWidget.h">
+      <Filter>Файлы заголовков\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeEditor.h">
       <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
   </ItemGroup>

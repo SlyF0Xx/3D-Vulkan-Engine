@@ -85,7 +85,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	auto tagComponent = m_Context->get_registry().try_get<TagComponent>((entt::entity) entity);
 	std::string tag;
 	if (tagComponent == nullptr) {
-		tag = "Object# " + std::to_string(entity);
+		tag = "Object #" + std::to_string(entity);
 	} else {
 		tag = ((TagComponent*) tagComponent)->m_Tag;
 	}
