@@ -8,12 +8,25 @@ Editor::MainLayout::MainLayout() :
 	m_Viewport(m_Context),
 	m_LuaConsole(m_Context),
 	m_ActionsWidget(m_Context) {
-
-	m_TextEditor = TextEditor();
-	m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-	m_TextEditor.SetTabSize(4);
-	m_TextEditor.SetPalette(m_TextEditor.GetLightPalette());
-	m_TextEditor.SetShowWhitespaces(false);
+	m_SceneDispatcher = Editor::SceneInteractionSingleTon::GetDispatcher();
+	
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::EDIT_SCRIPT_COMPONENT, [&](const Editor::SceneInteractEvent& event) {
+		entt::entity entity = (entt::entity) event.Entities[0];
+		if (!m_CodeEditors.contains(entity)) {
+			m_CodeEditors[entity] = new CodeEditor(entity, m_Context);
+		} else {
+			MakeTabVisible(m_CodeEditors[entity]->GetTitle().c_str());
+		}
+		m_WindowStates.ScriptEditorStates[entity] = true;
+	});
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::REMOVE_SCRIPT_COMPONENT, [&](const Editor::SceneInteractEvent& event) {
+		entt::entity entity = (entt::entity) event.Entities[0];
+		auto position = m_CodeEditors.find(entity);
+		if (position != m_CodeEditors.end()) {
+			m_CodeEditors.erase(position);
+		}
+		m_WindowStates.ScriptEditorStates.erase(entity);
+	});
 }
 
 Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
@@ -101,6 +114,19 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			ImGui::EndMenu();
 		}
 
+		if (m_IsScriptEditing && ImGui::BeginMenu("Scripting")) {
+			if (ImGui::MenuItem("Save script")) {
+				m_CodeEditors[m_ScriptEditingEntity]->Save();
+			}
+
+			if (ImGui::MenuItem("Save all scripts")) {
+				std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
+					pair.second->Save();
+				});
+			}
+			ImGui::EndMenu();
+		}
+
 		ImGui::PopStyleVar();
 		ImGui::PopStyleVar();
 		ImGui::EndMainMenuBar();
@@ -119,12 +145,21 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		m_ContentBrowser.Render(&m_WindowStates.isContentBrowserOpen, 0);
 	}
 
-	ImGui::SetNextWindowDockID(m_DockIDs.MainDock, ImGuiCond_Once);
-	ImGui::Begin("Code editor");
+	m_IsScriptEditing = false;
+	m_ScriptEditingEntity = entt::null;
 	ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::LUA_EDITOR_PRIMARY));
-	m_TextEditor.Render("Editor", ImVec2(0, 0), true);
+	std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
+		if (m_WindowStates.ScriptEditorStates[pair.first]) {
+			ImGui::SetNextWindowDockID(m_DockIDs.MainDock, ImGuiCond_Once);
+			pair.second->Render(&m_WindowStates.ScriptEditorStates[pair.first], 0);
+
+			if (IsTabSelected(pair.second->GetID())) {
+				m_IsScriptEditing = true;
+				m_ScriptEditingEntity = pair.first;
+			}
+		}
+	});
 	ImGui::PopFont();
-	ImGui::End();
 
 	if (m_WindowStates.isViewportOpen) {
 		ImGui::SetNextWindowDockID(m_DockIDs.TopDock, ImGuiCond_Once);
@@ -198,4 +233,22 @@ void Editor::MainLayout::OnContextChanged() {
 	m_Viewport.SetContext(m_Context);
 	m_LuaConsole.SetContext(m_Context);
 	m_ActionsWidget.SetContext(m_Context);
+	std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
+		pair.second->SetContext(m_Context);
+	});
+}
+
+void Editor::MainLayout::MakeTabVisible(const char* window_name) {
+	ImGuiWindow* window = ImGui::FindWindowByName(window_name);
+	if (window == NULL || window->DockNode == NULL || window->DockNode->TabBar == NULL)
+		return;
+	window->DockNode->TabBar->NextSelectedTabId = window->ID;
+}
+
+bool Editor::MainLayout::IsTabSelected(ImGuiID id) {
+	ImGuiWindow* window = ImGui::FindWindowByID(id);
+	if (window == NULL || window->DockNode == NULL || window->DockNode->TabBar == NULL)
+		return false;
+	// printf((std::to_string(window->DockNode->TabBar->SelectedTabId) + "\t" + std::to_string(id) + "\n").c_str());
+	return window->DockNode->TabBar->SelectedTabId == window->ID;
 }

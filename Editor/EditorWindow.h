@@ -75,7 +75,7 @@ namespace Editor {
 
 		void Destroy();
 		void SetLayout(Ref<EditorLayout>& layout);
-		// void SetContext(Ref<Game>& context);
+		void SetContext(EDITOR_GAME_TYPE context);
 
 		// TODO: Add resize listener.
 
@@ -116,7 +116,7 @@ namespace Editor {
 		GLFWwindow* m_Window;
 		// TODO: Deprecated.
 		// Ref<Game> m_Context;
-		Game* m_Context;
+		EDITOR_GAME_TYPE m_Context;
 		Ref<EditorLayout> m_Layout;
 		Ref<ImGUIBasedPresentationEngine> m_PresentationEngine;
 
