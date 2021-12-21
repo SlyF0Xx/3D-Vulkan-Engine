@@ -26,7 +26,8 @@ void Editor::ScriptComponentInspector::RenderContent() {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Remove")) {
-		m_Context->get_registry().erase<diffusion::ScriptComponent>(m_Selection);
+		m_Context->get_registry().remove<diffusion::ScriptComponent>(m_Selection);
+		m_Context->get_registry().remove<diffusion::ScriptComponentState>(m_Selection);
 		m_SceneDispatcher->dispatch({SceneInteractType::REMOVE_SCRIPT_COMPONENT, (ENTT_ID_TYPE) m_Selection});
 		m_SceneDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
 	}
