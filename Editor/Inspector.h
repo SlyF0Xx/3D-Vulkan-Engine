@@ -21,6 +21,8 @@ namespace Editor {
 		enum class EditorCreatableComponentType {
 			UNDEFINED,
 
+			TAG,
+			TRANSFORM,
 			SCRIPT,
 		};
 
@@ -57,7 +59,9 @@ namespace Editor {
 
 		static inline constexpr const char* POPUP_ADD_COMPONENT = "POPUP_ADD_COMPONENT";
 
-		EditorCreatableComponent m_CreatableComponents[1] = {
+		EditorCreatableComponent m_CreatableComponents[3] = {
+			EditorCreatableComponent("Tag Component", EditorCreatableComponent::EditorCreatableComponentType::TAG),
+			EditorCreatableComponent("Transform Component", EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM),
 			EditorCreatableComponent("Script Component", EditorCreatableComponent::EditorCreatableComponentType::SCRIPT),
 		};
 	};

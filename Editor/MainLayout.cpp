@@ -157,6 +157,10 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 				m_IsScriptEditing = true;
 				m_ScriptEditingEntity = pair.first;
 			}
+
+			if (!m_WindowStates.ScriptEditorStates[pair.first]) {
+				pair.second->Save();
+			}
 		}
 	});
 	ImGui::PopFont();

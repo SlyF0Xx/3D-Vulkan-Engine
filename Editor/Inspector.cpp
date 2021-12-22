@@ -73,12 +73,35 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 		treeNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 	}
 
+	bool isLocked = false;
+	switch (comp.Type) {
+		case EditorCreatableComponent::EditorCreatableComponentType::SCRIPT:
+			isLocked = m_Context->get_registry().view<ScriptComponent>().contains(m_Selection);
+			break;
+		case EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM:
+			isLocked = m_Context->get_registry().view<TransformComponent>().contains(m_Selection);
+			break;
+		case EditorCreatableComponent::EditorCreatableComponentType::TAG:
+			isLocked = m_Context->get_registry().view<TagComponent>().contains(m_Selection);
+			break;
+	}
+
+	if (isLocked) {
+		ImGui::BeginDisabled();
+	}
+
 	bool isOpened = ImGui::TreeNodeEx(comp.Title, treeNodeFlags);
 
 	if (ImGui::IsItemClicked() && !comp.Children) {
 		switch (comp.Type) {
 			case EditorCreatableComponent::EditorCreatableComponentType::SCRIPT:
-				m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, "-- Example:\n-- function on_trigger()\n--     tv = get_entity_by_name(\"Name\");\n--     local_translate(tv, 0, 0, 50);\n-- end");
+				m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, "-- Example:\n-- function on_trigger()\n--     tv = get_entity_by_name(\"Name\");\n--     local_translate(tv, 0, 0, 50);\n-- end\n");
+				break;
+			case EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM:
+				m_Context->get_registry().emplace_or_replace<diffusion::TransformComponent>(m_Selection);
+				break;
+			case EditorCreatableComponent::EditorCreatableComponentType::TAG:
+				m_Context->get_registry().emplace_or_replace<diffusion::TagComponent>(m_Selection, "Sample Title");
 				break;
 		}
 		m_SingleDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
@@ -91,5 +114,9 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 		}
 
 		ImGui::TreePop();
+	}
+
+	if (isLocked) {
+		ImGui::EndDisabled();
 	}
 }
