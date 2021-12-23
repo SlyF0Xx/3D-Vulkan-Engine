@@ -45,6 +45,25 @@ namespace Editor {
 		EDITOR_CONST ImU32 ACTIVE_COLOR = IM_COL32(47, 147, 87, 190);
 #pragma endregion
 
+		EDITOR_CONST char* SCRIPT_TEMPLATE =
+			"-- Available functions:\n"
+			"-- global_translate(entity, x, y, z);\n"
+			"-- local_translate(entity, x, y, z);\n"
+			"-- local_rotate(entity, x, y, z);\n"
+			"-- local_scale(entity, x, y, z);\n"
+			"-- spawn_entity(); -- Create new entity.\n"
+			"-- change_name(entity, name);\n"
+			"-- add_transform(entity); -- Apply transform component to entity. Throw exception if component exists.\n"
+			"-- import_mesh(entity, path);\n"
+			"-- get_entity_by_name(name);\n"
+			"-- destroy_entity(entity);\n"
+			"-- \n"
+			"-- Example:\n"
+			"-- function on_trigger()\n"
+			"--     tv = get_entity_by_name(\"Name\");\n"
+			"--     local_translate(tv, 0, 0, 50);\n"
+			"-- end\n";
+
 	}
 
 }

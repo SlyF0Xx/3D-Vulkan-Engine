@@ -50,7 +50,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("New Scene")) {
+			if (ImGui::MenuItem("New Scene", "Experimental")) {
 				Editor::GameProject::Instance()->NewScene();
 			}
 			ImGui::Separator();

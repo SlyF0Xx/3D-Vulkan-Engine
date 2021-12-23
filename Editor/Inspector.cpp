@@ -95,7 +95,7 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 	if (ImGui::IsItemClicked() && !comp.Children) {
 		switch (comp.Type) {
 			case EditorCreatableComponent::EditorCreatableComponentType::SCRIPT:
-				m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, "-- Example:\n-- function on_trigger()\n--     tv = get_entity_by_name(\"Name\");\n--     local_translate(tv, 0, 0, 50);\n-- end\n");
+				m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, std::string(Constants::SCRIPT_TEMPLATE));
 				break;
 			case EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM:
 				m_Context->get_registry().emplace_or_replace<diffusion::TransformComponent>(m_Selection);
