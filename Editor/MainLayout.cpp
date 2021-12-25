@@ -39,12 +39,8 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	// all active windows docked into it will lose their parent and become undocked.
 	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
 	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-	ImGui::Begin("DockSpace", &m_WindowStates.isDocksSpaceOpen, m_WindowFlags);
-	m_DockIDs.MainDock = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(m_DockIDs.MainDock, ImVec2(0.0f, 0.0f), m_DockspaceFlags);
 
 	InitDockspace();
-	ImGui::End();
 
 	if (ImGui::BeginMainMenuBar()) {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
@@ -182,30 +178,37 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	return Editor::LayoutRenderStatus::SUCCESS;
 }
 
-void Editor::MainLayout::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+void Editor::MainLayout::OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
 	m_Viewport.OnResize(vulkan, engine);
 }
 
 void Editor::MainLayout::InitDockspace() {
-	if (m_IsDockspaceInitialized) {
-		return;
+	if (!m_IsDockspaceInitialized) {
+		m_WindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		m_WindowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (m_DockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
+			m_WindowFlags |= ImGuiWindowFlags_NoBackground;
 	}
-
-	m_ActionsWidget.InitContexed();
-	m_ContentBrowser.InitContexed();
-	m_Viewport.InitContexed();
-
-	m_WindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	m_WindowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->Pos);
 	ImGui::SetNextWindowSize(viewport->Size);
 	ImGui::SetNextWindowViewport(viewport->ID);
 
-	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (m_DockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
-		m_WindowFlags |= ImGuiWindowFlags_NoBackground;
+	ImGui::Begin("DockSpace", &m_WindowStates.isDocksSpaceOpen, m_WindowFlags);
+	m_DockIDs.MainDock = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(m_DockIDs.MainDock, ImVec2(0.0f, 0.0f), m_DockspaceFlags);
+
+	if (m_IsDockspaceInitialized) {
+		ImGui::End();
+		return;
+	}
+
+	m_ActionsWidget.InitContexed();
+	m_ContentBrowser.InitContexed();
+	m_Viewport.InitContexed();
 
 	// Docks building.
 	ImGui::DockBuilderRemoveNode(m_DockIDs.MainDock); // clear any previous layout
@@ -226,6 +229,8 @@ void Editor::MainLayout::InitDockspace() {
 	ImGui::DockBuilderFinish(m_DockIDs.MainDock);
 
 	m_IsDockspaceInitialized = true;
+
+	ImGui::End();
 }
 
 void Editor::MainLayout::OnContextChanged() {

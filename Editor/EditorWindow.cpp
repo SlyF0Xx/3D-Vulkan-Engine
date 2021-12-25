@@ -34,6 +34,8 @@ bool Editor::EditorWindow::Create() {
 
 	// Create Framebuffers
 	glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
+	m_LastWidth = m_Width;
+	m_LastHeight = m_Height;
 	ImGui_ImplVulkanH_Window* wd = &m_MainWindowData;
 	SetupVulkanWindow(wd, m_Surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
 
@@ -71,6 +73,13 @@ bool Editor::EditorWindow::GLFWInit() {
 	images[0].pixels = stbi_load(FAVICON_PATH, &images[0].width, &images[0].height, 0, 4); //rgba channels 
 	glfwSetWindowIcon(m_Window, 1, images);
 	stbi_image_free(images[0].pixels);
+
+	// Necessary to use class's member function.
+	glfwSetWindowUserPointer(m_Window, this);
+
+	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* w, int x, int y) {
+		static_cast<EditorWindow*>(glfwGetWindowUserPointer(w))->GLFWResizeCallback(w, x, y);
+	});
 
 	if (!glfwVulkanSupported()) {
 		printf("GLFW: Vulkan Not Supported\n");
@@ -146,6 +155,7 @@ void Editor::EditorWindow::SetupImGuiContext() {
 	ImGuiContext* context = ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void) io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.IniFilename = NULL;
 
 	if (io.BackendPlatformUserData != NULL) {
 		return;
@@ -223,6 +233,36 @@ void Editor::EditorWindow::OnContextChanged() {
 	StartMainLoop();
 }
 
+void Editor::EditorWindow::GLFWResizeCallback(GLFWwindow* window, int x, int y) {
+	if (x == 0 || y == 0) {
+		printf("Incorrect resizing size of window. Abort.");
+		return;
+	}
+	printf("Resizing window to %d;x%d;", x, y);
+
+	/*float relativeScaleReset = static_cast<float>(m_Width) / (m_LastWidth > 0 ? m_Width : m_LastWidth);
+	for (const auto& viewport : ImGui::GetCurrentContext()->Viewports) {
+		ImGui::ScaleWindowsInViewport(viewport, relativeScaleReset);
+	}*/
+
+	// Scale them to the appropriate size
+	float relativeScale = static_cast<float>(x) / 1920.f;
+	for (const auto& viewport : ImGui::GetCurrentContext()->Viewports) {
+		ImGui::ScaleWindowsInViewport(viewport, relativeScale);
+	}
+	ImGui::GetStyle().ScaleAllSizes(relativeScale);
+	ImGui::GetIO().FontGlobalScale = relativeScale;
+
+	m_LastWidth = m_Width;
+	m_LastHeight = m_Height;
+	m_Width = x;
+	m_Height = y;
+
+	SetupStyle(relativeScale);
+
+	m_Layout->OnResize(m_Context, *m_PresentationEngine);
+}
+
 void Editor::EditorWindow::Destroy() {
 	if (!m_IsInitialized) return;
 
@@ -266,11 +306,17 @@ std::string Editor::EditorWindow::GetWindowTitle() const {
 	return "Awesome Editor Window";
 }
 
-void Editor::EditorWindow::SetupStyle() {
+void Editor::EditorWindow::SetupStyle(float scale) {
 	ImGui::StyleColorsLight();
-	ImGui::GetStyle().FrameRounding = 4.f;
-	ImGui::GetStyle().WindowPadding = {0.f, 0.f};
-	ImGui::GetStyle().WindowBorderSize = 0.f;
-	ImGui::GetStyle().FrameBorderSize = 0.f;
-	ImGui::GetStyle().ChildBorderSize = 0.f;
+	ImGui::GetStyle().WindowMinSize			= {100.f * scale, 100.f * scale};
+	ImGui::GetStyle().ItemSpacing			= {4.f * scale, 4.f * scale};
+	ImGui::GetStyle().ItemInnerSpacing		= {4.f * scale, 4.f * scale};
+	ImGui::GetStyle().FramePadding			= {4.f * scale, 4.f * scale};
+	ImGui::GetStyle().ScrollbarSize			= 8.f * scale;
+	ImGui::GetStyle().FrameRounding			= 4.f * scale;
+	ImGui::GetStyle().GrabMinSize			= 10.f * scale;
+	ImGui::GetStyle().WindowPadding			= {0.f, 0.f};
+	ImGui::GetStyle().WindowBorderSize		= 0.f;
+	ImGui::GetStyle().FrameBorderSize		= 0.f;
+	ImGui::GetStyle().ChildBorderSize		= 0.f;
 }

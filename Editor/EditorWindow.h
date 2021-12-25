@@ -71,7 +71,7 @@ namespace Editor {
 		bool Create();
 
 		virtual void StartMainLoop() = 0;
-		virtual void SetupStyle();
+		virtual void SetupStyle(float scale = 1.f);
 
 		void Destroy();
 		void SetLayout(Ref<EditorLayout>& layout);
@@ -80,6 +80,8 @@ namespace Editor {
 		// TODO: Add resize listener.
 
 		virtual std::string GetWindowTitle() const;
+
+		void GLFWResizeCallback(GLFWwindow* window, int x, int y);
 
 //		static Ref<GameProject> GetGameProject();
 	protected:
@@ -95,11 +97,12 @@ namespace Editor {
 
 		virtual void OnContextChanged();
 
+
 	protected:
 		static inline constexpr const char* FAVICON_PATH = "./misc/icons/toolbar_icon.png";
 
-		int m_Width = 0;
-		int m_Height = 0;
+		int m_Width, m_LastWidth = 0;
+		int m_Height, m_LastHeight = 0;
 
 		bool						m_IsInitialized = false;
 		bool						m_SwapChainRebuild = false;

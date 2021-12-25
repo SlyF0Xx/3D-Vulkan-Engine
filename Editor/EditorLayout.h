@@ -18,7 +18,7 @@ namespace Editor {
 	public:
 		EditorLayout();
 		virtual LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
-		virtual void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
+		virtual void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnContextChanged() = 0;
 
 		// void SetContext(const diffusion::Ref<Game>& game);

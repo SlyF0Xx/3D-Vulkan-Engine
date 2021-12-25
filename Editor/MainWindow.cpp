@@ -13,7 +13,7 @@ Editor::MainWindow::MainWindow() : Editor::EditorWindow::EditorWindow() {
 //}
 
 void Editor::MainWindow::DispatchCameraMovement() {
-	/*
+	
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
 		diffusion::move_forward();
 	}
@@ -37,7 +37,7 @@ void Editor::MainWindow::DispatchCameraMovement() {
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_SHIFT]) {
 		diffusion::move_down();
 	}
-	*/
+	
 }
 void Editor::MainWindow::DispatchScriptControl() {
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
@@ -124,7 +124,7 @@ void Editor::MainWindow::StartMainLoop() {
 				m_MainWindowData.FrameIndex = 0;
 
 				// TODO: recalculate size
-				m_Layout->OnResize(*m_Context, *m_PresentationEngine);
+				m_Layout->OnResize(m_Context, *m_PresentationEngine);
 
 				m_SwapChainRebuild = false;
 			}

@@ -79,34 +79,43 @@ void Editor::EditorViewport::ClickHandler() {
 }
 
 void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIBasedPresentationEngine& engine) {
-	ImGuiWindowFlags _flags = ImGuiWindowFlags_NoScrollbar;
+	ImGuiWindowFlags _flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	_flags |= flags;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 	ImGui::Begin(TITLE, p_open, _flags);
 
 #pragma region Render Target.
 	ImVec2 currentSize = ImGui::GetContentRegionAvail();
+	static bool resizeNeeded = false;
 	if (currentSize.x != m_SceneSize.x || currentSize.y != m_SceneSize.y) {
 		m_SceneSize = currentSize;
-
-		OnResize(*m_Context, engine);
+		resizeNeeded = true;
+		// OnResize(m_Context, engine);
 	}
+
 	//m_RenderSize = ImGui::GetIO().DisplaySize;
 
 	if (currentSize.x > m_RenderSize.x) {
 		float multiplier = (int) (currentSize.x / STEP) + 1;
 		m_RenderSize.x = STEP * multiplier;
-		OnResize(*m_Context, engine);
+		resizeNeeded = true;
+		//OnResize(m_Context, engine);
 	} else if (currentSize.y > m_RenderSize.y) {
 		float multiplier = (int) (currentSize.y / STEP) + 1;
 		m_RenderSize.y = STEP * multiplier;
-		OnResize(*m_Context, engine);
+		resizeNeeded = true;
+		//OnResize(m_Context, engine);
+	}
+	if (resizeNeeded) {
+		OnResizeInternal(m_Context, engine);
 	}
 
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
 	ImGui::SetCursorPos(pos);
 
-	ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
+	if (!m_IsResizingWindow) {
+		ImGui::Image(m_TexIDs[m_Context->get_presentation_engine().SemaphoreIndex], m_RenderSize);
+	}
 #pragma endregion
 
 	m_TopLeftPoint = ImGui::GetWindowContentRegionMin() + ImGui::GetWindowPos();
@@ -441,8 +450,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		RightClickHandler();
-	}
-	else {
+	} else {
 		m_CameraYaw = 0.0f;
 		m_CameraPitch = 0.0f;
 	}
@@ -451,15 +459,36 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PopStyleVar();
 }
 
-void Editor::EditorViewport::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
-	//engine.resize(m_SceneSize.x, m_SceneSize.y);
+void Editor::EditorViewport::OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
+	m_IsResizingWindow = true;
+
+	float multiplierX = (int) (m_SceneSize.x / STEP) + 1;
+	float multiplierY = (int) (m_SceneSize.y / STEP) + 1;
+	m_RenderSize = {STEP * multiplierX, STEP * multiplierY};
+
 	engine.resize(m_RenderSize.x, m_RenderSize.y);
-	vulkan.InitializePresentationEngine(engine.get_presentation_engine());
-	vulkan.SecondInitialize();
+	vulkan->InitializePresentationEngine(engine.get_presentation_engine());
 
 	m_TexIDs.clear();
 	for (auto& swapchain_data : engine.get_presentation_engine().m_swapchain_data) {
-		vk::Sampler color_sampler = vulkan.get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+		vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
+		m_TexIDs.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
+	}
+
+	// TODO: Вот тут крашится, на этом мои полномочия всё.
+	// vulkan->SecondInitialize();
+
+	m_IsResizingWindow = false;
+}
+
+void Editor::EditorViewport::OnResizeInternal(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
+	engine.resize(m_RenderSize.x, m_RenderSize.y);
+	vulkan->InitializePresentationEngine(engine.get_presentation_engine());
+	vulkan->SecondInitialize();
+
+	m_TexIDs.clear();
+	for (auto& swapchain_data : engine.get_presentation_engine().m_swapchain_data) {
+		vk::Sampler color_sampler = vulkan->get_device().createSampler(vk::SamplerCreateInfo({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, 0, VK_FALSE, 0, VK_FALSE, vk::CompareOp::eAlways, 0, 0, vk::BorderColor::eFloatOpaqueWhite, VK_FALSE));
 		m_TexIDs.push_back(ImGui_ImplVulkan_AddTexture(color_sampler, swapchain_data.m_color_image_view, static_cast<VkImageLayout>(vk::ImageLayout::eGeneral)));
 	}
 }
@@ -628,33 +657,8 @@ void Editor::EditorViewport::RightClickHandler() {
 		return;
 	}
 
-	bool isMoving = false;
-	glm::vec3 deltaPosition = {0, 0, 0};
 	glm::vec3 forward = glm::normalize(camera_view.target - camera_view.position);
 	glm::vec3 right = glm::cross(forward, camera_view.up);
-
-	if (ImGui::IsKeyPressed('W')) {
-		deltaPosition = forward * moveMultiplier;
-		isMoving = true;
-	} else if (ImGui::IsKeyPressed('S')) {
-		deltaPosition = -forward * moveMultiplier;
-		isMoving = true;
-	} else if (ImGui::IsKeyPressed('A')) {
-		deltaPosition = -right * moveMultiplier;
-		isMoving = true;
-	} else if (ImGui::IsKeyPressed('D')) {
-		deltaPosition = right * moveMultiplier;
-		isMoving = true;
-	} else if (ImGui::IsKeyPressed('Q')) {
-		deltaPosition = camera_view.up * moveMultiplier;
-		isMoving = true;
-	} else if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
-		deltaPosition = -camera_view.up * moveMultiplier;
-	}
-	else {
-		deltaPosition = {0, 0, 0};
-		isMoving = false;
-	}
 
 	float dx = io.MouseDelta.x * sensitivity * io.DeltaTime;
 	float dy = io.MouseDelta.y * sensitivity * io.DeltaTime;
@@ -670,24 +674,19 @@ void Editor::EditorViewport::RightClickHandler() {
 
 	if (std::abs(m_CameraPitch) > std::abs(m_CameraYaw)) {
 		m_CameraYaw = 0.0f;
-	}
-	else {
+	} else {
 		m_CameraPitch = 0.0f;
 	}
 
 	//front = glm::normalize(front);
 	m_Context->get_registry().patch<diffusion::TransformComponent>(
-		mainCameraEntity.m_entity, [&](diffusion::TransformComponent & transform) {
-		if (isMoving) {
-			glm::mat4 translate = glm::translate(glm::mat4(1), deltaPosition);
-			transform.m_world_matrix = translate * transform.m_world_matrix;
-		}
+		mainCameraEntity.m_entity, [&](diffusion::TransformComponent& transform) {
 		glm::vec3 up = camera_view.up;
 		up.z = -up.z;
 
 		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
 		// do not work normally, when delta z != 0
 		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, glm::vec3(0, 0, 1));
-		
+
 	});
 }

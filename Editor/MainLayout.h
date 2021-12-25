@@ -53,7 +53,7 @@ namespace Editor {
 		MainLayout();
 
 		LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
-		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
 		virtual void OnContextChanged() override;
 

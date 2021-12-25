@@ -30,7 +30,8 @@ namespace Editor {
 		void Render() override;
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 		void Render(bool* p_open, ImGuiWindowFlags flags, ImGUIBasedPresentationEngine& engine);
-		void OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) override;
+		void OnResizeInternal(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine);
 		void InitContexed() override;
 
 		void ClickHandler();
@@ -86,6 +87,8 @@ namespace Editor {
 
 		float m_CameraYaw = 0.f, m_CameraPitch = 0.f;
 		glm::vec3 m_TargetPosition;
+
+		bool m_IsResizingWindow = false;
 
 		SceneEventDispatcher m_SceneDispatcher;
 		ViewportEventDispatcher m_SnapDispatcher;

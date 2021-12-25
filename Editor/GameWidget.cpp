@@ -10,7 +10,7 @@ void Editor::GameWidget::SetContext(Game* game) {
 	InitContexed();
 }
 
-void Editor::GameWidget::OnResize(Game& vulkan, ImGUIBasedPresentationEngine& engine) {
+void Editor::GameWidget::OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
 	// ..
 }
 
