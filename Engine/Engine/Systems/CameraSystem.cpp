@@ -17,7 +17,8 @@ void CameraSystem::move_forward(float multiplier)
         auto camera_view = calculate_camera_view(m_registry, camera, transform);
 
         direction = glm::normalize(camera_view.target - camera_view.position) * multiplier;
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), direction) * transform.m_world_matrix;
     });
     callback_list(direction);
 }
@@ -30,7 +31,8 @@ void CameraSystem::move_backward(float multiplier)
         auto camera_view = calculate_camera_view(m_registry, camera, transform);
 
         direction = glm::normalize(camera_view.target - camera_view.position) * multiplier;
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, -direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), -direction) * transform.m_world_matrix;
     });
     callback_list(-direction);
 }
@@ -44,7 +46,8 @@ void CameraSystem::move_left(float multiplier)
 
         glm::vec3 forward_vec = glm::normalize(camera_view.target - camera_view.position) * multiplier;
         direction = glm::cross(forward_vec, camera_view.up) * multiplier;
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, -direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), -direction) * transform.m_world_matrix;
     });
     callback_list(-direction);
 }
@@ -58,7 +61,8 @@ void CameraSystem::move_right(float multiplier)
 
         glm::vec3 forward_vec = glm::normalize(camera_view.target - camera_view.position) * multiplier;
         direction = glm::cross(forward_vec, camera_view.up) * multiplier;
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), direction) * transform.m_world_matrix;
     });
     callback_list(direction);
 }
@@ -70,7 +74,8 @@ void CameraSystem::move_up(float multiplier)
         auto& camera = m_registry.get<CameraComponent>(entt::to_entity(m_registry, transform));
         auto camera_view = calculate_camera_view(m_registry, camera, transform);
         direction = glm::vec3(camera_view.up * multiplier);
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), direction) * transform.m_world_matrix;
     });
     callback_list(direction);
 }
@@ -82,7 +87,8 @@ void CameraSystem::move_down(float multiplier)
         auto& camera = m_registry.get<CameraComponent>(entt::to_entity(m_registry, transform));
         auto camera_view = calculate_camera_view(m_registry, camera, transform);
         direction = glm::vec3(camera_view.up * multiplier);
-        transform.m_world_matrix = glm::translate(transform.m_world_matrix, -direction);
+
+        transform.m_world_matrix = glm::translate(glm::mat4(1), -direction) * transform.m_world_matrix;
     });
     callback_list(-direction);
 }
