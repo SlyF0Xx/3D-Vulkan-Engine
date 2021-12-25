@@ -46,10 +46,10 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("New Scene", "Experimental")) {
-				Editor::GameProject::Instance()->NewScene();
-			}
-			ImGui::Separator();
+			 if (ImGui::MenuItem("New Scene", "Experimental")) {
+			 	Editor::GameProject::Instance()->NewScene();
+			 }
+			 ImGui::Separator();
 			if (ImGui::MenuItem("Load project")) {
 				Editor::GameProject::Instance()->Load();
 			}
@@ -99,16 +99,16 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Scenes")) {
-			for (const Scene& scene : GameProject::Instance()->GetScenes()) {
-				if (ImGui::MenuItem((std::to_string(scene.GetID()) + ") " + scene.GetTitle()).c_str(), NULL,
-					scene.GetID() == GameProject::Instance()->GetActiveScene()->GetID())) {
-					GameProject::Instance()->SetActiveScene(scene.GetID());
-				}
-			}
-
-			ImGui::EndMenu();
-		}
+		 if (ImGui::BeginMenu("Scenes")) {
+		 	for (const Scene& scene : GameProject::Instance()->GetScenes()) {
+		 		if (ImGui::MenuItem((std::to_string(scene.GetID()) + ") " + scene.GetTitle()).c_str(), NULL,
+		 			scene.GetID() == GameProject::Instance()->GetActiveScene()->GetID())) {
+		 			GameProject::Instance()->SetActiveScene(scene.GetID());
+		 		}
+		 	}
+		 
+		 	ImGui::EndMenu();
+		 }
 
 		if (m_IsScriptEditing && ImGui::BeginMenu("Scripting")) {
 			if (ImGui::MenuItem("Save script")) {
@@ -234,6 +234,7 @@ void Editor::MainLayout::InitDockspace() {
 }
 
 void Editor::MainLayout::OnContextChanged() {
+	m_IsDockspaceInitialized = false;
 	m_Context = GameProject::Instance()->GetCurrentContext();
 
 	m_ContentBrowser.SetContext(m_Context);
