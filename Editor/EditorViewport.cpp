@@ -671,12 +671,6 @@ void Editor::EditorViewport::RightClickHandler() {
 		m_CameraPitch = -89.f;
 	}
 
-	if (std::abs(m_CameraPitch) > std::abs(m_CameraYaw)) {
-		m_CameraYaw = 0.0f;
-	} else {
-		m_CameraPitch = 0.0f;
-	}
-
 	//front = glm::normalize(front);
 	m_Context->get_registry().patch<diffusion::TransformComponent>(
 		mainCameraEntity.m_entity, [&](diffusion::TransformComponent& transform) {
@@ -684,8 +678,7 @@ void Editor::EditorViewport::RightClickHandler() {
 		up.z = -up.z;
 
 		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
-		// do not work normally, when delta z != 0
-		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, glm::vec3(0, 0, 1));
-
+		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, up);
+		// TODO: bug, when rotationg mouse by circle. Should prevent rotation around forward vector
 	});
 }
