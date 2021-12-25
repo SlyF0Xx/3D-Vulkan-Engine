@@ -200,9 +200,9 @@ void Editor::EditorWindow::OnContextChanged() {
 	if (!CreateImGui()) {
 		throw;
 	}
-	//m_Layout->OnContextChanged();
-	auto ptr = m_Layout->Copy();
-	SetLayout(ptr);
+	m_Layout->OnContextChanged();
+	/*auto ptr = m_Layout->Copy();
+	SetLayout(ptr);*/
 
 	GameProject::Instance()->Refresh();
 
