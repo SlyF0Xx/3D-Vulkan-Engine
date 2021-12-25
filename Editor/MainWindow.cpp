@@ -93,7 +93,7 @@ void Editor::MainWindow::StartMainLoop() {
 	diffusion::move_up.append([&camera_system]() {camera_system.move_up(0.1f); });
 	diffusion::move_down.append([&camera_system]() {camera_system.move_down(0.1f); });
 
-
+	LayoutRenderStatus status = LayoutRenderStatus::EXIT;
 	// Main loop
 	while (!glfwWindowShouldClose(m_Window)) {
 		// Poll and handle events (inputs, window resize, etc.)
@@ -136,16 +136,11 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 
-		//if (GameProject::Instance()->IsReady()) {
-		if (m_Layout->Render(*m_Context, *m_PresentationEngine) != LayoutRenderStatus::SUCCESS) {
-			break;
-		}
-		//}
-
-		GameProject::Instance()->Render();
+		status = m_Layout->Render(*m_Context, *m_PresentationEngine);
 
 		ImGui::Render();
 		ImGui::EndFrame();
+
 		ImDrawData* draw_data = ImGui::GetDrawData();
 		const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 		if (!is_minimized) {
@@ -160,6 +155,25 @@ void Editor::MainWindow::StartMainLoop() {
 				m_SwapChainRebuild = true;
 			}
 		}
+
+		if (status != LayoutRenderStatus::SUCCESS) {
+			break;
+		}
+	}
+
+	/**
+	 * Important: Calling this functions outside main loop.
+	 */
+	switch (status) {
+		case LayoutRenderStatus::NEW_SCENE:
+			Editor::GameProject::Instance()->NewScene();
+			break;
+		case LayoutRenderStatus::SWITCH_SCENE:
+			Editor::GameProject::Instance()->ActivatePreparedScene();
+			break;
+		case LayoutRenderStatus::LOAD_PROJECT:
+			Editor::GameProject::Instance()->ParseMetaFile();
+			break;
 	}
 }
 

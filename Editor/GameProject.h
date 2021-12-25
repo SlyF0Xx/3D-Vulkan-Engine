@@ -17,6 +17,10 @@
 
 namespace Editor {
 
+	enum class GameProjectRenderStatus {
+		SUCCESS, LOAD_PROJECT
+	};
+
 	class GameProject {
 	public:
 		explicit GameProject();
@@ -29,7 +33,7 @@ namespace Editor {
 
 		void RenameScene();
 
-		void Render();
+		Editor::GameProjectRenderStatus Render();
 
 		void Load();
 
@@ -37,9 +41,15 @@ namespace Editor {
 
 		void SaveAs();
 
+		bool PrepareChangeScene(uint32_t id);
+
+		void ActivatePreparedScene();
+
 		void SetActiveScene(uint32_t id);
 
 		void Refresh();
+
+		void ParseMetaFile();
 
 		const bool HasSourceRoot() const;
 
@@ -65,8 +75,6 @@ namespace Editor {
 		Game* GetCurrentContext() const;
 
 	private:
-		void ParseMetaFile(std::filesystem::path path);
-
 		void _SetActiveScene(uint32_t id);
 
 	private:
@@ -74,8 +82,10 @@ namespace Editor {
 
 		std::vector<Scene> m_Scenes;
 		uint32_t m_ActiveSceneID;
+		uint32_t m_NextActiveSceneID;
 
-		std::filesystem::path m_SourcePath;
+		std::filesystem::path m_SourceDirectoryPath;
+		std::filesystem::path m_SourceProjectFilePath;
 
 		bool m_IsSavingAs = false;
 		bool m_IsRenamingScene = false;
