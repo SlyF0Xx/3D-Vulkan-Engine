@@ -240,12 +240,7 @@ void Editor::EditorWindow::GLFWResizeCallback(GLFWwindow* window, int x, int y) 
 	}
 	printf("Resizing window to %d;x%d;", x, y);
 
-	/*float relativeScaleReset = static_cast<float>(m_Width) / (m_LastWidth > 0 ? m_Width : m_LastWidth);
-	for (const auto& viewport : ImGui::GetCurrentContext()->Viewports) {
-		ImGui::ScaleWindowsInViewport(viewport, relativeScaleReset);
-	}*/
-
-	// Scale them to the appropriate size
+	// Best looking on FHD.
 	float relativeScale = static_cast<float>(x) / 1920.f;
 	for (const auto& viewport : ImGui::GetCurrentContext()->Viewports) {
 		ImGui::ScaleWindowsInViewport(viewport, relativeScale);

@@ -86,11 +86,10 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 #pragma region Render Target.
 	ImVec2 currentSize = ImGui::GetContentRegionAvail();
-	static bool resizeNeeded = false;
+	static bool isResizeNeeded = false;
 	if (currentSize.x != m_SceneSize.x || currentSize.y != m_SceneSize.y) {
 		m_SceneSize = currentSize;
-		resizeNeeded = true;
-		// OnResize(m_Context, engine);
+		isResizeNeeded = true;
 	}
 
 	//m_RenderSize = ImGui::GetIO().DisplaySize;
@@ -98,16 +97,15 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	if (currentSize.x > m_RenderSize.x) {
 		float multiplier = (int) (currentSize.x / STEP) + 1;
 		m_RenderSize.x = STEP * multiplier;
-		resizeNeeded = true;
-		//OnResize(m_Context, engine);
+		isResizeNeeded = true;
 	} else if (currentSize.y > m_RenderSize.y) {
 		float multiplier = (int) (currentSize.y / STEP) + 1;
 		m_RenderSize.y = STEP * multiplier;
-		resizeNeeded = true;
-		//OnResize(m_Context, engine);
+		isResizeNeeded = true;
 	}
-	if (resizeNeeded) {
+	if (isResizeNeeded) {
 		OnResizeInternal(m_Context, engine);
+		isResizeNeeded = false;
 	}
 
 	ImVec2 pos = (ImGui::GetWindowSize() - m_RenderSize) * 0.5f;
@@ -482,6 +480,7 @@ void Editor::EditorViewport::OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresent
 }
 
 void Editor::EditorViewport::OnResizeInternal(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
+	printf("Resize internal");
 	engine.resize(m_RenderSize.x, m_RenderSize.y);
 	vulkan->InitializePresentationEngine(engine.get_presentation_engine());
 	vulkan->SecondInitialize();
