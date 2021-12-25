@@ -8,6 +8,7 @@ Editor::Scene::Scene(uint32_t id) {
 }
 
 void Editor::Scene::FillBasic() {
+	m_Context->get_registry().clear();
 	auto mainEntity = m_Context->get_registry().create();
 	m_Context->get_registry().set<diffusion::PossessedEntity>(mainEntity);
 	m_Context->get_registry().emplace<diffusion::TagComponent>(mainEntity, "Main Entity");

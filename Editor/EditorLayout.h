@@ -11,7 +11,7 @@ namespace Editor {
 	class EditorWindow;
 
 	enum class LayoutRenderStatus {
-		SUCCESS, EXIT
+		SUCCESS, EXIT, NEW_SCENE, SWITCH_SCENE, LOAD_PROJECT
 	};
 
 	class EditorLayout {
@@ -20,6 +20,7 @@ namespace Editor {
 		virtual LayoutRenderStatus Render(Game& vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) = 0;
 		virtual void OnContextChanged() = 0;
+		virtual diffusion::Ref<Editor::EditorLayout> Copy() = 0;
 
 		// void SetContext(const diffusion::Ref<Game>& game);
 

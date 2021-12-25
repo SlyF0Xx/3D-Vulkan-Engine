@@ -47,7 +47,19 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		if (ImGui::BeginMenu("File")) {
 			 if (ImGui::MenuItem("New Scene", "Experimental")) {
-			 	Editor::GameProject::Instance()->NewScene();
+				// Destroy current, because created new one.
+				// GetParent()->Destroy();
+
+				ImGui::EndMenu();
+				ImGui::EndMainMenuBar();
+
+				ImGui::PopStyleVar();
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+
+				return Editor::LayoutRenderStatus::NEW_SCENE;
 			 }
 			 ImGui::Separator();
 			if (ImGui::MenuItem("Load project")) {
@@ -66,7 +78,17 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
-				GetParent()->Destroy();
+				// GetParent()->Destroy();
+
+				ImGui::EndMenu();
+				ImGui::EndMainMenuBar();
+
+				ImGui::PopStyleVar();
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+
 				return Editor::LayoutRenderStatus::EXIT;
 			}
 
@@ -103,7 +125,24 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		 	for (const Scene& scene : GameProject::Instance()->GetScenes()) {
 		 		if (ImGui::MenuItem((std::to_string(scene.GetID()) + ") " + scene.GetTitle()).c_str(), NULL,
 		 			scene.GetID() == GameProject::Instance()->GetActiveScene()->GetID())) {
-		 			GameProject::Instance()->SetActiveScene(scene.GetID());
+		 			// GameProject::Instance()->SetActiveScene(scene.GetID());
+
+					// Destroy current, because created new one.
+					// GetParent()->Destroy();
+
+					if (GameProject::Instance()->PrepareChangeScene(scene.GetID())) {
+
+						ImGui::EndMenu();
+						ImGui::EndMainMenuBar();
+
+						ImGui::PopStyleVar();
+						ImGui::PopStyleVar();
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+
+						return Editor::LayoutRenderStatus::SWITCH_SCENE;
+					}
 		 		}
 		 	}
 		 
@@ -174,6 +213,13 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
+
+	GameProjectRenderStatus status = GameProject::Instance()->Render();
+	if (status != Editor::GameProjectRenderStatus::SUCCESS) {
+		if (status == Editor::GameProjectRenderStatus::LOAD_PROJECT) {
+			return Editor::LayoutRenderStatus::LOAD_PROJECT;
+		}
+	}
 
 	return Editor::LayoutRenderStatus::SUCCESS;
 }
@@ -246,6 +292,10 @@ void Editor::MainLayout::OnContextChanged() {
 	std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
 		pair.second->SetContext(m_Context);
 	});
+}
+
+diffusion::Ref<Editor::EditorLayout> Editor::MainLayout::Copy() {
+	return diffusion::CreateRef<Editor::MainLayout>();
 }
 
 void Editor::MainLayout::MakeTabVisible(const char* window_name) {

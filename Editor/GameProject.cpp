@@ -15,7 +15,7 @@ void Editor::GameProject::CreateEmpty() {
 		return;
 	}
 
-	m_Scenes[0].Load(m_SourcePath);
+	m_Scenes[0].Load(m_SourceDirectoryPath);
 	m_ActiveSceneID = 0; // REPLACE FOR SETTER.
 
 	m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::TITLE_UPDATED);
@@ -25,18 +25,17 @@ void Editor::GameProject::NewScene() {
 	uint32_t id = m_Scenes.size();
 	Scene scene = Scene(id);
 	m_Scenes.push_back(scene);
+
+	// scene.Load(m_SourcePath);
+
 	_SetActiveScene(id);
-
-	scene.Load(m_SourcePath);
-
-	m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::TITLE_UPDATED);
 }
 
 void Editor::GameProject::RenameScene() {
 	m_IsRenamingScene = true;
 }
 
-void Editor::GameProject::Render() {
+Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 
@@ -117,7 +116,7 @@ void Editor::GameProject::Render() {
 				printf("\n");
 #endif
 
-				m_SourcePath = std::filesystem::path(dirPath);
+				m_SourceDirectoryPath = std::filesystem::path(dirPath);
 				Save();
 			}
 
@@ -131,20 +130,26 @@ void Editor::GameProject::Render() {
 
 		if (ImGuiFileDialog::Instance()->Display("ChooseFile")) {
 			if (ImGuiFileDialog::Instance()->IsOk()) {
-				std::string dirPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+				m_SourceDirectoryPath = std::filesystem::path(
+					ImGuiFileDialog::Instance()->GetCurrentPath());
+				m_SourceProjectFilePath = std::filesystem::path(
+					ImGuiFileDialog::Instance()->GetFilePathName());
 
 #if _DEBUG
 				printf("Loading from... ");
-				printf(filePathName.c_str());
+				printf(m_SourceProjectFilePath.string().c_str());
 				printf("\n");
 #endif
+
 				m_IsProjectFileChoosing = false;
 				ImGuiFileDialog::Instance()->Close();
 
-				m_SourcePath = std::filesystem::path(dirPath);
-				ParseMetaFile(std::filesystem::path(filePathName));
+				ImGui::PopStyleVar();
+				ImGui::PopStyleVar();
+
+				return Editor::GameProjectRenderStatus::LOAD_PROJECT;
 			}
+
 			m_IsProjectFileChoosing = false;
 			ImGuiFileDialog::Instance()->Close();
 		}
@@ -152,6 +157,8 @@ void Editor::GameProject::Render() {
 
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
+
+	return Editor::GameProjectRenderStatus::SUCCESS;
 }
 
 void Editor::GameProject::Load() {
@@ -159,7 +166,7 @@ void Editor::GameProject::Load() {
 }
 
 void Editor::GameProject::Save() {
-	if (m_SourcePath.empty()) {
+	if (m_SourceDirectoryPath.empty()) {
 		m_IsSourceFolderChoosing = true;
 		return;
 	}
@@ -179,7 +186,7 @@ void Editor::GameProject::Save() {
 
 		scenes.push_back(scene);
 
-		source.Save(m_SourcePath);
+		source.Save(m_SourceDirectoryPath);
 	}
 	general["Scenes"] = scenes;
 
@@ -192,6 +199,19 @@ void Editor::GameProject::Save() {
 
 void Editor::GameProject::SaveAs() {
 	m_IsSavingAs = true;
+}
+
+bool Editor::GameProject::PrepareChangeScene(uint32_t id) {
+	if (id == m_ActiveSceneID) {
+		return false;
+	}
+	m_NextActiveSceneID = id;
+	return true;
+}
+
+void Editor::GameProject::ActivatePreparedScene() {
+	_SetActiveScene(m_NextActiveSceneID);
+	m_NextActiveSceneID = 0;
 }
 
 void Editor::GameProject::SetActiveScene(uint32_t id) {
@@ -208,11 +228,35 @@ void Editor::GameProject::SetActiveScene(uint32_t id) {
 }
 
 void Editor::GameProject::Refresh() {
-	GetActiveScene()->Load(m_SourcePath);
+	GetActiveScene()->Load(m_SourceDirectoryPath);
+}
+
+void Editor::GameProject::ParseMetaFile() {
+	m_Scenes.clear();
+	std::ifstream fin(m_SourceProjectFilePath);
+
+	nlohmann::json general;
+	fin >> general;
+
+	m_Title = general["Title"];
+	nlohmann::json scenes = general["Scenes"];
+	for (nlohmann::json& sceneData : scenes) {
+		Scene scene = Scene(0);
+		scene.SetData(sceneData);
+		m_Scenes.push_back(scene);
+	}
+
+	uint32_t id = 0;
+	if (general.contains("ActiveSceneID")) {
+		uint32_t id = general["ActiveSceneID"];
+	}
+
+	fin.close();
+	_SetActiveScene(id);
 }
 
 const bool Editor::GameProject::HasSourceRoot() const {
-	return !m_SourcePath.empty();
+	return !m_SourceDirectoryPath.empty();
 }
 
 const std::string Editor::GameProject::GetTitle() const {
@@ -235,38 +279,14 @@ const std::vector<Editor::Scene> Editor::GameProject::GetScenes() const {
 }
 
 const std::filesystem::path Editor::GameProject::GetMetaPath() const {
-	if (!m_SourcePath.empty()) {
-		return m_SourcePath / (m_Title + ".diffusion");
+	if (!m_SourceDirectoryPath.empty()) {
+		return m_SourceDirectoryPath / (m_Title + ".diffusion");
 	}
 	return std::filesystem::path();
 }
 
 const std::filesystem::path Editor::GameProject::GetSourceRoot() const {
-	return m_SourcePath;
-}
-
-void Editor::GameProject::ParseMetaFile(std::filesystem::path path) {
-	m_Scenes.clear();
-	std::ifstream fin(path);
-
-	nlohmann::json general;
-	fin >> general;
-
-	m_Title = general["Title"];
-	nlohmann::json scenes = general["Scenes"];
-	for (nlohmann::json& sceneData : scenes) {
-		Scene scene = Scene(0);
-		scene.SetData(sceneData);
-		m_Scenes.push_back(scene);
-	}
-	
-	uint32_t id = 0;
-	if (general.contains("ActiveSceneID")) {
-		uint32_t id = general["ActiveSceneID"];
-	}
-
-	fin.close();
-	_SetActiveScene(id);
+	return m_SourceDirectoryPath;
 }
 
 void Editor::GameProject::_SetActiveScene(uint32_t id) {
