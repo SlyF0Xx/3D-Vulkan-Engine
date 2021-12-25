@@ -97,6 +97,13 @@ namespace Editor {
 
 		virtual void OnContextChanged();
 
+		bool CreateGLFW();
+
+		bool CreateImGui();
+
+		void DestroyGLFW();
+
+		void DestroyImGui();
 
 	protected:
 		static inline constexpr const char* FAVICON_PATH = "./misc/icons/toolbar_icon.png";

@@ -19,35 +19,11 @@ Editor::EditorWindow::~EditorWindow() {
 }
 
 bool Editor::EditorWindow::Create() {
-	if (!m_Context || !m_Layout) {
+	if (!CreateGLFW() || !CreateImGui()) {
 		return false;
 	}
 
-	if (!GLFWInit()) {
-		return false;
-	}
-	SetupVulkan();
-
-	// Create Window Surface
-	VkResult err = glfwCreateWindowSurface(m_Context->get_instance(), m_Window, m_Allocator, &m_Surface);
-	check_vk_result(err);
-
-	// Create Framebuffers
-	glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
-	m_LastWidth = m_Width;
-	m_LastHeight = m_Height;
-	ImGui_ImplVulkanH_Window* wd = &m_MainWindowData;
-	SetupVulkanWindow(wd, m_Surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
-
-	m_PresentationEngine = diffusion::CreateRef<ImGUIBasedPresentationEngine>(*m_Context, wd, 100, 100);
-	m_Context->InitializePresentationEngine(m_PresentationEngine->get_presentation_engine());
-
-	SetupImGuiContext();
-	UploadFonts();
-
-	m_Context->register_menu_renderer(std::make_unique<MenuRenderer>(*m_Context, &m_MainWindowData));
-	m_IsInitialized = true;
-	return true;
+	return m_IsInitialized;
 }
 
 bool Editor::EditorWindow::GLFWInit() {
@@ -217,11 +193,11 @@ void Editor::EditorWindow::OnContextChanged() {
 #if _DEBUG
 	printf("------- Context changed (EditorWindow) -------");
 #endif
-	Destroy();
+	DestroyImGui();
 
 	m_Context = GameProject::Instance()->GetCurrentContext();
 
-	if (!Create()) {
+	if (!CreateImGui()) {
 		throw;
 	}
 	//m_Layout->OnContextChanged();
@@ -233,6 +209,66 @@ void Editor::EditorWindow::OnContextChanged() {
 	glfwSetWindowTitle(m_Window, GetWindowTitle().c_str());
 
 	StartMainLoop();
+}
+
+bool Editor::EditorWindow::CreateGLFW() {
+	if (!GLFWInit()) {
+		return false;
+	}
+	return true;
+}
+
+bool Editor::EditorWindow::CreateImGui() {
+	if (!m_Context) {
+		return false;
+	}
+
+	SetupVulkan();
+
+	// Create Window Surface
+	VkResult err = glfwCreateWindowSurface(m_Context->get_instance(), m_Window, m_Allocator, &m_Surface);
+	check_vk_result(err);
+
+	// Create Framebuffers
+	glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
+	m_LastWidth = m_Width;
+	m_LastHeight = m_Height;
+	ImGui_ImplVulkanH_Window* wd = &m_MainWindowData;
+	SetupVulkanWindow(wd, m_Surface, m_Context->get_instance(), m_Context->get_device(), m_Context->get_physical_device(), m_Context->get_queue_family_index());
+
+	m_PresentationEngine = diffusion::CreateRef<ImGUIBasedPresentationEngine>(*m_Context, wd, 100, 100);
+	m_Context->InitializePresentationEngine(m_PresentationEngine->get_presentation_engine());
+
+	SetupImGuiContext();
+	UploadFonts();
+
+	m_Context->register_menu_renderer(std::make_unique<MenuRenderer>(*m_Context, &m_MainWindowData));
+	m_IsInitialized = true;
+	return m_IsInitialized;
+}
+
+void Editor::EditorWindow::DestroyGLFW() {
+	glfwDestroyWindow(m_Window);
+	glfwTerminate();
+}
+
+void Editor::EditorWindow::DestroyImGui() {
+	FontUtils::ReleaseFonts();
+
+	// Cleanup
+	VkResult err = vkDeviceWaitIdle(m_Context->get_device());
+	check_vk_result(err);
+	ImGui_ImplVulkan_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	vkDestroyDescriptorPool(m_Context->get_device(), m_DescriptorPool, m_Allocator);
+	ImGui_ImplVulkanH_DestroyWindow(
+		m_Context->get_instance(),
+		m_Context->get_device(),
+		&m_MainWindowData,
+		m_Allocator
+	);
 }
 
 void Editor::EditorWindow::GLFWResizeCallback(GLFWwindow* window, int x, int y) {
@@ -263,27 +299,10 @@ void Editor::EditorWindow::GLFWResizeCallback(GLFWwindow* window, int x, int y) 
 void Editor::EditorWindow::Destroy() {
 	if (!m_IsInitialized) return;
 
+	DestroyImGui();
+	DestroyGLFW();
+
 	m_IsInitialized = false;
-
-	FontUtils::ReleaseFonts();
-
-	// Cleanup
-	VkResult err = vkDeviceWaitIdle(m_Context->get_device());
-	check_vk_result(err);
-	ImGui_ImplVulkan_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	vkDestroyDescriptorPool(m_Context->get_device(), m_DescriptorPool, m_Allocator);
-	ImGui_ImplVulkanH_DestroyWindow(
-		m_Context->get_instance(),
-		m_Context->get_device(),
-		&m_MainWindowData,
-		m_Allocator
-	);
-
-	glfwDestroyWindow(m_Window);
-	glfwTerminate();
 }
 
 void Editor::EditorWindow::SetLayout(Ref<EditorLayout>& layout) {
