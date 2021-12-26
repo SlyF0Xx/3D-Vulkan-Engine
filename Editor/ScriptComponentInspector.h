@@ -15,7 +15,11 @@ namespace Editor {
 	private:
 		inline const char* GetTitle() const override;
 
+		void OnRemoveComponent() override;
+
 		bool IsRenderable() const override;
+
+		std::string GetSize() const;
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT = false;
 

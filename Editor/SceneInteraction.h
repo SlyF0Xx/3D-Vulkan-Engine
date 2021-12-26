@@ -10,11 +10,23 @@ namespace Editor {
 
 	enum class SceneInteractType {
 		UNDEFINED,
+
+		// Selection.
 		SELECTED_ONE,
 		RESET_SELECTION,
 		SELECTED_MANY,
+
+		// Scripting.
+		SAVE_SCRIPT,
+		SAVE_ALL_SCTIPTS,
 		EDIT_SCRIPT_COMPONENT,
 		REMOVE_SCRIPT_COMPONENT,
+
+		// Scene.
+		RUN,
+		STOP,
+		PAUSE,
+		RESUME,
 	};
 
 	struct SceneInteractEvent {

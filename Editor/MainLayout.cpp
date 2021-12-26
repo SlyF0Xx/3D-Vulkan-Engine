@@ -19,6 +19,7 @@ Editor::MainLayout::MainLayout() :
 		}
 		m_WindowStates.ScriptEditorStates[entity] = true;
 	});
+
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::REMOVE_SCRIPT_COMPONENT, [&](const Editor::SceneInteractEvent& event) {
 		entt::entity entity = (entt::entity) event.Entities[0];
 		auto position = m_CodeEditors.find(entity);
@@ -26,6 +27,21 @@ Editor::MainLayout::MainLayout() :
 			m_CodeEditors.erase(position);
 		}
 		m_WindowStates.ScriptEditorStates.erase(entity);
+	});
+
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::RUN, [&](const Editor::SceneInteractEvent& event) {
+		if (!m_IsScriptEditing)
+			MakeTabVisible(EditorViewport::TITLE);
+	});
+
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_SCRIPT, [&](const Editor::SceneInteractEvent& event) {
+		m_CodeEditors[m_ScriptEditingEntity]->Save();
+	});
+
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_ALL_SCTIPTS, [&](const Editor::SceneInteractEvent& event) {
+		std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
+			pair.second->Save();
+		});
 	});
 }
 
@@ -47,38 +63,38 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		if (ImGui::BeginMenu("File")) {
 			EDITOR_BEGIN_DISABLE_IF_RUNNING
-			if (ImGui::MenuItem("New Scene", "Experimental")) {
-				// Destroy current, because created new one.
-				// GetParent()->Destroy();
+				if (ImGui::MenuItem("New Scene", "CTRL + N")) {
+					// Destroy current, because created new one.
+					// GetParent()->Destroy();
 
-				ImGui::EndMenu();
-				ImGui::EndMainMenuBar();
+					ImGui::EndMenu();
+					ImGui::EndMainMenuBar();
 
-				ImGui::PopStyleVar();
-				ImGui::PopStyleVar();
-				ImGui::PopStyleColor();
-				ImGui::PopStyleColor();
-				ImGui::PopStyleColor();
+					ImGui::PopStyleVar();
+					ImGui::PopStyleVar();
+					ImGui::PopStyleColor();
+					ImGui::PopStyleColor();
+					ImGui::PopStyleColor();
 
-				return Editor::LayoutRenderStatus::NEW_SCENE;
-			}
+					return Editor::LayoutRenderStatus::NEW_SCENE;
+				}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Load project")) {
+			if (ImGui::MenuItem("Load project", "CTRL + O")) {
 				Editor::GameProject::Instance()->Load();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Rename Scene")) {
+			if (ImGui::MenuItem("Rename Scene", "CTRL + R")) {
 				Editor::GameProject::Instance()->RenameScene();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Save Project")) {
+			if (ImGui::MenuItem("Save Project", "CTRL + S")) {
 				Editor::GameProject::Instance()->Save();
 			}
-			if (ImGui::MenuItem("Save Project as...")) {
+			if (ImGui::MenuItem("Save Project as...", "CTRL + SHIFT + S")) {
 				Editor::GameProject::Instance()->SaveAs();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Quit")) {
+			if (ImGui::MenuItem("Quit", "ALT + F4")) {
 				// GetParent()->Destroy();
 
 				ImGui::EndMenu();
@@ -93,7 +109,7 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 				return Editor::LayoutRenderStatus::EXIT;
 			}
 			EDITOR_END_DISABLE_IF_RUNNING
-			ImGui::EndMenu();
+				ImGui::EndMenu();
 		}
 
 
@@ -123,9 +139,9 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 		}
 
 		if (ImGui::BeginMenu("Scenes")) {
-			EDITOR_BEGIN_DISABLE_IF_RUNNING
+			EDITOR_BEGIN_DISABLE_IF_RUNNING;
 			for (const Scene& scene : GameProject::Instance()->GetScenes()) {
-				if (ImGui::MenuItem((std::to_string(scene.GetID()) + ") " + scene.GetTitle()).c_str(), NULL,
+				if (ImGui::MenuItem(scene.GetTitle().c_str(), NULL,
 					scene.GetID() == GameProject::Instance()->GetActiveScene()->GetID())) {
 					// GameProject::Instance()->SetActiveScene(scene.GetID());
 
@@ -147,22 +163,27 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 					}
 				}
 			}
-			EDITOR_END_DISABLE_IF_RUNNING
+
+			ImGui::Separator();
+			ImGui::PushStyleColor(ImGuiCol_Text, Constants::ERROR_COLOR);
+			if (ImGui::MenuItem("[X] Delete Current Scene")) {
+				GameProject::Instance()->DeleteScene();
+			}
+			ImGui::PopStyleColor();
+			EDITOR_END_DISABLE_IF_RUNNING;
 			ImGui::EndMenu();
 		}
 
 		if (m_IsScriptEditing && ImGui::BeginMenu("Scripting")) {
-			EDITOR_BEGIN_DISABLE_IF_RUNNING
-			if (ImGui::MenuItem("Save script")) {
-				m_CodeEditors[m_ScriptEditingEntity]->Save();
+			EDITOR_BEGIN_DISABLE_IF_RUNNING;
+			if (ImGui::MenuItem("Save script", "CTRL + ALT + S")) {
+				m_SceneDispatcher->dispatch(SceneInteractType::SAVE_SCRIPT);
 			}
 
-			if (ImGui::MenuItem("Save all scripts")) {
-				std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
-					pair.second->Save();
-				});
+			if (ImGui::MenuItem("Save all scripts", "CTRL + SHIFT + ALT + S")) {
+				m_SceneDispatcher->dispatch(SceneInteractType::SAVE_ALL_SCTIPTS);
 			}
-			EDITOR_END_DISABLE_IF_RUNNING
+			EDITOR_END_DISABLE_IF_RUNNING;
 			ImGui::EndMenu();
 		}
 
@@ -222,6 +243,8 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 	if (status != Editor::GameProjectRenderStatus::SUCCESS) {
 		if (status == Editor::GameProjectRenderStatus::LOAD_PROJECT) {
 			return Editor::LayoutRenderStatus::LOAD_PROJECT;
+		} else if (status == Editor::GameProjectRenderStatus::DELETE_SCENE) {
+			return Editor::LayoutRenderStatus::DELETE_SCENE;
 		}
 	}
 
@@ -293,9 +316,8 @@ void Editor::MainLayout::OnContextChanged() {
 	m_Viewport.SetContext(m_Context);
 	m_LuaConsole.SetContext(m_Context);
 	m_ActionsWidget.SetContext(m_Context);
-	std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
-		pair.second->SetContext(m_Context);
-	});
+	m_CodeEditors.clear();
+	m_ScriptEditingEntity = entt::null;
 }
 
 diffusion::Ref<Editor::EditorLayout> Editor::MainLayout::Copy() {

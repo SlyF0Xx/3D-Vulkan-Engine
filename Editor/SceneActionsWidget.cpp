@@ -3,6 +3,28 @@
 Editor::SceneActionsWidget::SceneActionsWidget(EDITOR_GAME_TYPE ctx) : Editor::GameWidget(ctx) {
 	m_IsStopped = m_Context->m_stopped;
 	m_IsPaused = m_Context->m_paused;
+
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
+
+	m_SceneDispatcher->appendListener(SceneInteractType::RUN, [&](const SceneInteractEvent& e) {
+		m_IsStopped = m_Context->m_stopped;
+		m_IsPaused = m_Context->m_paused;
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::STOP, [&](const SceneInteractEvent& e) {
+		m_IsStopped = m_Context->m_stopped;
+		m_IsPaused = m_Context->m_paused;
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::PAUSE, [&](const SceneInteractEvent& e) {
+		m_IsStopped = m_Context->m_stopped;
+		m_IsPaused = m_Context->m_paused;
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::RESUME, [&](const SceneInteractEvent& e) {
+		m_IsStopped = m_Context->m_stopped;
+		m_IsPaused = m_Context->m_paused;
+	});
 }
 
 void Editor::SceneActionsWidget::Render(bool* p_open, ImGuiWindowFlags flags) {
@@ -17,7 +39,7 @@ void Editor::SceneActionsWidget::Render(bool* p_open, ImGuiWindowFlags flags) {
 	window_class.DockNodeFlagsOverrideSet |= ImGuiDockNodeFlags_NoSplit;
 	ImGui::SetNextWindowClass(&window_class);
 
-	ImGui::Begin(TITLE, p_open, 
+	ImGui::Begin(TITLE, p_open,
 		ImGuiWindowFlags_NoTitleBar
 		| ImGuiWindowFlags_NoMove
 		| ImGuiWindowFlags_NoScrollbar
@@ -37,12 +59,13 @@ void Editor::SceneActionsWidget::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImTextureID icon = m_IsStopped ? m_PlayTex : m_StopTex;
 	ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size.x));
 	if (ImGui::ImageButton(icon, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-		if (m_IsStopped)
+		if (m_IsStopped) {
 			m_Context->run();
-		else
+			m_SceneDispatcher->dispatch(SceneInteractType::RUN);
+		} else {
 			m_Context->stop();
-		m_IsStopped = !m_IsStopped;
-		m_IsPaused = false;
+			m_SceneDispatcher->dispatch(SceneInteractType::STOP);
+		}
 	}
 
 	// Pause button.
@@ -55,11 +78,13 @@ void Editor::SceneActionsWidget::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::SameLine();
 
 	if (ImGui::ImageButton(m_PauseTex, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-		if (m_IsPaused)
+		if (m_IsPaused) {
 			m_Context->resume();
-		else
+			m_SceneDispatcher->dispatch(SceneInteractType::RESUME);
+		} else {
 			m_Context->pause();
-		m_IsPaused = !m_IsPaused;
+			m_SceneDispatcher->dispatch(SceneInteractType::PAUSE);
+		}
 	}
 
 	ImGui::PopStyleColor();

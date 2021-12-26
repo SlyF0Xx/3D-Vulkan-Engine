@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EditorWindow.h"
+#include "SceneInteraction.h"
 
 #include <ImGuizmo.h>
 
@@ -24,6 +25,8 @@ namespace Editor {
 
 		entt::entity m_camera;
 		entt::entity m_edittor_camera;
+
+		SceneEventDispatcher m_SceneDispatcher;
 	};
 
 }

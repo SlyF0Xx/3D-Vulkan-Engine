@@ -47,6 +47,17 @@ ImGuiID Editor::CodeEditor::GetID() const {
 
 void Editor::CodeEditor::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::Begin(GetTitle().c_str(), p_open, flags);
+	bool isRunning = GameProject::Instance()->IsRunning();
+	if (isRunning) {
+		ImGui::BeginDisabled(); 
+	}
+
+	m_TextEditor.SetReadOnly(isRunning);
+
 	m_TextEditor.Render("Editor", ImVec2(0, 0), true);
+
+	if (isRunning) {
+		ImGui::EndDisabled();
+	}
 	ImGui::End();
 }

@@ -143,3 +143,10 @@ void Editor::TransformComponentInspector::ApplyTransform() {
 	INS_COM_REP<diffusion::TransformComponent>(m_Selection, diffusion::create_matrix(loc, rotRad, scale));
 	m_AlreadyAppliedChanges = true;
 }
+
+void Editor::TransformComponentInspector::OnRemoveComponent() {
+	m_Context->get_registry().remove<diffusion::TransformComponent>(m_Selection);
+	m_SceneDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
+
+	Editor::BaseComponentInspector::OnRemoveComponent();
+}

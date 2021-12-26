@@ -2,6 +2,7 @@
 
 Editor::Scene::Scene(uint32_t id) {
 	m_ID = id;
+	m_Title += " " + std::to_string(id);
 
 	// m_Context = diffusion::CreateRef<Game>();
 	m_Context = new Game();

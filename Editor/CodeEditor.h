@@ -6,6 +6,7 @@
 
 #include "widgets/TextEditor.h"
 #include "GameWidget.h"
+#include "GameProject.h"
 
 namespace Editor {
 

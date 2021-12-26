@@ -4,7 +4,7 @@
 #include "BaseComponents/DebugComponent.h"
 
 Editor::MainWindow::MainWindow() : Editor::EditorWindow::EditorWindow() {
-	// ..
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
 }
 
 //void Editor::MainWindow::OnContextChanged() {
@@ -13,7 +13,7 @@ Editor::MainWindow::MainWindow() : Editor::EditorWindow::EditorWindow() {
 //}
 
 void Editor::MainWindow::DispatchCameraMovement() {
-	
+
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_W]) {
 		diffusion::move_forward();
 	}
@@ -37,27 +37,35 @@ void Editor::MainWindow::DispatchCameraMovement() {
 	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_SHIFT]) {
 		diffusion::move_down();
 	}
-	
+
 }
 void Editor::MainWindow::DispatchScriptControl() {
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+	if (ImGui::IsKeyPressed(GLFW_KEY_F8, false)) {
 		if (m_Context->get_registry().ctx<diffusion::MainCameraTag>().m_entity == m_edittor_camera) {
 			m_Context->get_registry().set<diffusion::MainCameraTag>(m_camera);
 		}
 
 		m_Context->run();
+		m_SceneDispatcher->dispatch(SceneInteractType::RUN);
 	}
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_BACKSPACE]) {
+	if (ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
 		if (m_Context->get_registry().ctx<diffusion::MainCameraTag>().m_entity == m_camera) {
 			m_Context->get_registry().set<diffusion::MainCameraTag>(m_edittor_camera);
 		}
 
-		m_Context->pause();
+		if (m_Context->m_paused) {
+			m_Context->resume();
+			m_SceneDispatcher->dispatch(SceneInteractType::RESUME);
+		} else {
+			m_Context->pause();
+			m_SceneDispatcher->dispatch(SceneInteractType::PAUSE);
+		}
 	}
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_ESCAPE]) {
+	if (ImGui::IsKeyPressed(GLFW_KEY_ESCAPE, false) || ImGui::IsKeyPressed(GLFW_KEY_F7, false)) {
 		m_Context->stop();
+		m_SceneDispatcher->dispatch(SceneInteractType::STOP);
 
 		m_Context->get_registry().view<diffusion::CameraComponent, diffusion::debug_tag>().each([this](const diffusion::CameraComponent& camera) {
 			entt::entity camera_entity = entt::to_entity(m_Context->get_registry(), camera);
@@ -70,6 +78,36 @@ void Editor::MainWindow::DispatchScriptControl() {
 void Editor::MainWindow::DispatchKeyInputs() {
 	DispatchCameraMovement();
 	DispatchScriptControl();
+
+	if (GameProject::Instance()->IsRunning()) {
+		return;
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	if (ImGui::IsKeyPressed(GLFW_KEY_N, false) && io.KeyCtrl) {
+		GameProject::Instance()->NewScene();
+	}
+
+	// Saving.
+	if (ImGui::IsKeyPressed(GLFW_KEY_S, false) && io.KeyCtrl && io.KeyAlt && io.KeyShift) {
+		m_SceneDispatcher->dispatch(SceneInteractType::SAVE_ALL_SCTIPTS);
+	} else if (ImGui::IsKeyPressed(GLFW_KEY_S, false) && io.KeyCtrl && io.KeyAlt) {
+		m_SceneDispatcher->dispatch(SceneInteractType::SAVE_SCRIPT);
+	} else if (ImGui::IsKeyPressed(GLFW_KEY_S, false) && io.KeyCtrl && io.KeyShift) {
+		GameProject::Instance()->SaveAs();
+	} else if (ImGui::IsKeyPressed(GLFW_KEY_S, false) && io.KeyCtrl) {
+		GameProject::Instance()->Save();
+	}
+
+	// Loading.
+	if (ImGui::IsKeyPressed(GLFW_KEY_O, false) && io.KeyCtrl) {
+		GameProject::Instance()->Load();
+	}
+
+	if (ImGui::IsKeyPressed(GLFW_KEY_R, false) && io.KeyCtrl) {
+		GameProject::Instance()->RenameScene();
+	}
 }
 
 void Editor::MainWindow::StartMainLoop() {
@@ -173,6 +211,9 @@ void Editor::MainWindow::StartMainLoop() {
 			break;
 		case LayoutRenderStatus::LOAD_PROJECT:
 			Editor::GameProject::Instance()->ParseMetaFile();
+			break;
+		case LayoutRenderStatus::DELETE_SCENE:
+			Editor::GameProject::Instance()->DeleteSceneConfirm();
 			break;
 	}
 }

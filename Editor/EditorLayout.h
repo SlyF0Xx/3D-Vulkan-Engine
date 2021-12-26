@@ -11,7 +11,12 @@ namespace Editor {
 	class EditorWindow;
 
 	enum class LayoutRenderStatus {
-		SUCCESS, EXIT, NEW_SCENE, SWITCH_SCENE, LOAD_PROJECT
+		SUCCESS, 
+		EXIT, 
+		NEW_SCENE, 
+		SWITCH_SCENE, 
+		LOAD_PROJECT,
+		DELETE_SCENE
 	};
 
 	class EditorLayout {

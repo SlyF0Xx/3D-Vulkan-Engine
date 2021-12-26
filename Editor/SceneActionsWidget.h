@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameWidget.h"
+#include "SceneInteraction.h"
 
 namespace Editor {
 
@@ -27,6 +28,8 @@ namespace Editor {
 		ImTextureID m_PlayTex;
 		diffusion::ImageData m_TexPauseData;
 		ImTextureID m_PauseTex;
+
+		SceneEventDispatcher m_SceneDispatcher;
 	};
 
 }

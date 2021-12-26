@@ -19,18 +19,13 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 }
 
 void Editor::ScriptComponentInspector::RenderContent() {
-	ImGui::BeginGroupPanel("Script content", ImVec2(-1.0f, -1.0f));
+	ImGui::BeginGroupPanel("Script Content", ImVec2(-1.0f, -1.0f));
 	ImGui::Bullet();
-	if (ImGui::Button("Edit")) {
+	if (ImGui::Button("Modify")) {
 		m_SceneDispatcher->dispatch({SceneInteractType::EDIT_SCRIPT_COMPONENT, (ENTT_ID_TYPE) m_Selection});
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Remove")) {
-		m_Context->get_registry().remove<diffusion::ScriptComponent>(m_Selection);
-		m_Context->get_registry().remove<diffusion::ScriptComponentState>(m_Selection);
-		m_SceneDispatcher->dispatch({SceneInteractType::REMOVE_SCRIPT_COMPONENT, (ENTT_ID_TYPE) m_Selection});
-		m_SceneDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
-	}
+	ImGui::Text(GetSize().c_str());
 	ImGui::EndGroupPanel();
 }
 
@@ -38,6 +33,31 @@ inline const char* Editor::ScriptComponentInspector::GetTitle() const {
 	return "Script Component";
 }
 
+void Editor::ScriptComponentInspector::OnRemoveComponent() {
+	m_Context->get_registry().remove<diffusion::ScriptComponent>(m_Selection);
+	m_Context->get_registry().remove<diffusion::ScriptComponentState>(m_Selection);
+	m_SceneDispatcher->dispatch({SceneInteractType::REMOVE_SCRIPT_COMPONENT, (ENTT_ID_TYPE) m_Selection});
+	m_SceneDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
+
+	Editor::BaseComponentInspector::OnRemoveComponent();
+}
+
 bool Editor::ScriptComponentInspector::IsRenderable() const {
-	return m_Component;
+	return Editor::BaseComponentInspector::IsRenderable() && m_Component;
+}
+
+std::string Editor::ScriptComponentInspector::GetSize() const {
+	std::string representation = " bytes";
+	size_t size = m_Component->m_content.length();
+
+	if (m_Component->m_content.length() >= 1024) {
+		representation = " KB";
+		size = size >> 10;
+		if (m_Component->m_content.length() >= (1024 * 1024)) {
+			representation = " MB";
+			size = size >> 10;
+		}
+	}
+
+	return "Size: " + std::to_string(size) + representation;
 }

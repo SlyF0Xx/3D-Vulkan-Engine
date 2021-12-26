@@ -51,3 +51,10 @@ inline const char* Editor::TagComponentInspector::GetTitle() const {
 bool Editor::TagComponentInspector::IsRenderable() const {
 	return m_TagComponent;
 }
+
+void Editor::TagComponentInspector::OnRemoveComponent() {
+	m_Context->get_registry().remove<diffusion::TagComponent>(m_Selection);
+	m_SceneDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});
+
+	Editor::BaseComponentInspector::OnRemoveComponent();
+}

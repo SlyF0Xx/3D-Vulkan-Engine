@@ -11,7 +11,7 @@ void Editor::BaseComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 
 void Editor::BaseComponentInspector::Render() {
 	if (IsRenderable()) {
-		if (ImGui::CollapsingHeader(GetTitle(), ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(GetTitle(), &m_IsVisibleComponent, ImGuiTreeNodeFlags_DefaultOpen)) {
 			/*ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 			ImGui::BeginChild(GetTitle(), ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);*/
 			EDITOR_BEGIN_DISABLE_IF_RUNNING
@@ -20,6 +20,10 @@ void Editor::BaseComponentInspector::Render() {
 
 			/*ImGui::EndChild();
 			ImGui::PopStyleVar();*/
+		}
+
+		if (!m_IsVisibleComponent) {
+			OnRemoveComponent();
 		}
 	}
 }
@@ -30,5 +34,11 @@ bool Editor::BaseComponentInspector::IsAvailable() const {
 }
 
 bool Editor::BaseComponentInspector::IsRenderable() const {
-	return true;
+	return m_IsVisibleComponent;
+}
+
+void Editor::BaseComponentInspector::OnRemoveComponent() {
+	// Component removing...
+	// Reset variable for next assignations.
+	m_IsVisibleComponent = true;
 }

@@ -23,6 +23,8 @@ namespace Editor {
 
 		void ApplyTransform();
 
+		void OnRemoveComponent() override;
+
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT = false;
 

@@ -1,6 +1,7 @@
 #include "GameProject.h"
 
 Editor::GameProject::GameProject() {
+	m_SceneDispatcher = SceneInteractionSingleTon::GetDispatcher();
 	m_WindowTitleDispatcher = WindowTitleInteractionSingleTon::GetDispatcher();
 }
 
@@ -15,14 +16,15 @@ void Editor::GameProject::CreateEmpty() {
 		return;
 	}
 
-	m_Scenes[0].Load(m_SourceDirectoryPath);
-	m_ActiveSceneID = 0; // REPLACE FOR SETTER.
+	m_Scenes[m_AutoIncrement].Load(m_SourceDirectoryPath);
+	m_ActiveSceneID = m_AutoIncrement; // REPLACE FOR SETTER.
+	m_AutoIncrement++;
 
 	m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::TITLE_UPDATED);
 }
 
 void Editor::GameProject::NewScene() {
-	uint32_t id = m_Scenes.size();
+	uint32_t id = m_AutoIncrement++;
 	Scene scene = Scene(id);
 	m_Scenes.push_back(scene);
 
@@ -155,6 +157,38 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 		}
 	}
 
+	if (m_IsDeletingScene) {
+		ImGui::OpenPopup("Delete Current Scene");
+		ImGui::BeginPopupModal("Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Text(("You want to delete scene (" + GetActiveScene()->GetTitle() + ")").c_str());
+
+		ImGui::Text("Are you sure? "); ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Text, Constants::ERROR_COLOR);
+		ImGui::Text("It can't be undone!");
+
+		if (ImGui::Button("[X] DELETE", ImVec2(120, 0))) {
+			m_IsDeletingScene = false;
+
+			ImGui::PopStyleColor();
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+
+			ImGui::PopStyleVar();
+			ImGui::PopStyleVar();
+
+			return Editor::GameProjectRenderStatus::DELETE_SCENE;
+		}
+		ImGui::PopStyleColor();
+
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+			m_IsDeletingScene = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 
@@ -166,6 +200,8 @@ void Editor::GameProject::Load() {
 }
 
 void Editor::GameProject::Save() {
+	m_SceneDispatcher->dispatch(SceneInteractType::SAVE_ALL_SCTIPTS);
+
 	if (m_SourceDirectoryPath.empty()) {
 		m_IsSourceFolderChoosing = true;
 		return;
@@ -173,6 +209,7 @@ void Editor::GameProject::Save() {
 
 	nlohmann::json general;
 	general["Title"] = m_Title;
+	general["AutoIncrement"] = m_AutoIncrement;
 	general["ScenesCount"] = m_Scenes.size();
 	general["ActiveSceneID"] = m_ActiveSceneID;
 
@@ -239,6 +276,7 @@ void Editor::GameProject::ParseMetaFile() {
 	fin >> general;
 
 	m_Title = general["Title"];
+	m_AutoIncrement = general["AutoIncrement"];
 	nlohmann::json scenes = general["Scenes"];
 	for (nlohmann::json& sceneData : scenes) {
 		Scene scene = Scene(0);
@@ -248,11 +286,30 @@ void Editor::GameProject::ParseMetaFile() {
 
 	uint32_t id = 0;
 	if (general.contains("ActiveSceneID")) {
-		uint32_t id = general["ActiveSceneID"];
+		id = general["ActiveSceneID"];
 	}
 
 	fin.close();
 	_SetActiveScene(id);
+}
+
+void Editor::GameProject::DeleteScene() {
+	m_IsDeletingScene = true;
+}
+
+void Editor::GameProject::DeleteSceneConfirm() {
+	auto it = std::find_if(m_Scenes.begin(), m_Scenes.end(), [&](const Scene& scene) {
+		return scene.GetID() == m_ActiveSceneID;
+	});
+
+	if (it != m_Scenes.end()) {
+		m_Scenes.erase(it);
+		if (m_Scenes.size() > 0) {
+			_SetActiveScene(m_Scenes[0].GetID());
+		} else {
+			NewScene();
+		}
+	}
 }
 
 const bool Editor::GameProject::HasSourceRoot() const {

@@ -121,7 +121,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			StartRenaming(entity, tag.c_str());
 		}
 
-		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, .2f, .2f, 1.f));
+		ImGui::PushStyleColor(ImGuiCol_Text, Constants::ERROR_COLOR);
 		if (ImGui::MenuItem("Delete")) {
 			isEntityDeleted = true;
 		}

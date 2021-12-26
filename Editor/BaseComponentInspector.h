@@ -35,6 +35,8 @@ namespace Editor {
 
 		virtual void RenderContent() = 0;
 
+		virtual void OnRemoveComponent();
+
 		inline virtual const char* GetTitle() const = 0;
 
 	protected:
@@ -42,6 +44,9 @@ namespace Editor {
 		entt::entity m_Selection;
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT		= false;
+
+		// Видимость компонента зависит от наличия компонента на сущности.
+		bool m_IsVisibleComponent = true;
 	};
 
 	template<class T>
