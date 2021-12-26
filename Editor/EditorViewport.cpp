@@ -712,8 +712,8 @@ void Editor::EditorViewport::RightClickHandler() {
 			glm::vec3 front;
 			float yaw = glm::radians(m_CameraYaw);
 			float pitch = glm::radians(m_CameraPitch);
-			front.x = cosf(yaw) * cos(pitch);
-			front.y = sin(yaw) * cos(pitch);
+			front.x = -sin(yaw) * cos(pitch);
+			front.y = cosf(yaw) * cos(pitch);
 			front.z = -sin(pitch);
 
 			glm::vec3 scale;
