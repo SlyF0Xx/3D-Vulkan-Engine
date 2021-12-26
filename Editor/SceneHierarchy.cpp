@@ -8,7 +8,7 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::Begin(TITLE, p_open, flags);
 
-#if _DEBUG
+#if _DEBUG && 0
 	ImGui::Text("Only Debug:");
 	ImGui::Text("Addr: %p", m_Context);
 	ImGui::Text("Entities count: %d", m_Context->get_registry().alive());
@@ -29,9 +29,11 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	auto textWidth = ImGui::CalcTextSize(text).x;
 
 	ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+	EDITOR_BEGIN_DISABLE_IF_RUNNING
 	if (ImGui::Button(text, {0.f, 0.f})) {
 		ImGui::OpenPopup(POPUP_ADD_ENTITY);
 	}
+	EDITOR_END_DISABLE_IF_RUNNING
 
 	if (ImGui::BeginPopup(POPUP_ADD_ENTITY)) {
 		for (const EditorCreatableEntity& entity : m_CreatableEntities) {

@@ -20,6 +20,7 @@
 
 #include "SceneInteraction.h"
 #include "Constants.h"
+#include "GameProject.h"
 
 namespace Editor {
 

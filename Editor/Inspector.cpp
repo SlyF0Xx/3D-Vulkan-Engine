@@ -38,9 +38,11 @@ void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
 	auto textWidth = ImGui::CalcTextSize(text).x;
 
 	ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+	EDITOR_BEGIN_DISABLE_IF_RUNNING
 	if (ImGui::Button(text, {0.f, 0.f})) {
 		ImGui::OpenPopup(POPUP_ADD_COMPONENT);
 	}
+	EDITOR_END_DISABLE_IF_RUNNING
 
 	if (ImGui::BeginPopup(POPUP_ADD_COMPONENT)) {
 		for (const EditorCreatableComponent& entity : m_CreatableComponents) {

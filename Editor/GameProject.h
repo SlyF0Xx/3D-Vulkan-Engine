@@ -63,6 +63,8 @@ namespace Editor {
 
 		const std::filesystem::path GetSourceRoot() const;
 
+		bool IsRunning() const;
+
 		static inline diffusion::Ref<GameProject> Instance() {
 			if (!GameProject::s_GameProject) {
 				GameProject::s_GameProject = diffusion::CreateRef<GameProject>();

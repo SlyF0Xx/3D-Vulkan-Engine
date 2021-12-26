@@ -289,6 +289,10 @@ const std::filesystem::path Editor::GameProject::GetSourceRoot() const {
 	return m_SourceDirectoryPath;
 }
 
+bool Editor::GameProject::IsRunning() const {
+	return !GetCurrentContext()->m_stopped;
+}
+
 void Editor::GameProject::_SetActiveScene(uint32_t id) {
 	m_ActiveSceneID = id;
 	m_WindowTitleDispatcher->dispatch(Editor::WindowTitleInteractionType::CONTEXT_CHANGED);

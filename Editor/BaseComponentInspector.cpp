@@ -14,8 +14,9 @@ void Editor::BaseComponentInspector::Render() {
 		if (ImGui::CollapsingHeader(GetTitle(), ImGuiTreeNodeFlags_DefaultOpen)) {
 			/*ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 			ImGui::BeginChild(GetTitle(), ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);*/
-
+			EDITOR_BEGIN_DISABLE_IF_RUNNING
 			RenderContent();
+			EDITOR_END_DISABLE_IF_RUNNING
 
 			/*ImGui::EndChild();
 			ImGui::PopStyleVar();*/

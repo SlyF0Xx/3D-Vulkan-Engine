@@ -137,12 +137,19 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Constants::OVERLAY_HOVER_COLOR);
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, Constants::OVERLAY_ACTIVE_COLOR);
 
-	int frame_padding = -1;									// -1 == uses default padding (style.FramePadding)
-	ImVec2 size = ImVec2(32, 32);     // Size of the image we want to make visible
+	int framePadding = -1;									// -1 == uses default padding (style.FramePadding)
+	ImVec2 size = ImVec2(32, 32);							// Size of the image we want to make visible
 	ImVec2 uv0 = ImVec2(0.0f, 0.0f);                        // UV coordinates for lower-left
 	ImVec2 uv1 = ImVec2(1, 1);								// UV coordinates for (thumbnailSize, thumbnailSize) in our texture
-	ImVec4 bg_col = ImVec4(0.f, 0.f, 0.f, .0f);         // Background.
-	ImVec4 tint_col = ImVec4(1.0f, 1.f, 1.0f, 1.f);       // No tint
+	ImVec4 bgColor = ImVec4(0.f, 0.f, 0.f, .0f);			// Background.
+	ImVec4 tintColor = ImVec4(1.0f, 1.f, 1.0f, 1.f);		// No tint
+
+	ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
+	if (ImGui::ImageButton(m_CameraTex, size, uv0, uv1, framePadding, bgColor, tintColor)) {
+		ImGui::OpenPopup(POPUP_CAMERA);
+	}
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine(m_SceneSize.x - (48.f * 3.f));
 
 	if (m_CurrentGizmoOperation == ImGuizmo::TRANSLATE) {
@@ -150,7 +157,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	} else {
 		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
-	if (ImGui::ImageButton(m_GridTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+	if (ImGui::ImageButton(m_GridTex, size, uv0, uv1, framePadding, bgColor, tintColor))
 		m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_TRANSFORM);
@@ -163,7 +170,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	} else {
 		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
-	if (ImGui::ImageButton(m_RotationTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+	if (ImGui::ImageButton(m_RotationTex, size, uv0, uv1, framePadding, bgColor, tintColor))
 		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_ROTATION);
@@ -176,7 +183,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 	} else {
 		ImGui::PushStyleColor(ImGuiCol_Button, Constants::OVERLAY_DEFAULT_COLOR);
 	}
-	if (ImGui::ImageButton(m_ScaleTex, size, uv0, uv1, frame_padding, bg_col, tint_col))
+	if (ImGui::ImageButton(m_ScaleTex, size, uv0, uv1, framePadding, bgColor, tintColor))
 		m_CurrentGizmoOperation = ImGuizmo::SCALE;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup(POPUP_SCALE);
@@ -188,6 +195,25 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		m_CurrentGizmoOperation = ImGuizmo::ROTATE;
 	if (ImGui::IsKeyPressed(82)) // r Key
 		m_CurrentGizmoOperation = ImGuizmo::SCALE;
+
+	if (ImGui::BeginPopup(POPUP_CAMERA)) {
+		ImGui::PushFont(FontUtils::GetFont(FONT_TYPE::SUBHEADER_TEXT));
+		ImGui::Text("Camera Preferences");
+		ImGui::Separator();
+
+		ImGui::Text("Camera Movement Type");
+		ImGui::PopFont();
+
+		if (ImGui::RadioButton("ROTATE MATRIX", m_CameraMovementType == CameraMovementType::ROTATE_MATRIX)) {
+			m_CameraMovementType = CameraMovementType::ROTATE_MATRIX;
+		}
+
+		if (ImGui::RadioButton("CREATE MATRIX", m_CameraMovementType == CameraMovementType::CREATION_MATRIX)) {
+			m_CameraMovementType = CameraMovementType::CREATION_MATRIX;
+		}
+
+		ImGui::EndPopup();
+	}
 
 	if (ImGui::BeginPopup(POPUP_TRANSFORM)) {
 		TransformSnapSize localSize = m_TransformSnapSize;
@@ -448,7 +474,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		RightClickHandler();
-	} else {
+	} else if (m_CameraMovementType == CameraMovementType::ROTATE_MATRIX) {
 		m_CameraYaw = 0.0f;
 		m_CameraPitch = 0.0f;
 	}
@@ -501,6 +527,7 @@ void Editor::EditorViewport::InitContexed() {
 	m_GridTex = GenerateTextureID(m_Context, m_GridTexData, GRID_ICON_PATH);
 	m_RotationTex = GenerateTextureID(m_Context, m_RotationTexData, ROTATION_ICON_PATH);
 	m_ScaleTex = GenerateTextureID(m_Context, m_ScaleTexData, SCALE_ICON_PATH);
+	m_CameraTex = GenerateTextureID(m_Context, m_CameraTexData, CAMERA_ICON_PATH);
 }
 
 void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
@@ -674,11 +701,29 @@ void Editor::EditorViewport::RightClickHandler() {
 	//front = glm::normalize(front);
 	m_Context->get_registry().patch<diffusion::TransformComponent>(
 		mainCameraEntity.m_entity, [&](diffusion::TransformComponent& transform) {
-		glm::vec3 up = camera_view.up;
-		up.z = -up.z;
+		if (m_CameraMovementType == CameraMovementType::ROTATE_MATRIX) {
+			glm::vec3 up = camera_view.up;
+			up.z = -up.z;
 
-		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
-		transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, up);
-		// TODO: bug, when rotationg mouse by circle. Should prevent rotation around forward vector
+			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
+			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, up);
+			// TODO: bug, when rotationg mouse by circle. Should prevent rotation around forward vector
+		} else if (m_CameraMovementType == CameraMovementType::CREATION_MATRIX) {
+			glm::vec3 front;
+			float yaw = glm::radians(m_CameraYaw);
+			float pitch = glm::radians(m_CameraPitch);
+			front.x = cosf(yaw) * cos(pitch);
+			front.y = sin(yaw) * cos(pitch);
+			front.z = -sin(pitch);
+
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform.m_world_matrix, scale, rotation, translation, skew, perspective);
+
+			transform.m_world_matrix = diffusion::create_matrix_by_location_target(translation, translation + front);
+		}
 	});
 }

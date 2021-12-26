@@ -20,6 +20,10 @@
 
 namespace Editor {
 
+	enum class CameraMovementType {
+		ROTATE_MATRIX, CREATION_MATRIX
+	};
+
 	class EditorViewport : public GameWidget {
 	public:
 		static inline constexpr const char* TITLE = "Viewport";
@@ -49,10 +53,12 @@ namespace Editor {
 		static inline constexpr const char* POPUP_TRANSFORM = "POPUP_TRANSFORM";
 		static inline constexpr const char* POPUP_ROTATION = "POPUP_ROTATION";
 		static inline constexpr const char* POPUP_SCALE = "POPUP_SCALE";
+		static inline constexpr const char* POPUP_CAMERA = "POPUP_CAMERA";
 
 		static inline constexpr const char* GRID_ICON_PATH = "./misc/icons/grid.png";
 		static inline constexpr const char* ROTATION_ICON_PATH = "./misc/icons/rotation.png";
 		static inline constexpr const char* SCALE_ICON_PATH = "./misc/icons/scale.png";
+		static inline constexpr const char* CAMERA_ICON_PATH = "./misc/icons/camera.png";
 
 		diffusion::ImageData m_GridTexData;
 		ImTextureID m_GridTex;
@@ -62,6 +68,9 @@ namespace Editor {
 
 		diffusion::ImageData m_ScaleTexData;
 		ImTextureID m_ScaleTex;
+
+		diffusion::ImageData m_CameraTexData;
+		ImTextureID m_CameraTex;
 
 		ImVec2 m_SceneSize, m_TopLeftPoint;
 		ImVec2 m_RenderSize = MIN_RENDER_SIZE;
@@ -78,6 +87,8 @@ namespace Editor {
 		ScaleSnapSize m_ScaleSnapSize = ScaleSnapSize::HALF;
 		ImGuizmo::OPERATION m_CurrentGizmoOperation = ImGuizmo::TRANSLATE;
 		ImGuizmo::MODE m_CurrentGizmoMode = ImGuizmo::WORLD;
+
+		CameraMovementType m_CameraMovementType = CameraMovementType::ROTATE_MATRIX;
 
 		/// <summary>
 		/// Выбранная сущность.

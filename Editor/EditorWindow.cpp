@@ -201,8 +201,6 @@ void Editor::EditorWindow::OnContextChanged() {
 		throw;
 	}
 	m_Layout->OnContextChanged();
-	/*auto ptr = m_Layout->Copy();
-	SetLayout(ptr);*/
 
 	GameProject::Instance()->Refresh();
 
