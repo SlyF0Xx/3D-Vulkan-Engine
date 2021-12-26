@@ -4,6 +4,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace diffusion {
 
@@ -20,6 +22,18 @@ glm::mat4 calculate_global_world_matrix(::entt::registry& registry, const Transf
 	return component.m_world_matrix;
 }
 
+glm::mat4 create_matrix_by_location_target(
+	const glm::vec3& position,
+	const glm::vec3& target)
+{
+	const glm::vec3 view_vector = glm::normalize(target - position);
+
+	auto quat = glm::rotation(view_vector, glm::vec3(0, 1, 0));
+	glm::vec3 euler = glm::eulerAngles(quat);
+
+	return create_matrix(position, glm::vec3(-euler.x, -euler.y, -euler.z));
+}
+
 glm::mat4 create_matrix(
 	const glm::vec3& position,
 	const glm::vec3& rotation,
@@ -33,10 +47,10 @@ glm::mat4 create_matrix(
 	rotation_matrix = glm::rotate(glm::mat4(1), rotation[0], RotationX);
 
 	glm::vec3 RotationY(0, 1.0, 0);
-	rotation_matrix *= glm::rotate(glm::mat4(1), rotation[1], RotationY);
+	rotation_matrix = glm::rotate(glm::mat4(1), rotation[1], RotationY) * rotation_matrix;
 
 	glm::vec3 RotationZ(0, 0, 1.0);
-	rotation_matrix *= glm::rotate(glm::mat4(1), rotation[2], RotationZ);
+	rotation_matrix = glm::rotate(glm::mat4(1), rotation[2], RotationZ) * rotation_matrix;
 
 	glm::mat4 scale_matrix = glm::scale(scale);
 	return translation_matrix * rotation_matrix * scale_matrix;
