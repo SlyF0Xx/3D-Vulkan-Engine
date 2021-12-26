@@ -613,6 +613,10 @@ void Game::render_tick()
         draw.succeed(*physics);
     }
 
+    for (auto& task : m_tasks) {
+        draw.succeed(task);
+    }
+
     m_executor.run(m_taskflow);
     m_executor.wait_for_all();
     m_tasks.clear();

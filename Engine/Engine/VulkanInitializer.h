@@ -41,6 +41,10 @@ public:
     void recreate_framebuffer(::entt::registry& registry, std::vector<vk::Image> images,
                               VulkanDirectionalLights& lights,
                               int i, int layer_count);
+    void recreate_point_framebuffer(::entt::registry& registry, std::vector<vk::Image> images,
+        VulkanDirectionalLights& lights,
+        int i, int layer_count);
+    
     void add_directional_light(::entt::registry& registry, ::entt::entity parent_entity);
     void update_lights_buffer(::entt::registry& registry, VulkanDirectionalLights* lights_ptr);
     void add_point_light(::entt::registry& registry, ::entt::entity parent_entity);

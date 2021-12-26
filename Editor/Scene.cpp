@@ -22,8 +22,10 @@ void Editor::Scene::FillBasic() {
 	m_Context->get_registry().emplace<diffusion::PossessedEntity>(mainEntity, mainEntity);
 	m_Context->get_registry().emplace<diffusion::MainCameraTag>(mainCamera, mainCamera);
 
-	/*auto directionalLight = diffusion::create_directional_light_entity(m_Context->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(glm::pi<float>() / 2, 0.0f, 0.0f));
-	m_Context->get_registry().emplace<diffusion::TagComponent>(directionalLight, "Directional light");*/
+	/*
+	auto directionalLight = diffusion::create_directional_light_entity(m_Context->get_registry(), glm::vec3(4.0f, -4.0f, -3.0f), glm::vec3(glm::pi<float>() / 2, 0.0f, 0.0f));
+	m_Context->get_registry().emplace<diffusion::TagComponent>(directionalLight, "Directional light");
+	*/
 	auto pointLight = diffusion::create_point_light_entity(m_Context->get_registry(), glm::vec3(0.0f, -4.0f, -1.0f));
 	m_Context->get_registry().emplace<diffusion::TagComponent>(pointLight, "Point light");
 }

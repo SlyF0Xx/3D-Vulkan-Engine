@@ -620,6 +620,23 @@ void VulkanInitializer::recreate_framebuffer(::entt::registry& registry, std::ve
     }
 }
 
+void VulkanInitializer::recreate_point_framebuffer(::entt::registry& registry, std::vector<vk::Image> images, VulkanDirectionalLights& lights, int i, int layer_count)
+{
+    auto& vulkan_light = registry.get<VulkanDirectionalLightComponent>(lights.m_point_light_entities[i]);
+
+    for (int i = 0; i < images.size(); ++i) {
+        m_game.get_device().destroyImageView(vulkan_light.m_swapchain_data[i].m_depth_image_view);
+        m_game.get_device().destroyFramebuffer(vulkan_light.m_swapchain_data[i].m_framebuffer);
+    }
+
+    for (int j = 0; j < vulkan_light.m_swapchain_data.size(); ++j) {
+        vulkan_light.m_swapchain_data[j].m_depth_image_view = m_game.get_device().createImageView(vk::ImageViewCreateInfo({}, images[j], vk::ImageViewType::e2D, m_game.get_depth_format(), vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, i, layer_count)));
+
+        std::array deffered_views{ vulkan_light.m_swapchain_data[j].m_depth_image_view };
+        vulkan_light.m_swapchain_data[j].m_framebuffer = m_game.get_device().createFramebuffer(vk::FramebufferCreateInfo({}, lights.m_render_pass, deffered_views, m_game.m_shadow_width, m_game.m_shadow_height, layer_count));
+    }
+}
+
 void VulkanInitializer::update_lights_buffer(::entt::registry& registry, VulkanDirectionalLights* lights_ptr)
 {
     Lights lights;
@@ -731,7 +748,7 @@ void VulkanInitializer::add_point_light(::entt::registry& registry, ::entt::enti
         }
 
         for (int i = 0; i < lights.m_point_light_entities.size(); ++i) {
-            recreate_framebuffer(registry, images, lights, i, 6);
+            recreate_point_framebuffer(registry, images, lights, i, 6);
         }
     }
 
@@ -771,7 +788,7 @@ void VulkanInitializer::add_point_light(::entt::registry& registry, ::entt::enti
     registry.emplace<VulkanDirectionalLightComponent>(parent_entity, std::move(swapchain_data));
     lights_ptr->m_point_light_entities.push_back(parent_entity);
 
-    m_game.Update();
+    //m_game.Update();
 
     update_lights_buffer(registry, lights_ptr);
 }
