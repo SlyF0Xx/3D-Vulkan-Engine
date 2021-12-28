@@ -39,6 +39,8 @@ VulkanInitializer::VulkanInitializer(Game& game)
     m_game.get_registry().on_construct<Relation>().connect<&VulkanInitializer::change_transform_component>(*this);
 
     m_game.get_registry().on_destroy<VulkanDirectionalLights>().connect<&VulkanInitializer::destroy_vulkan_lights_component>(*this);
+
+    //m_game.get_registry().on_destroy<PointLightComponent>().connect<&VulkanInitializer::destroy_point_light>(*this);
 }
 
 void VulkanInitializer::destroy_vulkan_lights_component(::entt::registry& registry, ::entt::entity parent_entity)

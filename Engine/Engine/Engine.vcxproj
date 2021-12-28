@@ -136,6 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\vendor\Edyn\build\include;$(ProjectDir)..\..\vendor\Edyn\include;$(ProjectDir)..\..\vendor\LuaBridge\Source</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,6 +204,7 @@
     <ClInclude Include="IRender.h" />
     <ClInclude Include="Systems\CameraSystem.h" />
     <ClInclude Include="PhysicsUtils.h" />
+    <ClInclude Include="Systems\PhysicsSystem.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VulkanInitializer.h" />
   </ItemGroup>
@@ -227,6 +229,7 @@
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="Systems\CameraSystem.cpp" />
     <ClCompile Include="PhysicsUtils.cpp" />
+    <ClCompile Include="Systems\PhysicsSystem.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VulkanInitializer.cpp" />
   </ItemGroup>

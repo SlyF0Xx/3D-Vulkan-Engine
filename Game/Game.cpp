@@ -14,7 +14,6 @@
 #include "KitamoriMovingSystem.h"
 #include "RotateSystem.h"
 #include "BaseComponents/CameraComponent.h"
-#include "PhysicsSystem.h"
 #include "InputEvents.h"
 #include "BaseComponents/PossessedComponent.h"
 #include "Systems/CameraSystem.h"
@@ -112,9 +111,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     diffusion::RotateSystem rotate_system(vulkan.get_registry());
-    diffusion::PhysicsSystem phys(vulkan.get_registry());
 
-    kitamori.linkedSystem = &phys;
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAME));
 
@@ -132,8 +129,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else
         {
             if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(100)) {
-                vulkan.get_tasks().emplace_back(vulkan.get_taskflow().emplace([&phys]() {
-                    phys.tick();
+                vulkan.get_tasks().emplace_back(vulkan.get_taskflow().emplace([&kitamori]() {
+                    kitamori.tick();
                 }));
 
                 m_phys_time_point = std::chrono::steady_clock::now();
@@ -263,7 +260,6 @@ void generate_scene()
 
     /*
     auto test = diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ 3.0, 0, 0 });
-    g_vulkan->get_registry().set<diffusion::PhysTag>(test);
     diffusion::create_cube_entity_unlit(g_vulkan->get_registry(), glm::vec3{ -3.0, 0, 0 });
     ColliderDefinition def = {};
     def.CollisionType = ECollisionType::Blocker;
