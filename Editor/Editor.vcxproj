@@ -192,6 +192,7 @@
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_lua_bindings.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
     <ClCompile Include="vendor\imgui\widgets\ColoredDragFloat.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="GameProject.h" />
     <ClInclude Include="GameWidget.h" />
+    <ClInclude Include="imgui_lua_bindings.h" />
     <ClInclude Include="Inspector.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="FontUtils.h" />
@@ -252,6 +254,9 @@
     <ProjectReference Include="..\Engine\Engine\Engine.vcxproj">
       <Project>{d00a8ad5-d52f-412a-a67b-0eca2f5611c4}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vendor\imgui\imgui_iterator.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -175,6 +175,10 @@ void Editor::MainWindow::StartMainLoop() {
 		ImGuizmo::BeginFrame();
 
 		status = m_Layout->Render(*m_Context, *m_PresentationEngine);
+		
+		if (status == LayoutRenderStatus::SUCCESS) {
+			m_Context->render_imgui_tick();
+		}
 
 		ImGui::Render();
 		ImGui::EndFrame();

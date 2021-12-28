@@ -186,6 +186,9 @@
     <ClCompile Include="CodeEditor.cpp">
       <Filter>Исходные файлы\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_lua_bindings.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -326,5 +329,13 @@
     <ClInclude Include="CodeEditor.h">
       <Filter>Файлы заголовков\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="imgui_lua_bindings.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vendor\imgui\imgui_iterator.inl">
+      <Filter>imgui</Filter>
+    </None>
   </ItemGroup>
 </Project>

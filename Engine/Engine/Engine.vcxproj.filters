@@ -162,8 +162,8 @@
     <ClInclude Include="PhysicsUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScaleComponent.h">
-      <Filter>Header Files\BaseComponents</Filter>
+    <ClInclude Include="BaseComponents\ScaleComponent.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
