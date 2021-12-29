@@ -105,8 +105,10 @@ void VulkanInitializer::transform_component_changed(::entt::registry& registry, 
     const auto * childs = registry.try_get<Childs>(parent_entity);
     if (childs) {
         for (auto& child : childs->m_childs) {
-            registry.patch<TransformComponent>(child, [](auto& transform) {
-            });
+            if (registry.view<TransformComponent>().contains(child)) {
+                registry.patch<TransformComponent>(child, [](auto& transform) {
+                });
+            }
         }
     }
 

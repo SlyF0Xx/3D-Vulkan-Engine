@@ -1,7 +1,11 @@
 #include "Inspector.h"
 
 Editor::Inspector::Inspector(EDITOR_GAME_TYPE game)
-	: GameWidget(game), m_TagInspector(game), m_TransformInspector(game), m_ScriptInspector(game) {
+	: GameWidget(game), 
+	m_TagInspector(game), 
+	m_TransformInspector(game), 
+	m_ScriptInspector(game),
+	m_PhysicsInspector(game) {
 	m_SingleDispatcher = SceneInteractionSingleTon::GetDispatcher();
 
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
@@ -31,6 +35,7 @@ void Editor::Inspector::Render(bool* p_open, ImGuiWindowFlags flags) {
 	m_TagInspector.Render();
 	m_TransformInspector.Render();
 	m_ScriptInspector.Render();
+	m_PhysicsInspector.Render();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, Constants::EDITOR_WINDOW_PADDING);
 	const char* text = "Add Component";
@@ -62,6 +67,7 @@ void Editor::Inspector::SetContext(EDITOR_GAME_TYPE ctx) {
 	m_TagInspector.SetContext(ctx);
 	m_TransformInspector.SetContext(ctx);
 	m_ScriptInspector.SetContext(ctx);
+	m_PhysicsInspector.SetContext(ctx);
 
 	m_Selection = entt::null;
 }

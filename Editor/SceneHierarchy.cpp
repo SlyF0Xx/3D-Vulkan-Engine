@@ -16,7 +16,7 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 
 	m_Context->get_registry().each([&](auto entity) {
 		const auto& relation = m_Context->get_registry().try_get<Relation>(entity);
-		if (relation == nullptr) {
+		if (!relation) {
 			// Only parents or independent objects.
 			DrawEntityNode((ENTT_ID_TYPE) entity);
 		}
@@ -29,11 +29,11 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	auto textWidth = ImGui::CalcTextSize(text).x;
 
 	ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-	EDITOR_BEGIN_DISABLE_IF_RUNNING
+	EDITOR_BEGIN_DISABLE_IF_RUNNING;
 	if (ImGui::Button(text, {0.f, 0.f})) {
 		ImGui::OpenPopup(POPUP_ADD_ENTITY);
 	}
-	EDITOR_END_DISABLE_IF_RUNNING
+	EDITOR_END_DISABLE_IF_RUNNING;
 
 	if (ImGui::BeginPopup(POPUP_ADD_ENTITY)) {
 		for (const EditorCreatableEntity& entity : m_CreatableEntities) {
@@ -44,16 +44,22 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 
 	ImGui::PopStyleVar();
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+
 	if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-			
+
 			import_entity(m_Context->get_registry(), std::filesystem::path(filePathName));
 		}
 
 		ImGuiFileDialog::Instance()->Close();
 	}
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -107,6 +113,59 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	if (ImGui::IsItemClicked()) {
 		StopRenaming();
 		SelectOneNotify(entity);
+	}
+
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+		ImGui::SetDragDropPayload("DND_DEMO_NAME", &entity, sizeof(ENTT_ID_TYPE));
+		ImGui::Text(tag.c_str());
+		ImGui::EndDragDropSource();
+	}
+
+
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_NAME")) {
+			IM_ASSERT(payload->DataSize == sizeof(ENTT_ID_TYPE));
+			entt::entity payloadEntity = *(const entt::entity*) payload->Data;
+			entt::entity newParent = (entt::entity) entity;
+
+
+#if _DEBUG
+			printf("\nPAYLOAD: \n");
+			printf(std::to_string((ENTT_ID_TYPE) payloadEntity).c_str());
+			printf("\nENTITY: \n");
+			printf(std::to_string((ENTT_ID_TYPE) newParent).c_str());
+			printf("\n");
+#endif
+
+			entt::basic_view view = m_Context->get_registry().view<Relation>();
+
+			auto* payloadChildren = m_Context->get_registry().try_get<Childs>((entt::entity) payloadEntity);
+
+			bool isAttachable = true;
+
+			if (payloadChildren) {
+				for (const entt::entity& child : payloadChildren->m_childs) {
+					if (view.contains(child)) {
+						auto& relation = m_Context->get_registry().get<Relation>(child);
+						if (relation.m_parent == (entt::entity) payloadEntity) {
+							isAttachable = false;
+							break;
+						}
+					}
+				}
+			}
+
+
+			if (true) {
+				if (view.contains(payloadEntity)) {
+					rebind_entity(m_Context->get_registry(), payloadEntity, newParent);
+				} else {
+					m_Context->get_registry().emplace<Relation>((entt::entity) payloadEntity, (entt::entity) entity);
+				}
+				
+			}
+		}
+		ImGui::EndDragDropTarget();
 	}
 
 	bool isEntityDeleted = false;
@@ -184,13 +243,18 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 				created = create_debug_sphere_entity(m_Context->get_registry());
 				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::IMPORTABLE: {
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Model", ".fbx,.obj", ".");
+				// Always center this window when appearing.
+				ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+				ImGui::SetNextWindowSize({400.f, 600.f});
+				ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", "Choose Model", ".fbx,.obj", ".");
 				break;
 			}
 		}
 
 		if (m_Context->get_registry().valid(created)) {
-			std::string title = 
+			std::string title =
 				std::string(entity.Title) + std::string(" #") + std::to_string((ENTT_ID_TYPE) created);
 			m_Context->get_registry().emplace_or_replace<diffusion::TagComponent>(created, title);
 		}
@@ -222,13 +286,13 @@ void Editor::SceneHierarchy::StopRenaming() {
 void Editor::SceneHierarchy::SelectOneNotify(const ENTT_ID_TYPE& entity) {
 	m_SelectionContext = entity;
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
-	m_SingleDispatcher->dispatch({ SceneInteractType::SELECTED_ONE, entity });
+	m_SingleDispatcher->dispatch({SceneInteractType::SELECTED_ONE, entity});
 }
 
 void Editor::SceneHierarchy::ResetSelectionNotify() {
 	m_SelectionContext = ENTT_ID_TYPE(-1);
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
-	m_SingleDispatcher->dispatch({ SceneInteractType::RESET_SELECTION });
+	m_SingleDispatcher->dispatch({SceneInteractType::RESET_SELECTION});
 }
 
 void Editor::SceneHierarchy::InitContexed() {

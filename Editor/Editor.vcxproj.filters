@@ -189,6 +189,9 @@
     <ClCompile Include="vendor\imgui\imgui_lua_bindings.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsComponentInspector.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -331,6 +334,9 @@
     </ClInclude>
     <ClInclude Include="imgui_lua_bindings.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsComponentInspector.h">
+      <Filter>Файлы заголовков\Widgets\Inspector</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

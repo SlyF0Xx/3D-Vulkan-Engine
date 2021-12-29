@@ -7,6 +7,7 @@
 #include "GameWidget.h"
 #include "TagComponentInspector.h"
 #include "ScriptComponentInspector.h"
+#include "PhysicsComponentInspector.h"
 #include "TransformComponentInspector.h"
 
 #include "SceneInteraction.h"
@@ -26,6 +27,9 @@ namespace Editor {
 			TAG,
 			TRANSFORM,
 			SCRIPT,
+
+			// PHYSICS
+			PHYSICS_MASS,
 		};
 
 		const char* Title;
@@ -44,7 +48,7 @@ namespace Editor {
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
 		void SetContext(EDITOR_GAME_TYPE ctx) override;
 	public:
-		static inline constexpr const char* TITLE	= "Inspector";
+		static inline constexpr const char* TITLE = "Inspector";
 
 	private:
 		void DrawCreatableComponentNode(const EditorCreatableComponent& comp);
@@ -55,16 +59,21 @@ namespace Editor {
 #pragma region Inspectors
 		TagComponentInspector m_TagInspector;
 		ScriptComponentInspector m_ScriptInspector;
+		PhysicsComponentInspector m_PhysicsInspector;
 		TransformComponentInspector m_TransformInspector;
 #pragma endregion
 		SceneEventDispatcher m_SingleDispatcher;
 
 		static inline constexpr const char* POPUP_ADD_COMPONENT = "POPUP_ADD_COMPONENT";
 
-		EditorCreatableComponent m_CreatableComponents[3] = {
+		EditorCreatableComponent m_CreatableComponents[4] = {
 			EditorCreatableComponent("Tag Component", EditorCreatableComponent::EditorCreatableComponentType::TAG),
 			EditorCreatableComponent("Transform Component", EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM),
 			EditorCreatableComponent("Script Component", EditorCreatableComponent::EditorCreatableComponentType::SCRIPT),
+			EditorCreatableComponent("Physics Component", new EditorCreatableComponent[1] {
+				EditorCreatableComponent("Mass", EditorCreatableComponent::EditorCreatableComponentType::PHYSICS_MASS),
+				},
+			1),
 		};
 	};
 
