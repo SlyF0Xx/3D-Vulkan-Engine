@@ -139,7 +139,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 
 			entt::basic_view view = m_Context->get_registry().view<Relation>();
 
-			auto* payloadChildren = m_Context->get_registry().try_get<Childs>((entt::entity) payloadEntity);
+			/*auto* payloadChildren = m_Context->get_registry().try_get<Childs>((entt::entity) payloadEntity);
 
 			bool isAttachable = true;
 
@@ -153,7 +153,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 						}
 					}
 				}
-			}
+			}*/
 
 
 			if (true) {
