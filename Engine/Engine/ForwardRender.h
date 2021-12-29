@@ -44,7 +44,6 @@ class ForwardRender :
     vk::Pipeline m_debug_pipeline;
 
     Game& m_game;
-    entt::registry& m_registry;
 
     void InitializePipelineLayout();
 
@@ -66,7 +65,7 @@ class ForwardRender :
     void DestroyResources();
 
 public:
-    ForwardRender(Game& game, entt::registry & registry);
+    ForwardRender(Game& game);
     ~ForwardRender();
 
     void Update() override;

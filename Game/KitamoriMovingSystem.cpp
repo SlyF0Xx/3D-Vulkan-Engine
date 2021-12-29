@@ -24,10 +24,22 @@ void KitamoriMovingSystem::update_position(glm::vec3 direction)
         m_registry.get_or_emplace<edyn::dirty>(::entt::to_entity(m_registry, tag)).updated<edyn::position>();
     });*/
 
-    linkedSystem->addTranslation(direction);
+    this->translation += direction;// + translation + translation;
     //edyn::update(m_registry);
     //edyn::update(m_registry);
     //update_components();
+}
+
+void KitamoriMovingSystem::tick()
+{
+    auto saveTranslation = translation;
+    auto potential_linked_components = m_registry.view<const KitamoriLinkedTag>();
+    potential_linked_components.each([this](const KitamoriLinkedTag& tag) {
+        m_registry.get<edyn::position>(::entt::to_entity(m_registry, tag)) += {translation.x, translation.y, translation.z};
+        edyn::refresh<edyn::position>(m_registry, ::entt::to_entity(m_registry, tag));
+        });
+
+    translation -= saveTranslation;
 }
 
 } // namespace diffusion {

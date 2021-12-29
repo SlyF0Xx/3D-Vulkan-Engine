@@ -11,8 +11,8 @@
 
 #include "util.h"
 
-ForwardRender::ForwardRender(Game& game, entt::registry& registry)
-    : m_game(game), m_registry(registry)
+ForwardRender::ForwardRender(Game& game)
+    : m_game(game)
 {
     InitializePipelineLayout();
     InitializeRenderPass();
@@ -254,9 +254,9 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
     command_buffer.beginRenderPass(vk::RenderPassBeginInfo(m_render_pass, m_swapchain_data[i].m_framebuffer, vk::Rect2D({}, vk::Extent2D(m_game.get_presentation_engine().m_width, m_game.get_presentation_engine().m_height)), clear_values), vk::SubpassContents::eInline);
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
-    const auto * main_camera_component = m_registry.try_ctx<diffusion::MainCameraTag>();
+    const auto * main_camera_component = m_game.get_registry().try_ctx<diffusion::MainCameraTag>();
     if (main_camera_component) {
-        const auto& camera = m_registry.get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
+        const auto& camera = m_game.get_registry().get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 0, camera.m_descriptor_set, { {} });
     }
 
@@ -276,7 +276,7 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
         command_buffer.setStencilReference(vk::StencilFaceFlagBits::eFront, 0);
         command_buffer.setStencilReference(vk::StencilFaceFlagBits::eBack, 0);
 
-        auto unlit_view = m_registry.view<const diffusion::UnlitMaterialComponent,
+        auto unlit_view = m_game.get_registry().view<const diffusion::UnlitMaterialComponent,
             const diffusion::VulkanTransformComponent,
             const diffusion::VulkanSubMesh,
             const diffusion::SubMesh>(entt::exclude<diffusion::debug_tag>);
@@ -291,7 +291,7 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
 
                 if (unlit.m_reference != material_entity) {
                     material_entity = unlit.m_reference;
-                    const auto& unlit_material = m_registry.get<const diffusion::UnlitMaterial>(unlit.m_reference);
+                    const auto& unlit_material = m_game.get_registry().get<const diffusion::UnlitMaterial>(unlit.m_reference);
                     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 2, unlit_material.m_descriptor_set, { });
                 }
 
@@ -313,7 +313,7 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
         reinterpret_cast<PFN_vkCmdSetPrimitiveTopologyEXT>(static_cast<VkCommandBuffer>(command_buffer), VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         //command_buffer.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleList);
 
-        auto lit_view = m_registry.view<const diffusion::LitMaterialComponent,
+        auto lit_view = m_game.get_registry().view<const diffusion::LitMaterialComponent,
             const diffusion::VulkanTransformComponent,
             const diffusion::VulkanSubMesh,
             const diffusion::SubMesh>();
@@ -328,7 +328,7 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
 
                 if (lit.m_reference != material_entity) {
                     material_entity = lit.m_reference;
-                    const auto& lit_material = m_registry.get<const diffusion::LitMaterial>(lit.m_reference);
+                    const auto& lit_material = m_game.get_registry().get<const diffusion::LitMaterial>(lit.m_reference);
                     command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout, 2, lit_material.m_descriptor_set, { });
                 }
 
@@ -350,14 +350,14 @@ void ForwardRender::InitCommandBuffer(int i, const vk::CommandBuffer & command_b
     command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_debug_pipeline);
 
     if (main_camera_component) {
-        const auto& camera = m_registry.get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
+        const auto& camera = m_game.get_registry().get<const diffusion::VulkanCameraComponent>(main_camera_component->m_entity);
         command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_debug_layout, 0, camera.m_descriptor_set, { {} });
     }
 
 
 
     {
-        auto unlit_view = m_registry.view<const diffusion::VulkanTransformComponent,
+        auto unlit_view = m_game.get_registry().view<const diffusion::VulkanTransformComponent,
             const diffusion::VulkanSubMesh,
             const diffusion::SubMesh,
             const diffusion::debug_tag>();
