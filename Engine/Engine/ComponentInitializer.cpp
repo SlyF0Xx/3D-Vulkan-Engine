@@ -56,6 +56,7 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 			const int ret = luaL_dostring(lua_script->m_state, script.m_content.c_str());
 			if (ret != LUA_OK) {
 				const char* str = lua_tostring(lua_script->m_state, -1);
+				std::cerr << str << std::endl;
 				lua_pop(lua_script->m_state, 1);
 			}
 		}
