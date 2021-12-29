@@ -68,6 +68,15 @@ namespace Editor {
 		void SelectOneNotify(const ENTT_ID_TYPE& entity);
 		void ResetSelectionNotify();
 
+		/// <summary>
+		/// Check if target exists as child in origin.
+		/// Search is recursive.
+		/// </summary>
+		/// <param name="origin">Source entity.</param>
+		/// <param name="target">Search entity.</param>
+		/// <returns>True, if exists.</returns>
+		bool HasChild(const entt::entity& origin, const entt::entity& target);
+
 		void InitContexed() override;
 
 	public:
@@ -100,6 +109,8 @@ namespace Editor {
 		SceneEventDispatcher m_SingleDispatcher;
 		
 		ENTT_ID_TYPE m_SelectionContext;
+
+		entt::entity m_UngroupEntity = entt::null;
 
 		bool m_IsRenameInputFocused = false;
 		bool m_IsRenaming = false;

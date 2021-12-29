@@ -22,6 +22,11 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 		}
 	});
 
+	if (m_Context->get_registry().valid(m_UngroupEntity)) {
+		unbind_entity(m_Context->get_registry(), m_UngroupEntity);
+		m_UngroupEntity = entt::null;
+	}
+
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, Constants::EDITOR_WINDOW_PADDING);
 
 	const char* text = "Add Entity";
@@ -90,6 +95,8 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		return;
 	} // Renaming entity.
 
+	entt::basic_view view = m_Context->get_registry().view<Relation>();
+
 	auto tagComponent = m_Context->get_registry().try_get<TagComponent>((entt::entity) entity);
 	std::string tag;
 	if (tagComponent == nullptr) {
@@ -102,7 +109,8 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	treeNodeFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 	auto* children = m_Context->get_registry().try_get<Childs>((entt::entity) entity);
-	if (children) {
+	bool hasChildren = children && children->m_childs.size() > 0;
+	if (hasChildren) {
 		treeNodeFlags |= ImGuiTreeNodeFlags_OpenOnArrow;
 	} else {
 		treeNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -116,20 +124,18 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	}
 
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-		ImGui::SetDragDropPayload("DND_DEMO_NAME", &entity, sizeof(ENTT_ID_TYPE));
+		ImGui::SetDragDropPayload("Editor_SceneHierarchy_Payload", &entity, sizeof(ENTT_ID_TYPE));
 		ImGui::Text(tag.c_str());
 		ImGui::EndDragDropSource();
 	}
 
-
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_NAME")) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Editor_SceneHierarchy_Payload")) {
 			IM_ASSERT(payload->DataSize == sizeof(ENTT_ID_TYPE));
 			entt::entity payloadEntity = *(const entt::entity*) payload->Data;
 			entt::entity newParent = (entt::entity) entity;
 
-
-#if _DEBUG
+#if _DEBUG && 0
 			printf("\nPAYLOAD: \n");
 			printf(std::to_string((ENTT_ID_TYPE) payloadEntity).c_str());
 			printf("\nENTITY: \n");
@@ -137,32 +143,12 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			printf("\n");
 #endif
 
-			entt::basic_view view = m_Context->get_registry().view<Relation>();
-
-			/*auto* payloadChildren = m_Context->get_registry().try_get<Childs>((entt::entity) payloadEntity);
-
-			bool isAttachable = true;
-
-			if (payloadChildren) {
-				for (const entt::entity& child : payloadChildren->m_childs) {
-					if (view.contains(child)) {
-						auto& relation = m_Context->get_registry().get<Relation>(child);
-						if (relation.m_parent == (entt::entity) payloadEntity) {
-							isAttachable = false;
-							break;
-						}
-					}
-				}
-			}*/
-
-
-			if (true) {
+			if (!HasChild(payloadEntity, newParent)) {
 				if (view.contains(payloadEntity)) {
 					rebind_entity(m_Context->get_registry(), payloadEntity, newParent);
 				} else {
-					m_Context->get_registry().emplace<Relation>((entt::entity) payloadEntity, (entt::entity) entity);
+					m_Context->get_registry().emplace<Relation>(payloadEntity, newParent);
 				}
-				
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -180,6 +166,10 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			StartRenaming(entity, tag.c_str());
 		}
 
+		if (view.contains((entt::entity) entity) && ImGui::MenuItem("Ungroup")) {
+			m_UngroupEntity = (entt::entity) entity;
+		}
+
 		ImGui::PushStyleColor(ImGuiCol_Text, Constants::ERROR_COLOR);
 		if (ImGui::MenuItem("Delete")) {
 			isEntityDeleted = true;
@@ -189,7 +179,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 		ImGui::EndPopup();
 	}
 
-	if (isOpened && children) {
+	if (isOpened && hasChildren) {
 		for (const auto& child : children->m_childs) {
 			DrawEntityNode((ENTT_ID_TYPE) child);
 		}
@@ -204,8 +194,6 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			m_Context->get_registry().destroy((entt::entity) entity);
 		}
 	}
-
-
 }
 
 void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entity) {
@@ -293,6 +281,26 @@ void Editor::SceneHierarchy::ResetSelectionNotify() {
 	m_SelectionContext = ENTT_ID_TYPE(-1);
 	IM_ASSERT(&m_SingleDispatcher != nullptr);
 	m_SingleDispatcher->dispatch({SceneInteractType::RESET_SELECTION});
+}
+
+bool Editor::SceneHierarchy::HasChild(const entt::entity& origin, const entt::entity& target) {
+	auto* children = m_Context->get_registry().try_get<Childs>((entt::entity) origin);
+	bool hasChildren = children && children->m_childs.size() > 0;
+	if (!hasChildren) {
+		return false;
+	}
+
+	if (children->m_childs.contains(target)) {
+		return true;
+	}
+
+	for (const entt::entity& child : children->m_childs) {
+		bool result = HasChild(child, target);
+		if (result) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void Editor::SceneHierarchy::InitContexed() {

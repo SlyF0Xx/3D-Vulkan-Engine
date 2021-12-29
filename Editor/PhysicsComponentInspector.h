@@ -18,8 +18,12 @@ namespace Editor {
 		void OnRemoveComponent() override;
 
 		bool IsRenderable() const override;
+
+		bool HasMass() const;
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT = false;
+
+		float m_MassInKg = 0.01f;
 
 		SceneEventDispatcher m_SceneDispatcher;
 	};
