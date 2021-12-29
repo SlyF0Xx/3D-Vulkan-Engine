@@ -52,10 +52,20 @@ void Editor::Scene::Load(std::filesystem::path& source) {
 	if (m_HasData) {
 		std::string fileName = m_SceneData["FileName"];
 		m_Context->load_scene(source / fileName);
+
+		RefreshImGuiBindings();
 	} else {
 		FillBasic();
 	}
 	m_IsEmpty = false;
+}
+
+void Editor::Scene::RefreshImGuiBindings() {
+	m_Context->get_registry()
+		.view<diffusion::ScriptComponentState>()
+		.each([&](diffusion::ScriptComponentState state) {
+		LoadImguiBindings(state.m_state);
+	});
 }
 
 std::string Editor::Scene::GetFileName() const {

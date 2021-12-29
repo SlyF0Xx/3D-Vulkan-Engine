@@ -687,7 +687,7 @@ void Game::render_imgui_tick() {
     if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(1)) {
         if (!m_paused) {
             m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
-                m_component_initializer.add_to_execution(m_registry, entt::to_entity(m_registry, script));
+                m_component_initializer->add_to_execution(m_registry, entt::to_entity(m_registry, script));
             });
 
             m_executor.run(m_taskflow);

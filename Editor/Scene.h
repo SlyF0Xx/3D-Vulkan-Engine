@@ -8,12 +8,15 @@
 #include <BaseComponents/TagComponent.h>
 #include <BaseComponents/DebugComponent.h>
 #include <BaseComponents/CameraComponent.h>
+#include <BaseComponents/ScriptComponent.h>
 #include <BaseComponents/PossessedComponent.h>
 #include <BaseComponents/PointLightComponent.h>
 #include <BaseComponents/DirectionalLightComponent.h>
 
 #include <Entities/CubeEntity.h>
 #include <Entities/DirectionalLightEntity.h>
+
+#include "imgui_lua_bindings.h"
 
 namespace Editor {
 
@@ -29,6 +32,8 @@ namespace Editor {
 		void Save(std::filesystem::path& source);
 
 		void Load(std::filesystem::path& source);
+
+		void RefreshImGuiBindings();
 
 		std::string GetFileName() const;
 
