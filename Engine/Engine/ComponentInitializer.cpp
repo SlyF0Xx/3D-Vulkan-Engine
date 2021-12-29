@@ -43,6 +43,15 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 				registry.emplace<ScriptComponentState>(parent_entity, diffusion::create_lua_state(registry));
 			}
 
+			if (!lua_script->m_is_initialized) {
+				lua_script->m_is_initialized = true;
+				auto ret = luabridge::getGlobal(lua_script->m_state, "on_start")();
+				if (!ret.wasOk()) {
+					std::string err = ret.errorMessage();
+					std::cerr << err;
+				}
+			}
+
 			// state is local
 			const int ret = luaL_dostring(lua_script->m_state, script.m_content.c_str());
 			if (ret != LUA_OK) {

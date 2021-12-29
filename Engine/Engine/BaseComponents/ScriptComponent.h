@@ -24,6 +24,7 @@ struct ScriptComponent {
 
 struct ScriptComponentState {
 	lua_State* m_state;
+	bool m_is_initialized = false;
 };
 
 lua_State* create_lua_state(entt::registry & registry);
