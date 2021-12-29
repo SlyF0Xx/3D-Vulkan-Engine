@@ -20,5 +20,7 @@ struct Childs
 };
 
 void destroy_entity(entt::registry& registry, entt::entity & entity);
+void unbind_entity(entt::registry& registry, entt::entity& entity);
+void rebind_entity(entt::registry& registry, entt::entity& entity, entt::entity& new_parent);
 
 }
