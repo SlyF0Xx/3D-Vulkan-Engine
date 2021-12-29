@@ -135,7 +135,7 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 			entt::entity payloadEntity = *(const entt::entity*) payload->Data;
 			entt::entity newParent = (entt::entity) entity;
 
-#if _DEBUG
+#if _DEBUG && 0
 			printf("\nPAYLOAD: \n");
 			printf(std::to_string((ENTT_ID_TYPE) payloadEntity).c_str());
 			printf("\nENTITY: \n");
