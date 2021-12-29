@@ -72,7 +72,17 @@ namespace Editor {
 			"-- function on_trigger()\n"
 			"--     tv = get_entity_by_name(\"Name\");\n"
 			"--     local_translate(tv, 0, 0, 50);\n"
-			"-- end\n";
+			"-- end\n"
+			"-- \n"
+			"-- UI Interactions:\n"
+			"-- Create basic window:\n"
+			"-- _, b_open = imgui.Begin(\"Title\", b_open)\n"
+			"-- imgui.TextUnformatted(\"Sample Text\")\n"
+			"-- imgui.End()\n"
+			"-- \n"
+			"-- ImGui features:\n"
+			"-- imgui.ShowDemoWindow()\n"
+			"-- \n";
 
 	}
 

@@ -13,6 +13,8 @@
 #include "ViewportSnapInteraction.h"
 #include "Constants.h"
 
+#include "imgui_lua_bindings.h"
+
 namespace Editor {
 
 	using namespace diffusion;

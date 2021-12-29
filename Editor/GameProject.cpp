@@ -106,6 +106,7 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	}
 
 	if (m_IsSourceFolderChoosing) {
+		ImGui::SetNextWindowSize({400.f, 600.f});
 		ImGuiFileDialog::Instance()->OpenModal("ChooseDir", "Choose source folder", nullptr, ".");
 
 		if (ImGuiFileDialog::Instance()->Display("ChooseDir")) {
@@ -128,6 +129,7 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	}
 
 	if (m_IsProjectFileChoosing) {
+		ImGui::SetNextWindowSize({400.f, 600.f});
 		ImGuiFileDialog::Instance()->OpenModal("ChooseFile", "Choose project file", ".diffusion", ".");
 
 		if (ImGuiFileDialog::Instance()->Display("ChooseFile")) {

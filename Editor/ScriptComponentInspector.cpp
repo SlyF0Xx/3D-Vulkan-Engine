@@ -10,11 +10,21 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 		if (!m_Component) {
 			return;
 		}
+		m_SizeStr = GetSize();
 	});
 
 	m_SceneDispatcher->appendListener(SceneInteractType::RESET_SELECTION, [&](const SceneInteractEvent& e) {
 		m_Selection = entt::null;
 		m_Component = nullptr;
+		m_SizeStr = "";
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_SCRIPT, [&](const SceneInteractEvent& e) {
+		m_SizeStr = GetSize();
+	});
+
+	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_ALL_SCTIPTS, [&](const SceneInteractEvent& e) {
+		m_SizeStr = GetSize();
 	});
 }
 
@@ -25,7 +35,7 @@ void Editor::ScriptComponentInspector::RenderContent() {
 		m_SceneDispatcher->dispatch({SceneInteractType::EDIT_SCRIPT_COMPONENT, (ENTT_ID_TYPE) m_Selection});
 	}
 	ImGui::SameLine();
-	ImGui::Text(GetSize().c_str());
+	ImGui::Text(m_SizeStr.c_str());
 	ImGui::EndGroupPanel();
 }
 

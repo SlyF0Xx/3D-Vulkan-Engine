@@ -642,16 +642,6 @@ void Game::render_tick()
 
     m_SwapChainRebuild = false;
 
-    if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(100)) {
-        if (!m_paused) {
-            m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
-                m_component_initializer->add_to_execution(m_registry, entt::to_entity(m_registry, script));
-            });
-        }
-
-        m_script_time_point = std::chrono::steady_clock::now();
-    }
-
     std::optional<tf::Task> physics;
     if (std::chrono::steady_clock::now() - m_phys_time_point > std::chrono::milliseconds(1)) {
         if (!m_paused) {
@@ -691,6 +681,24 @@ void Game::render_tick()
     if (m_SwapChainRebuild) {
         throw vk::OutOfDateKHRError("rebuild");
     }
+}
+
+void Game::render_imgui_tick() {
+    if (std::chrono::steady_clock::now() - m_script_time_point > std::chrono::milliseconds(1)) {
+        if (!m_paused) {
+            m_registry.view<diffusion::ScriptComponent>().each([this](const diffusion::ScriptComponent& script) {
+                m_component_initializer->add_to_execution(m_registry, entt::to_entity(m_registry, script));
+            });
+
+            m_executor.run(m_taskflow);
+            m_executor.wait_for_all();
+            m_tasks.clear();
+            m_taskflow.clear();
+        }
+
+        m_script_time_point = std::chrono::steady_clock::now();
+    }
+    
 }
 
 void Game::run()

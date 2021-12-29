@@ -23,6 +23,8 @@ namespace Editor {
 	private:
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT = false;
 
+		std::string m_SizeStr;
+
 		SceneEventDispatcher m_SceneDispatcher;
 
 		diffusion::ScriptComponent* m_Component = nullptr;

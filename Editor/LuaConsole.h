@@ -17,6 +17,8 @@ extern "C" {
 
 #include "GameWidget.h"
 
+#include "imgui_lua_bindings.h"
+
 using namespace luabridge;
 
 namespace Editor {

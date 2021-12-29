@@ -34,6 +34,10 @@ Editor::MainLayout::MainLayout() :
 			MakeTabVisible(EditorViewport::TITLE);
 	});
 
+	m_SceneDispatcher->appendListener(Editor::SceneInteractType::STOP, [&](const Editor::SceneInteractEvent& event) {
+		GameProject::Instance()->GetActiveScene()->RefreshImGuiBindings();
+	});
+
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_SCRIPT, [&](const Editor::SceneInteractEvent& event) {
 		m_CodeEditors[m_ScriptEditingEntity]->Save();
 	});

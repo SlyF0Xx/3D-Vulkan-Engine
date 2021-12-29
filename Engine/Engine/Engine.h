@@ -278,6 +278,7 @@ public:
     void save_scene(const std::filesystem::path & path = "sample_scene.json");
 
     void render_tick();
+    void render_imgui_tick();
     void run();
     void pause();
     void resume();

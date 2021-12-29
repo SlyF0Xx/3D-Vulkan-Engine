@@ -38,6 +38,8 @@ Editor::LuaConsole::LuaConsole(EDITOR_GAME_TYPE vulkan) : Editor::GameWidget(vul
 	getGlobalNamespace(m_State)
 		.beginClass<entt::entity>("entity")
 		.endClass();
+
+	LoadImguiBindings(m_State);
 	/*
 	.beginClass<diffusion::TransformComponent>("transform")
 	.endClass()
@@ -125,6 +127,7 @@ void Editor::LuaConsole::Render() {
 
 void Editor::LuaConsole::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	if (!ImGui::Begin(TITLE, p_open, flags)) {
 		ImGui::End();
 		return;
@@ -202,7 +205,7 @@ void Editor::LuaConsole::Render(bool* p_open, ImGuiWindowFlags flags) {
 	// If your items are of variable height:
 	// - Split them into same height items would be simpler and facilitate random-seeking into your list.
 	// - Consider using manual call to IsRectVisible() and skipping extraneous decoration from your items.
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+	//ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 	if (copy_to_clipboard)
 		ImGui::LogToClipboard();
 	for (int i = 0; i < Items.Size; i++) {
@@ -215,11 +218,11 @@ void Editor::LuaConsole::Render(bool* p_open, ImGuiWindowFlags flags) {
 		ImVec4 color;
 		bool has_color = false;
 		if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; } else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); has_color = true; }
-		if (has_color)
-			ImGui::PushStyleColor(ImGuiCol_Text, color);
+		//if (has_color)
+		//	ImGui::PushStyleColor(ImGuiCol_Text, color);
 		ImGui::TextUnformatted(item);
-		if (has_color)
-			ImGui::PopStyleColor();
+	/*	if (has_color)
+			ImGui::PopStyleColor();*/
 	}
 	if (copy_to_clipboard)
 		ImGui::LogFinish();
@@ -228,7 +231,7 @@ void Editor::LuaConsole::Render(bool* p_open, ImGuiWindowFlags flags) {
 		ImGui::SetScrollHereY(1.0f);
 	ScrollToBottom = false;
 
-	ImGui::PopStyleVar();
+	//ImGui::PopStyleVar();
 	ImGui::EndChild();
 	ImGui::Separator();
 
@@ -249,6 +252,7 @@ void Editor::LuaConsole::Render(bool* p_open, ImGuiWindowFlags flags) {
 	if (reclaim_focus)
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 
+	//ImGui::PopStyleVar();
 	ImGui::End();
 }
 
@@ -284,8 +288,7 @@ void Editor::LuaConsole::ExecCommand(const char* command_line) {
 
 		LuaRef reference = getGlobal(m_State, value.c_str());
 		if (!reference.isNil()) {
-			std::string var_str = reference.cast<std::string>();
-			AddLog(var_str.c_str());
+			AddLog(reference.tostring().c_str());
 		} else {
 			AddLog(value.c_str());
 		}
@@ -295,6 +298,12 @@ void Editor::LuaConsole::ExecCommand(const char* command_line) {
 			const char* str = lua_tostring(m_State, -1);
 			lua_pop(m_State, 1);
 			AddLog(str);
+		}
+
+		static int ojfd = 0;
+		if (ojfd == 0) {
+			//luaL_dostring(m_State, "imgui.End()");
+			ojfd++;
 		}
 
 

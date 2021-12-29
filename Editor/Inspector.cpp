@@ -96,8 +96,13 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 
 	if (ImGui::IsItemClicked() && !comp.Children) {
 		switch (comp.Type) {
-			case EditorCreatableComponent::EditorCreatableComponentType::SCRIPT:
-				m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, std::string(Constants::SCRIPT_TEMPLATE));
+			case EditorCreatableComponent::EditorCreatableComponentType::SCRIPT: {
+				m_Context->get_registry().emplace<diffusion::ScriptComponent>(m_Selection, 
+					std::string(Constants::SCRIPT_TEMPLATE));
+				ScriptComponentState luaScript = m_Context->get_registry().get<ScriptComponentState>(m_Selection);
+				LoadImguiBindings(luaScript.m_state);
+				m_Context->get_registry().emplace_or_replace<ScriptComponentState>(m_Selection, luaScript.m_state);
+			}
 				break;
 			case EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM:
 				m_Context->get_registry().emplace_or_replace<diffusion::TransformComponent>(m_Selection);
