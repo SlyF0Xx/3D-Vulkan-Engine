@@ -193,7 +193,6 @@
     <ClInclude Include="Core\Base.h" />
     <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Entities\BTEntity.h" />
     <ClInclude Include="Entities\CubeEntity.h" />
     <ClInclude Include="Entities\DebugCube.h" />
     <ClInclude Include="Entities\DirectionalLightEntity.h" />
@@ -225,7 +224,6 @@
     <ClCompile Include="ComponentInitializer.cpp" />
     <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="Entities\BTEntity.cpp" />
     <ClCompile Include="Entities\CubeEntity.cpp" />
     <ClCompile Include="Entities\DebugCube.cpp" />
     <ClCompile Include="Entities\DirectionalLightEntity.cpp" />
