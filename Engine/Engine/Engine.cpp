@@ -601,7 +601,7 @@ void Game::load_scene(const std::filesystem::path& path)
         edyn::position, edyn::orientation, edyn::mass, edyn::mass_inv, edyn::inertia, edyn::inertia_inv, edyn::inertia_world_inv,
         edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
-        edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter,
+        edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
 
         diffusion::debug_tag /* should be ignored in runtime*/ >(json_in);
 
@@ -625,7 +625,7 @@ void Game::save_scene(const std::filesystem::path& path)
         edyn::position, edyn::orientation, edyn::mass, edyn::mass_inv, edyn::inertia, edyn::inertia_inv, edyn::inertia_world_inv,
         edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
-        edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter,
+        edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
 
         diffusion::debug_tag /* should be ignored in runtime*/>(output);
     output.Close();
@@ -706,6 +706,11 @@ void Game::run()
     m_paused = false;
     m_stopped = false;
 
+    m_registry.visit([](const entt::type_info & type) {
+        std::cerr << type.name() << std::endl;
+    });
+    std::cerr << std::endl << std::endl << std::endl << std::endl;
+
     save_scene("scene.tmp");
 }
 
@@ -728,16 +733,27 @@ void Game::stop()
     auto lights = m_registry.ctx<diffusion::VulkanDirectionalLights>();
     m_device.freeDescriptorSets(m_descriptor_pool, { lights.m_lights_descriptor_set });
 
+    // Finish.
+    edyn::detach(m_registry);
+    edyn::deinit();
+
     m_registry = entt::registry();
     m_initializer.reset(new diffusion::VulkanInitializer(*this));
     m_component_initializer.reset(new diffusion::ComponentInitializer(*this));
     m_physics_system.reset(new diffusion::PhysicsSystem(*this));
+    edyn::init();
     edyn::attach(m_registry);
     edyn::set_fixed_dt(m_registry, 0.014);
 
     m_initialized = false;
     load_scene("scene.tmp");
     m_initialized = true;
+    
+    m_registry.view<edyn::graph_node>().each([this](const edyn::graph_node& node) {
+        //auto non_connecting = def.kind != rigidbody_kind::rb_dynamic;
+        bool is_dynamic = m_registry.any_of<edyn::dynamic_tag>(entt::to_entity(m_registry, node));
+        auto node_index = m_registry.ctx<edyn::entity_graph>().insert_node(entt::to_entity(m_registry, node), !is_dynamic);
+    });
 }
 
 void Game::Exit()
