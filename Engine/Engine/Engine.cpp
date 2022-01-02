@@ -126,7 +126,7 @@ Game::Game()
 {
     m_initializer = std::make_unique<diffusion::VulkanInitializer>(*this);
     m_component_initializer = std::make_unique<diffusion::ComponentInitializer>(*this);
-    m_physics_system = std::make_unique<diffusion::PhysicsSystem>(m_registry);
+    m_physics_system = std::make_unique<diffusion::PhysicsSystem>(*this);
 
     m_registry.clear();
     vk::ApplicationInfo application_info("Lab1", 1, "Engine", 1, VK_API_VERSION_1_2);
@@ -731,7 +731,7 @@ void Game::stop()
     m_registry = entt::registry();
     m_initializer.reset(new diffusion::VulkanInitializer(*this));
     m_component_initializer.reset(new diffusion::ComponentInitializer(*this));
-    m_physics_system.reset(new diffusion::PhysicsSystem(m_registry));
+    m_physics_system.reset(new diffusion::PhysicsSystem(*this));
     edyn::attach(m_registry);
     edyn::set_fixed_dt(m_registry, 0.014);
 

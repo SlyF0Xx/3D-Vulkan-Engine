@@ -1,19 +1,51 @@
 #include "PhysicsSystem.h"
 
 #include <edyn/edyn.hpp>
-#include <edyn/time/time.hpp>
-#include "edyn/comp/tree_resident.hpp"
+//#include <edyn/time/time.hpp>
+//#include "edyn/comp/tree_resident.hpp"
+#include "../Engine.h"
+//#include <edyn/time/time.hpp>
+//#include "edyn/comp/tree_resident.hpp"
+
 
 #include "../Entities/ImportableEntity.h"
 #include "../BaseComponents/ScaleComponent.h"
 //#include "edyn/collision/contact_point.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 namespace diffusion {
 
-PhysicsSystem::PhysicsSystem(::entt::registry& registry)
+PhysicsSystem::PhysicsSystem(Game& game)
+    : m_game(game)
 {
-    registry.on_update<edyn::position>().connect<&PhysicsSystem::update_phys_component>(*this);
-    registry.on_construct<edyn::contact_point>().connect<&PhysicsSystem::on_detect_collision>(*this);
+    m_game.get_registry().on_update<edyn::position>().connect<&PhysicsSystem::update_phys_component>(*this);
+    m_game.get_registry().on_update<TransformComponent>().connect<&PhysicsSystem::update_transform>(*this);
+    m_game.get_registry().on_construct<edyn::contact_point>().connect<&PhysicsSystem::on_detect_collision>(*this);
+}
+
+void PhysicsSystem::update_transform(::entt::registry& registry, ::entt::entity parent_entity)
+{
+    if (!m_game.m_paused) {
+        return;
+    }
+    
+    auto & transform = registry.get<TransformComponent>(parent_entity);
+    glm::vec3 scale;
+    glm::quat rotation;
+    glm::vec3 translation;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    glm::decompose(diffusion::calculate_global_world_matrix(registry, transform), scale, rotation, translation, skew, perspective);
+
+    auto * physics_position = registry.try_get<edyn::position>(parent_entity);
+    if (!physics_position) {
+        return;
+    }
+
+    *physics_position = { translation.x, translation.y, translation.z };
 }
 
 void PhysicsSystem::update_phys_component(::entt::registry& registry, ::entt::entity parent_entity)
