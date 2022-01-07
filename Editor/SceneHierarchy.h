@@ -29,6 +29,7 @@ namespace Editor {
 	struct EditorCreatableEntity {
 		enum class EditorCreatableEntityType {
 			UNDEFINED,
+			EMPTY,
 
 			PRIMITIVE_CUBE,
 			PRIMITIVE_PLANE,
@@ -85,7 +86,8 @@ namespace Editor {
 	private:
 		static inline constexpr const char* POPUP_ADD_ENTITY = "POPUP_ADD_ENTITY";
 
-		EditorCreatableEntity m_CreatableEntities[4] = {
+		EditorCreatableEntity m_CreatableEntities[5] = {
+			EditorCreatableEntity("Empty", EditorCreatableEntity::EditorCreatableEntityType::EMPTY),
 			EditorCreatableEntity("Primitives", 
 				new EditorCreatableEntity[2] {
 					EditorCreatableEntity("Cube", EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_CUBE),

@@ -57,6 +57,9 @@ bool Editor::ScriptComponentInspector::IsRenderable() const {
 }
 
 std::string Editor::ScriptComponentInspector::GetSize() const {
+	if (!IsRenderable()) {
+		return "";
+	}
 	std::string representation = " bytes";
 	size_t size = m_Component->m_content.length();
 

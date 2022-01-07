@@ -10,8 +10,9 @@ void Editor::BaseComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 }
 
 void Editor::BaseComponentInspector::Render() {
+	bool* close = GameProject::Instance()->IsRunning() ? nullptr : &m_IsVisibleComponent;
 	if (IsRenderable()) {
-		if (ImGui::CollapsingHeader(GetTitle(), &m_IsVisibleComponent, ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(GetTitle(), close, ImGuiTreeNodeFlags_DefaultOpen)) {
 			/*ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 			ImGui::BeginChild(GetTitle(), ImVec2(0, 0), ImGuiWindowFlags_AlwaysAutoResize);*/
 			EDITOR_BEGIN_DISABLE_IF_RUNNING

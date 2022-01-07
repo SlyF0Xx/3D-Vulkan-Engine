@@ -210,6 +210,9 @@ void Editor::SceneHierarchy::DrawCreatableEntityNode(EditorCreatableEntity entit
 	if (ImGui::IsItemClicked() && !entity.Children) {
 		entt::entity created = entt::null;
 		switch (entity.Type) {
+			case EditorCreatableEntity::EditorCreatableEntityType::EMPTY:
+				created = m_Context->get_registry().create();
+				break;
 			case EditorCreatableEntity::EditorCreatableEntityType::PRIMITIVE_CUBE:
 				created = create_cube_entity_unlit(m_Context->get_registry());
 				break;

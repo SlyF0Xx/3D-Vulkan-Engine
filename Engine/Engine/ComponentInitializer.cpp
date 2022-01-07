@@ -1,5 +1,7 @@
 #include "ComponentInitializer.h"
 
+#include <chrono>
+
 #include "Engine.h"
 #include "BaseComponents/Relation.h"
 #include "BaseComponents/ScriptComponent.h"
@@ -38,26 +40,45 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 	m_game.get_tasks().push_back(m_game.get_taskflow().emplace(  // create four tasks
 		[this, &registry, parent_entity]() {
 			const auto& script = registry.get<ScriptComponent>(parent_entity);
-			auto * lua_script = registry.try_get<ScriptComponentState>(parent_entity);
-			if (!lua_script) {
+
+			if (!registry.try_get<ScriptComponentState>(parent_entity)) {
 				registry.emplace<ScriptComponentState>(parent_entity, diffusion::create_lua_state(registry));
 			}
+			const ScriptComponentState& lua_script = registry.get<ScriptComponentState>(parent_entity);
 
-			if (!lua_script->m_is_initialized) {
-				lua_script->m_is_initialized = true;
-				auto ret = luabridge::getGlobal(lua_script->m_state, "on_start")();
+			// state is local
+			const int ret = luaL_dostring(lua_script.m_state, script.m_content.c_str());
+			if (ret != LUA_OK) {
+				const char* str = lua_tostring(lua_script.m_state, -1);
+				std::cerr << str << std::endl;
+				lua_pop(lua_script.m_state, 1);
+			}
+
+			auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+			if (!lua_script.m_is_initialized) {
+				//luaL_dostring(lua_script.m_state, script.m_content.c_str());
+				//lua_pcall(lua_script.m_state, 0, 0, 0);
+
+				LuaRef func = luabridge::getGlobal(lua_script.m_state, "on_start");
+				auto ret = func(time);
 				if (!ret.wasOk()) {
 					std::string err = ret.errorMessage();
 					std::cerr << err;
 				}
+
+				registry.patch<ScriptComponentState>(parent_entity, [&](ScriptComponentState& state) {
+					state.m_is_initialized = true;
+				});
 			}
 
-			// state is local
-			const int ret = luaL_dostring(lua_script->m_state, script.m_content.c_str());
-			if (ret != LUA_OK) {
-				const char* str = lua_tostring(lua_script->m_state, -1);
-				std::cerr << str << std::endl;
-				lua_pop(lua_script->m_state, 1);
+			{
+				LuaRef func = luabridge::getGlobal(lua_script.m_state, "on_update");
+				LuaResult ret = func(time);
+				if (!ret.wasOk()) {
+					std::string err = ret.errorMessage();
+					std::cerr << err;
+				}
 			}
 		}
 	));

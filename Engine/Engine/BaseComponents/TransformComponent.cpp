@@ -28,10 +28,10 @@ glm::mat4 create_matrix_by_location_target(
 {
 	const glm::vec3 view_vector = glm::normalize(target - position);
 
-	auto quat = glm::rotation(view_vector, glm::vec3(0, 1, 0));
+	auto quat = glm::rotation(glm::vec3(0, 1, 0), view_vector);
 	glm::vec3 euler = glm::eulerAngles(quat);
 
-	return create_matrix(position, glm::vec3(-euler.x, -euler.y, -euler.z));
+	return create_matrix(position, glm::vec3(euler.x, euler.y, euler.z));
 }
 
 glm::mat4 create_matrix(

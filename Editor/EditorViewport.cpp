@@ -534,6 +534,10 @@ void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 	if (!m_Selection || m_Selection == -1)
 		return;
 
+	if (!m_Context->get_registry().valid((entt::entity) m_Selection)) {
+		return;
+	}
+
 	auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 	auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
 	auto& camera_transform = m_Context->get_registry().get<diffusion::TransformComponent>(mainCameraEntity.m_entity);

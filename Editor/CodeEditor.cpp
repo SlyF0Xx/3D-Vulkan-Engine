@@ -23,7 +23,6 @@ void Editor::CodeEditor::SetSelection(entt::entity entity) {
 }
 
 void Editor::CodeEditor::Save() {
-	printf(m_TextEditor.GetText().c_str());
 	m_Context->get_registry().emplace_or_replace<diffusion::ScriptComponent>(m_Selection, m_TextEditor.GetText());
 }
 
