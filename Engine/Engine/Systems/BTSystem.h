@@ -5,7 +5,8 @@ class BTSystem
 {
 public:
     BTSystem(::entt::registry& registry);
-    void tick(int deltaSeconds);
+    ~BTSystem();
+    void tick(float deltaSeconds);
 private:
     ::entt::registry & m_registry;
 };

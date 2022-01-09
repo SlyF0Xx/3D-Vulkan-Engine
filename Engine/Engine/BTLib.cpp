@@ -1,342 +1,72 @@
 ﻿#include "BTLib.h"
 
-// Sequence
-BehaviourState Sequence::tick(float delta)
+void BehaviourActionFunctions::OnInit(BehaviourAction& action, diffusion::ScriptComponentState& script)
 {
-    const auto State = composites[CurrentTaskIndex]->tick(delta);
-    if (State != BehaviourState::Running)
-    {
-        composites[CurrentTaskIndex]->onFinish();
-    }
-    if (State == BehaviourState::Succeeded)
-    {
-        CurrentTaskIndex++;
-        if (CurrentTaskIndex < composites.size())
-        {
-            composites[CurrentTaskIndex]->onInit();
-            return BehaviourState::Running;
-        }
-        else
-        {
-            CurrentTaskIndex = 0;
-            return BehaviourState::Succeeded;
-        }
-    }
-    else
-    {
-        return State;
+    CallLuaFunction(script, action.ActionOnInit.c_str());
+}
+
+void BehaviourActionFunctions::OnFinish(BehaviourAction& action, diffusion::ScriptComponentState& script)
+{
+    CallLuaFunction(script, action.ActionOnFinish.c_str());
+}
+
+void BehaviourActionFunctions::OnAbort(BehaviourAction& action, diffusion::ScriptComponentState& script)
+{
+    CallLuaFunction(script, action.ActionOnAbort.c_str());
+}
+
+void BehaviourActionFunctions::CallLuaFunction(diffusion::ScriptComponentState& script, const char* name)
+{
+    auto ref = luabridge::getGlobal(script.m_state, name);
+    auto ret = ref();
+    if (!ret.wasOk()) {
+        std::string err = ret.errorMessage();
+        std::cerr << err;
     }
 }
 
-void Sequence::onInit()
+BehaviourState BehaviourActionFunctions::OnTick(diffusion::ScriptComponentState& script, BehaviourAction& action,
+    float delta)
 {
-    CurrentTaskIndex = 0;
-    composites[CurrentTaskIndex]->onInit();
-}
-
-void Sequence::Abort()
-{
-    composites[CurrentTaskIndex]->Abort();
-}
-
-// Selector
-
-BehaviourState Selector::tick(float delta)
-{
-    const auto State = composites[CurrentTaskIndex]->tick(delta);
-    if (State != BehaviourState::Running)
-    {
-        composites[CurrentTaskIndex]->onFinish();
+    auto ref = luabridge::getGlobal(script.m_state, action.ActionOnTick.c_str());
+    auto ret = ref(delta);
+    if (!ret.wasOk()) {
+        std::string err = ret.errorMessage();
+        std::cerr << err;
     }
-    if (State == BehaviourState::Failed)
+    if (!(ret.size() && ret[0].isValid() && ret[0].isString()))
     {
-        CurrentTaskIndex++;
-        if (CurrentTaskIndex < composites.size())
-        {
-            composites[CurrentTaskIndex]->onInit();
-            return BehaviourState::Running;
-        }
-        else
-        {
-            CurrentTaskIndex = 0;
-            return BehaviourState::Failed;
-        }
+        std::cerr << "Wrong return value, string {Success | Failed | Running} required";
     }
-    else
+    auto state = ret[0].tostring();
+    if (state == "Success")
     {
-        return State;
-    }
-}
-
-void Selector::onInit()
-{
-    CurrentTaskIndex = 0;
-    composites[CurrentTaskIndex]->onInit();
-}
-
-void Selector::Abort()
-{
-    composites[CurrentTaskIndex]->Abort();
-}
-
-// Parallel
-
-BehaviourState Parallel::tick(float delta)
-{
-    bool RequiredAllState = true;
-    for (auto& composite : composites)
-    {
-        const auto State = composite->tick(delta);
-        switch (policy)
-        {
-        case ParallelPolicy::SuccessAny:
-            if (State == BehaviourState::Succeeded)
-            {
-                Abort();
-                return BehaviourState::Succeeded;
-            }
-            break;
-        case ParallelPolicy::SuccessAll:
-            if (State == BehaviourState::Failed)
-            {
-                Abort();
-                return BehaviourState::Failed;
-            }
-            break;
-        case ParallelPolicy::FailAny:
-            if (State == BehaviourState::Failed)
-            {
-                Abort();
-                return BehaviourState::Succeeded;
-            }
-            break;
-        case ParallelPolicy::FailAll:
-            if (State == BehaviourState::Succeeded)
-            {
-                Abort();
-                return BehaviourState::Failed;
-            }
-            break;
-        case ParallelPolicy::RequireAny:
-            if (State != BehaviourState::Running)
-            {
-                Abort();
-                return BehaviourState::Succeeded;
-            }
-            break;
-        case ParallelPolicy::RequireAll:
-            if (State != BehaviourState::Running)
-            {
-                RequiredAllState = false;
-            }
-            break;
-        }
-    }
-    if (policy == ParallelPolicy::RequireAll && RequiredAllState)
-    {
-        Abort();
-        return BehaviourState::Succeeded;
-    }
-    return BehaviourState::Running;
-}
-
-void Parallel::onInit()
-{
-    for (auto& composite : composites)
-    {
-        composite->onInit();
-    }
-}
-
-void Parallel::Abort()
-{
-    for (auto& composite : composites)
-    {
-        composite->Abort();
-    }
-}
-
-// Decorator
-
-void Decorator::onInit()
-{
-    Decorated->onInit();
-}
-
-void Decorator::onFinish()
-{
-    Decorated->onFinish();
-}
-
-void Decorator::Abort()
-{
-    Decorated->Abort();
-}
-
-// CoolDown
-
-CoolDown::CoolDown(Behaviour& behaviour, float Capacity): Decorator(behaviour)
-{
-    this->Capacity = std::max(0.0f, Capacity);
-}
-
-BehaviourState CoolDown::tick(float delta)
-{
-    if (isCooldownInProgress)
+        return BehaviourState::Succeeded; 
+    } else if (state == "Failed")
     {
         return BehaviourState::Failed;
-    }
-    const auto State = Decorated->tick(delta);
-    if (State != BehaviourState::Running)
+    } else if (state == "Running")
     {
-        onFinish();
-    }
-    return State;
-}
-
-void CoolDown::onFinish()
-{
-    CurrentTime = 0.0f;
-    isCooldownInProgress = Capacity > 0.f ? false : true;
-    Decorator::onFinish();
-}
-
-void CoolDown::CooldownTick(float delta)
-{
-    CurrentTime += delta;
-    if (CurrentTime >= Capacity)
+        return BehaviourState::Running;
+    } else
     {
-        isCooldownInProgress = true;
+        std::cerr << "Wrong return string, {Success | Failed | Running} required";
     }
+    return BehaviourState::Failed;
 }
 
-// RepeatN
-
-RepeatN::RepeatN(Behaviour& behaviour, int N): Decorator(behaviour)
+bool BehaviourActionFunctions::ConditionFunction(diffusion::ScriptComponentState& script, BehaviourCondition condition)
 {
-    this->N = std::max(1, N);
-}
-
-void RepeatN::onInit()
-{
-    iteration = 0;
-    Decorator::onInit();
-}
-
-BehaviourState RepeatN::tick(float delta)
-{
-    const auto State = Decorated->tick(delta);
-    if (State != BehaviourState::Running)
+    auto ref = luabridge::getGlobal(script.m_state, condition.ConditionName.c_str());
+    auto ret = ref();
+    if (!ret.wasOk()) {
+        std::string err = ret.errorMessage();
+        std::cerr << err;
+    }
+    if (!(ret.size() && ret[0].isValid() && ret[0].isBool()))
     {
-        Decorated->onFinish();
+        std::cerr << "Wrong return value, boolean {true | false} required";
     }
-    if (State == BehaviourState::Succeeded)
-    {
-        iteration++;
-        if (iteration < N)
-        {
-            Decorated->onInit();
-        }
-        else
-        {
-            iteration = 0;
-            return BehaviourState::Succeeded;
-        }
-    }
-    else
-    {
-        return State;
-    }
-    return BehaviourState::Running;
+    bool state = ret[0];
+    return state;
 }
-
-// RetryN
-
-RetryN::RetryN(Behaviour& behaviour, int N): Decorator(behaviour)
-{
-    this->N = std::max(1, N);
-}
-
-void RetryN::onInit()
-{
-    iteration = 0;
-    Decorator::onInit();
-}
-
-BehaviourState RetryN::tick(float delta)
-{
-    const auto State = Decorated->tick(delta);
-    if (State != BehaviourState::Running)
-    {
-        Decorated->onFinish();
-    }
-    if (State == BehaviourState::Failed)
-    {
-        iteration++;
-        if (iteration < N)
-        {
-            Decorated->onInit();
-        }
-        else
-        {
-            iteration = 0;
-            return BehaviourState::Failed;
-        }
-    }
-    else
-    {
-        return State;
-    }
-    return BehaviourState::Running;
-}
-
-BehaviourState Invert::tick(float delta)
-{
-    const auto State = Decorated->tick(delta);
-    if (State != BehaviourState::Running)
-    {
-        Decorated->onFinish();
-        return State == BehaviourState::Succeeded ? BehaviourState::Failed : BehaviourState::Succeeded;
-    }
-    return BehaviourState::Running;
-}
-
-// ForceSucceeded
-
-BehaviourState ForceSucceeded::tick(float delta)
-{
-    const auto State = Decorated->tick(delta);
-    if (State != BehaviourState::Running)
-    {
-        Decorated->onFinish();
-        return BehaviourState::Succeeded;
-    }
-    return BehaviourState::Running;
-}
-
-// ForceSucceeded
-
-Condition::Condition(BlackBoard& blackBoard, bool (* cond)(BlackBoard& blackBoard))
-{
-    this->blackBoard = &blackBoard;
-    Check = cond;
-}
-
-BehaviourState Condition::tick(float delta)
-{
-    return Check(*blackBoard) ? BehaviourState::Succeeded : BehaviourState::Failed;
-}
-
-// Action
-
-Action::Action(BlackBoard& blackBoard, BehaviourState (* action)(BlackBoard& blackBoard, float delta))
-{
-    this->blackBoard = &blackBoard;
-    ActionFunction = action;
-}
-
-BehaviourState Action::tick(float delta)
-{
-    return ActionFunction(*blackBoard, delta);
-}
-
