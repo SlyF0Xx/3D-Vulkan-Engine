@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="BaseComponentInspector.cpp" />
     <ClCompile Include="BaseWidget.cpp" />
+    <ClCompile Include="BehaviourTreeEditor.cpp" />
     <ClCompile Include="CodeEditor.cpp" />
     <ClCompile Include="ContentBrowser.cpp" />
     <ClCompile Include="EditorLayout.cpp" />
@@ -205,6 +206,7 @@
   <ItemGroup>
     <ClInclude Include="BaseComponentInspector.h" />
     <ClInclude Include="BaseWidget.h" />
+    <ClInclude Include="BehaviourTreeEditor.h" />
     <ClInclude Include="CodeEditor.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="ContentBrowser.h" />

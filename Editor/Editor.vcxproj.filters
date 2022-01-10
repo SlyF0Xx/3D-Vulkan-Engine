@@ -61,6 +61,12 @@
     <Filter Include="Исходные файлы\GameProject">
       <UniqueIdentifier>{7db123ab-dead-4a9a-acb6-4dd03e2d1658}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\Widgets\Inspector\Script">
+      <UniqueIdentifier>{feda0cfa-b1ab-4969-b063-04f5c5a3316c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Widgets\Inspector\Script">
+      <UniqueIdentifier>{b8ab67ee-81f6-403e-8e49-3796b489b128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -191,6 +197,9 @@
     </ClCompile>
     <ClCompile Include="PhysicsComponentInspector.cpp">
       <Filter>Исходные файлы\Widgets\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviourTreeEditor.cpp">
+      <Filter>Исходные файлы\Widgets\Inspector\Script</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -337,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="PhysicsComponentInspector.h">
       <Filter>Файлы заголовков\Widgets\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviourTreeEditor.h">
+      <Filter>Файлы заголовков\Widgets\Inspector\Script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

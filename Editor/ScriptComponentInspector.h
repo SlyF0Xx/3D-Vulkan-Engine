@@ -1,8 +1,10 @@
 #pragma once
 
 #include <BaseComponents/ScriptComponent.h>
+#include <BTLib.h>
 
 #include "BaseComponentInspector.h"
+#include "BehaviourTreeEditor.h"
 
 namespace Editor {
 
@@ -26,6 +28,7 @@ namespace Editor {
 		std::string m_SizeStr;
 
 		SceneEventDispatcher m_SceneDispatcher;
+		BehaviourTreeEditor m_BTEditor;
 
 		diffusion::ScriptComponent* m_Component = nullptr;
 	};
