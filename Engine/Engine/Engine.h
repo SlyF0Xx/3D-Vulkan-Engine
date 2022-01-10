@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include "IMenuRenderer.h"
 
+#include "BTLib.h"
+
 struct PrimitiveColoredVertex
 {
     float x, y, z;

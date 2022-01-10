@@ -603,6 +603,8 @@ void Game::load_scene(const std::filesystem::path& path)
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
         edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
 
+        BTComponent,
+
         diffusion::debug_tag /* should be ignored in runtime*/ >(json_in);
 
     auto main_entity = m_registry.view<diffusion::PossessedEntity>().front();
@@ -626,6 +628,8 @@ void Game::save_scene(const std::filesystem::path& path)
         edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
         edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
+
+        BTComponent,
 
         diffusion::debug_tag /* should be ignored in runtime*/>(output);
     output.Close();
