@@ -22,7 +22,7 @@ namespace Editor {
 		BaseComponentInspector() = delete;
 		explicit BaseComponentInspector(EDITOR_GAME_TYPE ctx);
 
-		void SetContext(EDITOR_GAME_TYPE game);
+		virtual void SetContext(EDITOR_GAME_TYPE game);
 
 		void Render();
 

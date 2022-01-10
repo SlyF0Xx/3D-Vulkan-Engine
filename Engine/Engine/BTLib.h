@@ -174,7 +174,7 @@ namespace BehaviourActionFunctions
 
 struct ToJsonFunctions
 {
-    nlohmann::json& operator()(const Sequence& behaviour)
+    nlohmann::json operator()(const Sequence& behaviour)
     {
         auto childs = nlohmann::json::array();
         for (auto& child : behaviour.childs)
@@ -185,7 +185,7 @@ struct ToJsonFunctions
         return j;
     }
 
-    nlohmann::json& operator()(const Selector& behaviour)
+    nlohmann::json operator()(const Selector& behaviour)
     {
         auto childs = nlohmann::json::array();
         for (auto& child : behaviour.childs)
@@ -196,7 +196,7 @@ struct ToJsonFunctions
         return j;
     }
 
-    nlohmann::json& operator()(const Parallel& behaviour)
+    nlohmann::json operator()(const Parallel& behaviour)
     {
         auto childs = nlohmann::json::array();
         for (auto& child : behaviour.childs)
@@ -207,42 +207,42 @@ struct ToJsonFunctions
         return j;
     }
 
-    nlohmann::json& operator()(const InvertDecorator& behaviour)
+    nlohmann::json operator()(const InvertDecorator& behaviour)
     {
         auto child = std::visit(ToJsonFunctions{}, behaviour.child[0]);
         nlohmann::json j = {{"type", 3}, {"child", child}};
         return j;
     }
 
-    nlohmann::json& operator()(const RepeatNDecorator& behaviour)
+    nlohmann::json operator()(const RepeatNDecorator& behaviour)
     {
         auto child = std::visit(ToJsonFunctions{}, behaviour.child[0]);
         nlohmann::json j = {{"type", 4}, {"N", behaviour.N}, {"child", child}};
         return j;
     }
 
-    nlohmann::json& operator()(const RetryNDecorator& behaviour)
+    nlohmann::json operator()(const RetryNDecorator& behaviour)
     {
         auto child = std::visit(ToJsonFunctions{}, behaviour.child[0]);
         nlohmann::json j = {{"type", 5}, {"N", behaviour.N}, {"child", child}};
         return j;
     }
 
-    nlohmann::json& operator()(const ForceSucceededDecorator& behaviour)
+    nlohmann::json operator()(const ForceSucceededDecorator& behaviour)
     {
         auto child = std::visit(ToJsonFunctions{}, behaviour.child[0]);
         nlohmann::json j = {{"type", 6}, {"child", child}};
         return j;
     }
 
-    nlohmann::json& operator()(const CooldownDecorator& behaviour)
+    nlohmann::json operator()(const CooldownDecorator& behaviour)
     {
         auto child = std::visit(ToJsonFunctions{}, behaviour.child[0]);
         nlohmann::json j = {{"type", 7}, {"capacity", behaviour.capacity}, {"child", child}};
         return j;
     }
 
-    nlohmann::json& operator()(const BehaviourAction& behaviour)
+    nlohmann::json operator()(const BehaviourAction& behaviour)
     {
         nlohmann::json events = {
             behaviour.ActionOnInit,
@@ -255,10 +255,9 @@ struct ToJsonFunctions
         return j;
     }
 
-    nlohmann::json& operator()(const BehaviourCondition& behaviour)
+    nlohmann::json operator()(const BehaviourCondition& behaviour)
     {
-        nlohmann::json j = {{"type", 9}, {"condition", behaviour.ConditionName}};
-        return j;
+        return nlohmann::json {{"type", 9}, {"condition", behaviour.ConditionName}};
     }
 };
 
@@ -603,6 +602,7 @@ struct BehaviourTickFunctions
 inline void to_json(nlohmann::json& j, const Behaviour& behaviour)
 {
     j = std::visit(ToJsonFunctions{}, behaviour);
+    std::cout << j << std::endl;
 }
 
 inline void from_json(const nlohmann::json& j, Behaviour& behaviour)

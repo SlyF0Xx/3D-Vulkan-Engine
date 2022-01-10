@@ -41,6 +41,11 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 	});
 }
 
+void Editor::ScriptComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
+	Editor::BaseComponentInspector::SetContext(game);
+	m_BTEditor.SetContext(game);
+}
+
 void Editor::ScriptComponentInspector::RenderContent() {
 	ImGui::BeginGroupPanel("Script Content", ImVec2(-1.0f, -1.0f));
 	ImGui::Bullet();

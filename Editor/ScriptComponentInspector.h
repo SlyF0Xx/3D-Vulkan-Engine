@@ -13,6 +13,8 @@ namespace Editor {
 		ScriptComponentInspector() = delete;
 		explicit ScriptComponentInspector(EDITOR_GAME_TYPE ctx);
 
+		void SetContext(EDITOR_GAME_TYPE game) override;
+
 		void RenderContent() override;
 	private:
 		inline const char* GetTitle() const override;
