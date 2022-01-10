@@ -336,7 +336,7 @@ struct NonTickFunction
 
     diffusion::ScriptComponentState* script;
     void (*func)(BehaviourAction& action, diffusion::ScriptComponentState& script);
-    static ::entt::registry* registry;
+    static inline ::entt::registry* registry;
 };
 
 //BehaviourState SequenceAndSelector()
@@ -602,7 +602,6 @@ struct BehaviourTickFunctions
 inline void to_json(nlohmann::json& j, const Behaviour& behaviour)
 {
     j = std::visit(ToJsonFunctions{}, behaviour);
-    std::cout << j << std::endl;
 }
 
 inline void from_json(const nlohmann::json& j, Behaviour& behaviour)

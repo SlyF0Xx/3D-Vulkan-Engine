@@ -80,6 +80,12 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 					std::cerr << err;
 				}
 			}
+
+			if (m_game.m_BehaviourTreeSystem) {
+				m_game.m_BehaviourTreeSystem->tick(
+					std::chrono::duration_cast<std::chrono::milliseconds>(m_game.m_script_time_point.time_since_epoch()).count() - time
+				);
+			}
 		}
 	));
 }

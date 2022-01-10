@@ -612,6 +612,11 @@ void Game::load_scene(const std::filesystem::path& path)
 
     auto main_camera = m_registry.view<diffusion::MainCameraTag>().front();
     m_registry.set<diffusion::MainCameraTag>(main_camera);
+
+    if (m_BehaviourTreeSystem) {
+        delete m_BehaviourTreeSystem;
+    }
+    m_BehaviourTreeSystem = new BTSystem(m_registry);
 }
 
 void Game::save_scene(const std::filesystem::path& path)

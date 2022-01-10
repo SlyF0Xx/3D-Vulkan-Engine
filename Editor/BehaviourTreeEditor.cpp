@@ -166,7 +166,7 @@ void Editor::BehaviourTreeEditor::RenderEditor() {
 				ImGui::EndGroupPanel();
 				break;
 			}
-			case 7: {// CooldownDecorator.
+			case 7: { // CooldownDecorator.
 				std::string title = GetTitle(*m_BehaviourSelection);
 				ImGui::BeginGroupPanel(title.c_str(), ImVec2(-1.0f, -1.f));
 				ImGui::Text((title + " could contain only one child.").c_str());

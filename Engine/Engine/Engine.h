@@ -23,6 +23,7 @@
 #include "IMenuRenderer.h"
 
 #include "BTLib.h"
+#include "Systems/BTSystem.h"
 
 struct PrimitiveColoredVertex
 {
@@ -121,6 +122,8 @@ public:
 
     bool m_paused = true;
     std::mutex m_render_mutex;
+
+    BTSystem* m_BehaviourTreeSystem;
 
 private:
     // Vulkan Common Data
