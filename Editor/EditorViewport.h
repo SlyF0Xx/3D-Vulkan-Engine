@@ -37,6 +37,7 @@ namespace Editor {
 		void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void OnResizeInternal(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine);
 		void InitContexed() override;
+		void OnRegisterUpdated() override;
 
 		void ClickHandler();
 

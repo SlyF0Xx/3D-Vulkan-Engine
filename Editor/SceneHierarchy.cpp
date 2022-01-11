@@ -70,6 +70,11 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::PopStyleVar();
 }
 
+void Editor::SceneHierarchy::OnRegisterUpdated() {
+	Editor::GameWidget::OnRegisterUpdated();
+	m_SelectionContext = (ENTT_ID_TYPE) m_Context->get_registry().entity((entt::entity) m_SelectionContext);
+}
+
 void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	// Renaming entity.
 	if (m_IsRenaming && m_SelectionContext == entity) {

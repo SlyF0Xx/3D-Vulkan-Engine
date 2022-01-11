@@ -29,6 +29,14 @@ void Editor::PhysicsComponentInspector::RenderContent() {
 	}
 }
 
+void Editor::PhysicsComponentInspector::OnRegisterUpdated() {
+	Editor::BaseComponentInspector::OnRegisterUpdated();
+	if (HasMass()) {
+		auto& mass = m_Context->get_registry().get<edyn::mass>(m_Selection);
+		m_MassInKg = mass.s;
+	}
+}
+
 inline const char* Editor::PhysicsComponentInspector::GetTitle() const {
 	return "Physics";
 }

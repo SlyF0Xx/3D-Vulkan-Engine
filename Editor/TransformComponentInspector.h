@@ -16,6 +16,7 @@ namespace Editor {
 		explicit TransformComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		void RenderContent() override;
+		void OnRegisterUpdated() override;
 	private:
 		inline const char* GetTitle() const override;
 

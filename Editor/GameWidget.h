@@ -21,6 +21,8 @@ namespace Editor {
 		virtual void SetContext(EDITOR_GAME_TYPE game);
 		virtual void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine);
 
+		virtual void OnRegisterUpdated();
+
 		static ImTextureID GenerateTextureID(EDITOR_GAME_TYPE ctx, diffusion::ImageData& imData, const std::filesystem::path& path);
 	protected:
 		// diffusion::Ref<Game> m_Context;

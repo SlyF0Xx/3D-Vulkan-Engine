@@ -72,6 +72,14 @@ void Editor::Inspector::SetContext(EDITOR_GAME_TYPE ctx) {
 	m_Selection = entt::null;
 }
 
+void Editor::Inspector::OnRegisterUpdated() {
+	Editor::GameWidget::OnRegisterUpdated();
+	m_TagInspector.OnRegisterUpdated();
+	m_TransformInspector.OnRegisterUpdated();
+	m_ScriptInspector.OnRegisterUpdated();
+	m_PhysicsInspector.OnRegisterUpdated();
+}
+
 void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponent& comp) {
 	ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_SpanAvailWidth;
 

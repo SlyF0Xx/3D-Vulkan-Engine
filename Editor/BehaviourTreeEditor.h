@@ -33,16 +33,6 @@ namespace Editor {
 		EditorCreatableBehaviourTreeNode(const char* T, EditorCreatableBehaviourTreeNode* C, uint32_t S) : Title(T), Children(C), Size(S) {};
 	};
 
-	/*struct EditorBehaviour {
-		bool Root = false;
-		uint32_t ID;
-		Behaviour* Behaviour = nullptr;
-		size_t Size = 0;
-
-		EditorBehaviour() {};
-		EditorBehaviour(bool _) : Root(true) {};
-	};*/
-
 	class BehaviourTreeEditor : public GameWidget {
 	public:
 		BehaviourTreeEditor() = delete;

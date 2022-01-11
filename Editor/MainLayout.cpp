@@ -35,7 +35,10 @@ Editor::MainLayout::MainLayout() :
 	});
 
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::STOP, [&](const Editor::SceneInteractEvent& event) {
+		while (!m_Context->m_initialized) {}
 		GameProject::Instance()->GetActiveScene()->RefreshImGuiBindings();
+		OnRegisterUpdated();
+		//m_SceneDispatcher->dispatch(Editor::SceneInteractType::RESET_SELECTION);
 	});
 
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_SCRIPT, [&](const Editor::SceneInteractEvent& event) {
@@ -322,6 +325,15 @@ void Editor::MainLayout::OnContextChanged() {
 	m_ActionsWidget.SetContext(m_Context);
 	m_CodeEditors.clear();
 	m_ScriptEditingEntity = entt::null;
+}
+
+void Editor::MainLayout::OnRegisterUpdated() {
+	m_ContentBrowser.OnRegisterUpdated();
+	m_SceneHierarchy.OnRegisterUpdated();
+	m_Inspector.OnRegisterUpdated();
+	m_Viewport.OnRegisterUpdated();
+	m_LuaConsole.OnRegisterUpdated();
+	m_ActionsWidget.OnRegisterUpdated();
 }
 
 diffusion::Ref<Editor::EditorLayout> Editor::MainLayout::Copy() {

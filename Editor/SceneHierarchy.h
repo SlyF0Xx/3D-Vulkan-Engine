@@ -58,6 +58,7 @@ namespace Editor {
 		SceneHierarchy(EDITOR_GAME_TYPE game);
 
 		void Render(bool* p_open, ImGuiWindowFlags flags) override;
+		void OnRegisterUpdated() override;
 
 		void DrawEntityNode(ENTT_ID_TYPE entity);
 		void DrawCreatableEntityNode(EditorCreatableEntity entity);

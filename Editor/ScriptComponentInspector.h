@@ -14,6 +14,7 @@ namespace Editor {
 		explicit ScriptComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		void SetContext(EDITOR_GAME_TYPE game) override;
+		void OnRegisterUpdated() override;
 
 		void RenderContent() override;
 	private:

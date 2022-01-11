@@ -33,6 +33,11 @@ void Editor::TagComponentInspector::RenderContent() {
 	m_IsFocused = focused;
 }
 
+void Editor::TagComponentInspector::OnRegisterUpdated() {
+	Editor::BaseComponentInspector::OnRegisterUpdated();
+	m_TagComponent = GetComponent<diffusion::TagComponent>(m_Selection);
+}
+
 void Editor::TagComponentInspector::Rename() {
 	if (strlen(m_RenameBuf) > 0) {
 		INS_COM_REP<diffusion::TagComponent, std::string>(m_Selection, std::string(m_RenameBuf));

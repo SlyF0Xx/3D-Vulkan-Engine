@@ -13,6 +13,7 @@ namespace Editor {
 		explicit TagComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		void RenderContent() override;
+		void OnRegisterUpdated() override;
 
 	private:
 		void Rename();

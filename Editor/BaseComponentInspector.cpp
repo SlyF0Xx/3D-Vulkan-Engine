@@ -6,7 +6,11 @@ Editor::BaseComponentInspector::BaseComponentInspector(EDITOR_GAME_TYPE ctx) {
 
 void Editor::BaseComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 	m_Context = game;
-	m_Selection = entt::entity();
+	m_Selection = entt::null;
+}
+
+void Editor::BaseComponentInspector::OnRegisterUpdated() {
+	m_Selection = m_Context->get_registry().entity(m_Selection);
 }
 
 void Editor::BaseComponentInspector::Render() {

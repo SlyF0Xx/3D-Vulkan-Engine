@@ -101,6 +101,11 @@ void Editor::TransformComponentInspector::RenderContent() {
 	ImGui::EndGroupPanel();
 }
 
+void Editor::TransformComponentInspector::OnRegisterUpdated() {
+	Editor::BaseComponentInspector::OnRegisterUpdated();
+	m_TransformComponent = GetComponent<diffusion::TransformComponent>(m_Selection);
+}
+
 inline const char* Editor::TransformComponentInspector::GetTitle() const {
 	if (IsRenderable()) {
 		return "Transform";

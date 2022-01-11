@@ -23,6 +23,7 @@ namespace Editor {
 		explicit BaseComponentInspector(EDITOR_GAME_TYPE ctx);
 
 		virtual void SetContext(EDITOR_GAME_TYPE game);
+		virtual void OnRegisterUpdated();
 
 		void Render();
 

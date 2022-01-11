@@ -23,20 +23,10 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 	});
 
 	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_SCRIPT, [&](const SceneInteractEvent& e) {
-		m_Component = GetComponent<diffusion::ScriptComponent>(m_Selection);
-		if (!m_Component) {
-			return;
-		}
-		m_BTEditor.SetSelection(m_Selection);
 		m_SizeStr = GetSize();
 	});
 
 	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_ALL_SCTIPTS, [&](const SceneInteractEvent& e) {
-		m_Component = GetComponent<diffusion::ScriptComponent>(m_Selection);
-		if (!m_Component) {
-			return;
-		}
-		m_BTEditor.SetSelection(m_Selection);
 		m_SizeStr = GetSize();
 	});
 }
@@ -44,6 +34,13 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 void Editor::ScriptComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 	Editor::BaseComponentInspector::SetContext(game);
 	m_BTEditor.SetContext(game);
+}
+
+void Editor::ScriptComponentInspector::OnRegisterUpdated() {
+	Editor::BaseComponentInspector::OnRegisterUpdated();
+	m_Component = GetComponent<diffusion::ScriptComponent>(m_Selection);
+	m_BTEditor.OnRegisterUpdated();
+	m_BTEditor.SetSelection(m_Selection);
 }
 
 void Editor::ScriptComponentInspector::RenderContent() {

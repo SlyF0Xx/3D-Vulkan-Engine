@@ -56,6 +56,7 @@ namespace Editor {
 		void OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) override;
 		void InitDockspace();
 		virtual void OnContextChanged() override;
+		void OnRegisterUpdated();
 		diffusion::Ref<Editor::EditorLayout> Copy() override;
 
 		void MakeTabVisible(const char* window_name);

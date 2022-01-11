@@ -530,6 +530,10 @@ void Editor::EditorViewport::InitContexed() {
 	m_CameraTex = GenerateTextureID(m_Context, m_CameraTexData, CAMERA_ICON_PATH);
 }
 
+void Editor::EditorViewport::OnRegisterUpdated() {
+	// ..
+}
+
 void Editor::EditorViewport::DrawGizmo(ImDrawList* drawlist) {
 	if (!m_Selection || m_Selection == -1)
 		return;

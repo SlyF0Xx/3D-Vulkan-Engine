@@ -6,12 +6,16 @@ Editor::GameWidget::GameWidget(Game* ctx) {
 
 void Editor::GameWidget::SetContext(Game* game) {
 	m_Context = game;
-	Reset();
-	InitContexed();
+	OnRegisterUpdated();
 }
 
 void Editor::GameWidget::OnResize(EDITOR_GAME_TYPE vulkan, ImGUIBasedPresentationEngine& engine) {
 	// ..
+}
+
+void Editor::GameWidget::OnRegisterUpdated() {
+	Reset();
+	InitContexed();
 }
 
 ImTextureID Editor::GameWidget::GenerateTextureID(EDITOR_GAME_TYPE ctx, diffusion::ImageData& imData, const std::filesystem::path& path) {
