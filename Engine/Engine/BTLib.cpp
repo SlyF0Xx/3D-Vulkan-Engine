@@ -65,7 +65,11 @@ bool BehaviourActionFunctions::ConditionFunction(diffusion::ScriptComponentState
     }
     if (!(ret.size() && ret[0].isValid() && ret[0].isBool()))
     {
-        std::cerr << "Wrong return value, boolean {true | false} required";
+        std::cerr << "Wrong return value, boolean {true | false} required" << std::endl;
+        std::cerr << ret.size() << std::endl;
+        std::cerr << ret[0] << std::endl;
+        std::cerr << ret[0].isValid() << std::endl;
+        std::cerr << ret[0].isBool() << std::endl;
     }
     bool state = ret[0];
     return state;

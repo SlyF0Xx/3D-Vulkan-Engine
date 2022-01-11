@@ -31,9 +31,11 @@ void Editor::PhysicsComponentInspector::RenderContent() {
 
 void Editor::PhysicsComponentInspector::OnRegisterUpdated() {
 	Editor::BaseComponentInspector::OnRegisterUpdated();
-	if (HasMass()) {
-		auto& mass = m_Context->get_registry().get<edyn::mass>(m_Selection);
-		m_MassInKg = mass.s;
+	if (m_Selection != entt::null && m_Context->get_registry().valid(m_Selection)) {
+		if (HasMass()) {
+			auto& mass = m_Context->get_registry().get<edyn::mass>(m_Selection);
+			m_MassInKg = mass.s;
+		}
 	}
 }
 

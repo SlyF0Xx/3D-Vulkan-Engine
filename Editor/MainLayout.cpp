@@ -43,12 +43,14 @@ Editor::MainLayout::MainLayout() :
 
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_SCRIPT, [&](const Editor::SceneInteractEvent& event) {
 		m_CodeEditors[m_ScriptEditingEntity]->Save();
+		m_SceneDispatcher->dispatch(Editor::SceneInteractType::UPDATE_SCRIPT_INFO);
 	});
 
 	m_SceneDispatcher->appendListener(Editor::SceneInteractType::SAVE_ALL_SCTIPTS, [&](const Editor::SceneInteractEvent& event) {
 		std::for_each(m_CodeEditors.begin(), m_CodeEditors.end(), [&](std::pair<const entt::entity, CodeEditor*>& pair) {
 			pair.second->Save();
 		});
+		m_SceneDispatcher->dispatch(Editor::SceneInteractType::UPDATE_SCRIPT_INFO);
 	});
 }
 

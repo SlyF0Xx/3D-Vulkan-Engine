@@ -35,7 +35,11 @@ void Editor::TagComponentInspector::RenderContent() {
 
 void Editor::TagComponentInspector::OnRegisterUpdated() {
 	Editor::BaseComponentInspector::OnRegisterUpdated();
-	m_TagComponent = GetComponent<diffusion::TagComponent>(m_Selection);
+	if (m_Selection != entt::null && m_Context->get_registry().valid(m_Selection)) {
+		m_TagComponent = GetComponent<diffusion::TagComponent>(m_Selection);
+	} else {
+		m_TagComponent = nullptr;
+	}
 }
 
 void Editor::TagComponentInspector::Rename() {

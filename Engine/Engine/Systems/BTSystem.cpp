@@ -6,28 +6,11 @@
 BTSystem::BTSystem(::entt::registry& registry) : m_registry(registry)
 {
     NonTickFunction::registry = &registry;
-    auto AITasks = m_registry.view<BTComponent>();
-    AITasks.each([this](BTComponent& BT)
-    {
-        auto script = m_registry.try_get<diffusion::ScriptComponentState>(entt::to_entity(m_registry,BT));
-        if (script)
-        {
-            std::visit(NonTickFunction{script, BehaviourActionFunctions::OnInit}, BT.root);
-        }
-    });
 }
 
 BTSystem::~BTSystem()
 {
-    auto AITasks = m_registry.view<BTComponent>();
-    AITasks.each([this](BTComponent& BT)
-    {
-        auto script = m_registry.try_get<diffusion::ScriptComponentState>(entt::to_entity(m_registry,BT));
-        if (script)
-        {
-            std::visit(NonTickFunction{script, BehaviourActionFunctions::OnAbort}, BT.root);
-        }
-    });
+    // ..
 }
 
 void BTSystem::tick(float deltaSeconds)
@@ -55,6 +38,26 @@ void BTSystem::tick(float deltaSeconds)
                 std::visit(NonTickFunction{script, BehaviourActionFunctions::OnFinish}, BT.root);
                 std::visit(NonTickFunction{script, BehaviourActionFunctions::OnInit}, BT.root);
             }
+        }
+    });
+}
+
+void BTSystem::onInit() {
+    auto AITasks = m_registry.view<BTComponent>();
+    AITasks.each([this](BTComponent& BT) {
+        auto script = m_registry.try_get<diffusion::ScriptComponentState>(entt::to_entity(m_registry, BT));
+        if (script) {
+            std::visit(NonTickFunction {script, BehaviourActionFunctions::OnInit}, BT.root);
+        }
+    });
+}
+
+void BTSystem::onAbort() {
+    auto AITasks = m_registry.view<BTComponent>();
+    AITasks.each([this](BTComponent& BT) {
+        auto script = m_registry.try_get<diffusion::ScriptComponentState>(entt::to_entity(m_registry, BT));
+        if (script) {
+            std::visit(NonTickFunction {script, BehaviourActionFunctions::OnAbort}, BT.root);
         }
     });
 }

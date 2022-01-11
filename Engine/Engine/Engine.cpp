@@ -735,6 +735,10 @@ void Game::resume()
 
 void Game::stop()
 {
+    if (m_BehaviourTreeSystem) {
+        m_BehaviourTreeSystem->onAbort();
+    }
+
     std::lock_guard lock(m_render_mutex);
     m_paused = true;
     m_stopped = true;

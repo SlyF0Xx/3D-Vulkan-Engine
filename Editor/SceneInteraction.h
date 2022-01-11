@@ -17,6 +17,7 @@ namespace Editor {
 		SELECTED_MANY,
 
 		// Scripting.
+		UPDATE_SCRIPT_INFO,
 		SAVE_SCRIPT,
 		SAVE_ALL_SCTIPTS,
 		EDIT_SCRIPT_COMPONENT,

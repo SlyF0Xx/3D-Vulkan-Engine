@@ -103,7 +103,11 @@ void Editor::TransformComponentInspector::RenderContent() {
 
 void Editor::TransformComponentInspector::OnRegisterUpdated() {
 	Editor::BaseComponentInspector::OnRegisterUpdated();
-	m_TransformComponent = GetComponent<diffusion::TransformComponent>(m_Selection);
+	if (m_Selection != entt::null && m_Context->get_registry().valid(m_Selection)) {
+		m_TransformComponent = GetComponent<diffusion::TransformComponent>(m_Selection);
+	} else {
+		m_TransformComponent = nullptr;
+	}
 }
 
 inline const char* Editor::TransformComponentInspector::GetTitle() const {

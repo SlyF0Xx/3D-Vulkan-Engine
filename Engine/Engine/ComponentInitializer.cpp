@@ -67,6 +67,10 @@ void ComponentInitializer::add_to_execution(::entt::registry& registry, ::entt::
 					std::cerr << err;
 				}
 
+				if (m_game.m_BehaviourTreeSystem) {
+					m_game.m_BehaviourTreeSystem->onInit();
+				}
+
 				registry.patch<ScriptComponentState>(parent_entity, [&](ScriptComponentState& state) {
 					state.m_is_initialized = true;
 				});

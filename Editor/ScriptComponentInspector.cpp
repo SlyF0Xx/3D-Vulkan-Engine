@@ -22,11 +22,7 @@ Editor::ScriptComponentInspector::ScriptComponentInspector(EDITOR_GAME_TYPE ctx)
 		m_BTEditor.SetSelection(entt::null);
 	});
 
-	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_SCRIPT, [&](const SceneInteractEvent& e) {
-		m_SizeStr = GetSize();
-	});
-
-	m_SceneDispatcher->appendListener(SceneInteractType::SAVE_ALL_SCTIPTS, [&](const SceneInteractEvent& e) {
+	m_SceneDispatcher->appendListener(SceneInteractType::UPDATE_SCRIPT_INFO, [&](const SceneInteractEvent& e) {
 		m_SizeStr = GetSize();
 	});
 }
@@ -38,9 +34,13 @@ void Editor::ScriptComponentInspector::SetContext(EDITOR_GAME_TYPE game) {
 
 void Editor::ScriptComponentInspector::OnRegisterUpdated() {
 	Editor::BaseComponentInspector::OnRegisterUpdated();
-	m_Component = GetComponent<diffusion::ScriptComponent>(m_Selection);
-	m_BTEditor.OnRegisterUpdated();
-	m_BTEditor.SetSelection(m_Selection);
+	if (m_Selection != entt::null && m_Context->get_registry().valid(m_Selection)) {
+		m_Component = GetComponent<diffusion::ScriptComponent>(m_Selection);
+		m_BTEditor.OnRegisterUpdated();
+		m_BTEditor.SetSelection(m_Selection);
+	} else {
+		m_Component = nullptr;
+	}
 }
 
 void Editor::ScriptComponentInspector::RenderContent() {
