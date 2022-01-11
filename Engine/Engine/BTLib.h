@@ -705,9 +705,9 @@ inline void from_json(const nlohmann::json& j, Behaviour& behaviour)
             auto& events = j.at("events");
             BehaviourAction action;
             action.ActionOnInit = events[0];
-            action.ActionOnFinish = events[1];
-            action.ActionOnTick = events[2];
-            action.ActionOnAbort = events[3];
+            action.ActionOnTick = events[1];
+            action.ActionOnAbort = events[2];
+            action.ActionOnFinish = events[3];
             behaviour = action;
             break;
         }

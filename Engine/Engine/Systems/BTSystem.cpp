@@ -49,8 +49,12 @@ void BTSystem::tick(float deltaSeconds)
         auto script = m_registry.try_get<diffusion::ScriptComponentState>(entt::to_entity(m_registry,BT));
         if (script)
         {
-            std::visit(BehaviourTickFunctions{script, deltaSeconds}, BT.root);
+            auto status = std::visit(BehaviourTickFunctions{script, deltaSeconds}, BT.root);
+            if (status != BehaviourState::Running)
+            {
+                std::visit(NonTickFunction{script, BehaviourActionFunctions::OnFinish}, BT.root);
+                std::visit(NonTickFunction{script, BehaviourActionFunctions::OnInit}, BT.root);
+            }
         }
-        
     });
 }
