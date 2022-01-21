@@ -87,7 +87,8 @@ namespace diffusion {
     collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z};
 
     add_collider(cube_entity, registry, collider);
-    
+
+    edyn::update(registry);
     return cube_entity;
 }
 
