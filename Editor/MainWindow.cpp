@@ -126,8 +126,8 @@ void Editor::MainWindow::StartMainLoop() {
 	diffusion::CameraSystem camera_system(m_Context->get_registry());
 	diffusion::move_forward.append([&camera_system]() {camera_system.move_forward(0.1f); });
 	diffusion::move_backward.append([&camera_system]() {camera_system.move_backward(0.1f); });
-	diffusion::move_left.append([&camera_system]() {camera_system.move_left(0.1f); });
-	diffusion::move_right.append([&camera_system]() {camera_system.move_right(0.1f); });
+	diffusion::move_left.append([&camera_system]() {camera_system.move_left(0.5f); });
+	diffusion::move_right.append([&camera_system]() {camera_system.move_right(0.5f); });
 	diffusion::move_up.append([&camera_system]() {camera_system.move_up(0.1f); });
 	diffusion::move_down.append([&camera_system]() {camera_system.move_down(0.1f); });
 

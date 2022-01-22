@@ -713,8 +713,8 @@ void Editor::EditorViewport::RightClickHandler() {
 			glm::vec3 up = camera_view.up;
 			up.z = -up.z;
 
-			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraPitch) * 0.01f, right);
-			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(m_CameraYaw) * 0.01f, up);
+			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(dy), right);
+			transform.m_world_matrix = glm::rotate(transform.m_world_matrix, glm::radians(dx), up);
 			// TODO: bug, when rotationg mouse by circle. Should prevent rotation around forward vector
 		} else if (m_CameraMovementType == CameraMovementType::CREATION_MATRIX) {
 			glm::vec3 front;
