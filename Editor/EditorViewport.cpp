@@ -392,7 +392,7 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 		}
 		ImGui::EndPopup();
 	}
-#ifdef _DEBUG
+#if _DEBUG && 0
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(127, 127, 250, 255));
 	std::string renderSizeStr = "Render size: [X: " + std::to_string(m_RenderSize.x) + " Y: " + std::to_string(m_RenderSize.y) + "]";
 	ImGui::Text(renderSizeStr.c_str());
@@ -463,12 +463,17 @@ void Editor::EditorViewport::Render(bool* p_open, ImGuiWindowFlags flags, ImGUIB
 #pragma endregion // Overlay.
 
 	DrawGizmo();
+
+#if _DEBUG && 0
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		auto& mainCameraEntity = m_Context->get_registry().ctx<diffusion::MainCameraTag>();
 		auto& cameraComponent = m_Context->get_registry().get<diffusion::CameraComponent>(mainCameraEntity.m_entity);
 
 		m_TargetPosition = camera_view.target;
-	} else if (!ImGuizmo::IsUsing() && click) {
+	}
+#endif
+		
+	if (!ImGuizmo::IsUsing() && click) {
 		ClickHandler();
 	}
 

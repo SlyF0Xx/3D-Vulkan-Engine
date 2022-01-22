@@ -193,11 +193,14 @@ void Editor::SceneHierarchy::DrawEntityNode(ENTT_ID_TYPE entity) {
 	}
 
 	if (isEntityDeleted) {
-		if (m_SelectionContext == entity)
-			ResetSelectionNotify();
+		bool isSame = m_SelectionContext == entity;
+
 		if (m_Context->get_registry().valid((entt::entity) entity)) {
 			m_Context->get_registry().destroy((entt::entity) entity);
 		}
+
+		if (isSame)
+			ResetSelectionNotify();
 	}
 }
 
