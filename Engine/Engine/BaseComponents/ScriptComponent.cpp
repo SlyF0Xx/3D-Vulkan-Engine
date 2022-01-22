@@ -30,11 +30,17 @@ entt::entity get_entity_by_name(entt::registry& registry, const char* name)
 
 lua_State* create_lua_state(entt::registry& registry)
 {
+
     auto state = luaL_newstate();
     luaL_openlibs(state);
     lua_settop(state, 0);
 
     getGlobalNamespace(state)
+        /*.beginClass<LuaVector>("Vector3")
+            .addProperty("x", &LuaVector::x)
+            .addProperty("y", &LuaVector::y)
+            .addProperty("z", &LuaVector::y)
+        .endClass()*/
         .beginClass<entt::entity>("entity")
         .endClass()
         .beginNamespace("log")
@@ -64,6 +70,9 @@ lua_State* create_lua_state(entt::registry& registry)
         })
         .addFunction("debug_sphere", [&registry](float x, float y, float z) {
             return diffusion::create_debug_sphere_entity(registry, {x, y, z});
+        })
+        .addFunction("debug_cube", [&registry](float x, float y, float z) {
+            return diffusion::create_debug_cube_entity(registry, {x, y, z});
         })
         .endNamespace()
         .beginNamespace("camera")
@@ -146,6 +155,89 @@ lua_State* create_lua_state(entt::registry& registry)
         })
         .addFunction("destroy_entity", [&registry](entt::entity& entity) {
             registry.destroy(entity);
+        })
+        .addFunction("get_position", [&registry](entt::entity& entity) {
+            if (registry.valid(entity) && registry.view<TransformComponent>().contains(entity)) {
+                auto& transform = registry.get<TransformComponent>(entity);
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(
+                    transform.m_world_matrix, 
+                    scale, rotation, translation, skew, perspective
+                );
+
+                return std::tuple<float, float, float, bool>(
+                    translation.x, 
+                    translation.y, 
+                    translation.z,
+                    true
+                );
+            }
+            return std::tuple<float, float, float, bool>(
+                -FLT_MAX,
+                -FLT_MAX,
+                -FLT_MAX,
+                false
+            );;
+        })
+        .addFunction("get_rotation", [&registry](entt::entity& entity) {
+            if (registry.valid(entity) && registry.view<TransformComponent>().contains(entity)) {
+                auto& transform = registry.get<TransformComponent>(entity);
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(
+                    transform.m_world_matrix,
+                    scale, rotation, translation, skew, perspective
+                );
+                rotation = glm::conjugate(rotation);
+                glm::vec3 euler = glm::degrees(glm::eulerAngles(rotation));
+
+                return std::tuple<float, float, float, bool>(
+                    euler.x,
+                    euler.y,
+                    euler.z,
+                    true
+                    );
+            }
+            return std::tuple<float, float, float, bool>(
+                -FLT_MAX,
+                -FLT_MAX,
+                -FLT_MAX,
+                false
+                );;
+        })
+        .addFunction("get_scale", [&registry](entt::entity& entity) {
+            if (registry.valid(entity) && registry.view<TransformComponent>().contains(entity)) {
+                auto& transform = registry.get<TransformComponent>(entity);
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(
+                    transform.m_world_matrix,
+                    scale, rotation, translation, skew, perspective
+                );
+
+                return std::tuple<float, float, float, bool>(
+                    scale.x,
+                    scale.y,
+                    scale.z,
+                    true
+                    );
+            }
+            return std::tuple<float, float, float, bool>(
+                -FLT_MAX,
+                -FLT_MAX,
+                -FLT_MAX,
+                false
+                );;
         });
     return state;
 }
