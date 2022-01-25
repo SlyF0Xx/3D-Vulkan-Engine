@@ -32,6 +32,7 @@ namespace Editor {
 		void Save(std::filesystem::path& source);
 
 		void Load(std::filesystem::path& source);
+		void LoadOld(std::filesystem::path& source);
 
 		void RefreshImGuiBindings();
 

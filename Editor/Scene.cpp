@@ -60,6 +60,23 @@ void Editor::Scene::Load(std::filesystem::path& source) {
 	m_IsEmpty = false;
 }
 
+void Editor::Scene::LoadOld(std::filesystem::path& source) {
+	if (!m_IsEmpty) {
+		return;
+	}
+
+	if (m_HasData) {
+		std::string fileName = m_SceneData["FileName"];
+		m_Context->load_scene_old(source / fileName);
+
+		RefreshImGuiBindings();
+	}
+	else {
+		FillBasic();
+	}
+	m_IsEmpty = false;
+}
+
 void Editor::Scene::RefreshImGuiBindings() {
 	m_Context->get_registry()
 		.view<diffusion::ScriptComponentState>()

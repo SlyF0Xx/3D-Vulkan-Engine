@@ -21,11 +21,9 @@
 #include "BaseComponents/DebugComponent.h"
 #include "BaseComponents/ScaleComponent.h"
 
+#include "PhysicsUtils.h"
 #include "util.h"
-
-#include "edyn/edyn.hpp"
-#include <edyn/time/time.hpp>
-#include "edyn/comp/tree_resident.hpp"
+#include "edyn_printer.h"
 
 #include <array>
 #include <fstream>
@@ -35,55 +33,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-namespace edyn {
-
-    //NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(kinematic_tag);
-    //NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(static_tag);
-    //NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(multi_island_resident, island_entities);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(vector3, x, y, z);
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(position, x, y, z);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(orientation, x, y, z, w);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(mass, s);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(mass_inv, s);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(inertia, row);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(inertia_inv, row);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(inertia_world_inv, row);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(linvel, x, y, z);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(angvel, x, y, z);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(gravity, x, y, z);
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(material, restitution, friction, spin_friction, roll_friction, stiffness, damping, id);
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(present_position, x, y, z);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(present_orientation, x, y, z, w);
-    
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(box_shape, half_extents);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(shape_index, value);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AABB, min, max);
-    /*
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(continuous_contacts_tag);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(dynamic_tag);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(procedural_tag);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(kinematic_tag);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(static_tag);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(continuous);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(rigidbody_tag);
-    */
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(continuous, types, size);
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(island_timestamp, value);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(island_resident, island_entity);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(graph_node, node_index);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(collision_filter, group, mask);
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(graph_edge, edge_index);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(contact_manifold, body, separation_threshold, point);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(tree_resident, id, procedural);
-    //NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(multi_island_resident, island_entities);
-}
 
 Game::~Game()
 {
@@ -597,15 +546,45 @@ void Game::load_scene(const std::filesystem::path& path)
         diffusion::PossessedEntity, diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent,
         diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
         diffusion::ScriptComponent, diffusion::ScaleComponent,
-
+        /*
         edyn::position, edyn::orientation, edyn::mass, edyn::mass_inv, edyn::inertia, edyn::inertia_inv, edyn::inertia_world_inv,
         edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
         edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
-
+        */
         BTComponent,
 
-        diffusion::debug_tag /* should be ignored in runtime*/ >(json_in);
+        diffusion::debug_tag /* should be ignored in runtime*/, ColliderDefinition >(json_in);
+
+    auto main_entity = m_registry.view<diffusion::PossessedEntity>().front();
+    m_registry.set<diffusion::PossessedEntity>(main_entity);
+
+    auto main_camera = m_registry.view<diffusion::MainCameraTag>().front();
+    m_registry.set<diffusion::MainCameraTag>(main_camera);
+}
+
+void Game::load_scene_old(const std::filesystem::path& path)
+{
+    std::ifstream fin(path);
+    std::string str{ std::istreambuf_iterator<char>(fin),
+                     std::istreambuf_iterator<char>() };
+
+    NJSONInputArchive json_in(str);
+    entt::basic_snapshot_loader loader(m_registry);
+    loader.entities(json_in)
+        .component< diffusion::TransformComponent, diffusion::BoundingComponent, diffusion::CameraComponent, diffusion::SubMesh,
+        diffusion::PossessedEntity, diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent,
+        diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
+        diffusion::ScriptComponent, diffusion::ScaleComponent,
+        
+        edyn::position, edyn::orientation, edyn::mass, edyn::mass_inv, edyn::inertia, edyn::inertia_inv, edyn::inertia_world_inv,
+        edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
+        edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
+        edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
+        
+        BTComponent,
+
+        diffusion::debug_tag /* should be ignored in runtime*/>(json_in);
 
     auto main_entity = m_registry.view<diffusion::PossessedEntity>().front();
     m_registry.set<diffusion::PossessedEntity>(main_entity);
@@ -623,15 +602,15 @@ void Game::save_scene(const std::filesystem::path& path)
         diffusion::PossessedEntity, diffusion::Relation, diffusion::LitMaterialComponent, diffusion::UnlitMaterialComponent,
         diffusion::MainCameraTag, diffusion::PointLightComponent, diffusion::DirectionalLightComponent, diffusion::TagComponent,
         diffusion::ScriptComponent, diffusion::ScaleComponent,
-
+        /*
         edyn::position, edyn::orientation, edyn::mass, edyn::mass_inv, edyn::inertia, edyn::inertia_inv, edyn::inertia_world_inv,
         edyn::linvel, edyn::angvel, edyn::gravity, edyn::material, edyn::present_position, edyn::present_orientation, edyn::box_shape,
         edyn::shape_index, edyn::AABB, edyn::continuous_contacts_tag, edyn::dynamic_tag, edyn::procedural_tag, edyn::kinematic_tag,
         edyn::static_tag, edyn::continuous, edyn::rigidbody_tag, edyn::collision_filter, edyn::graph_node,
-
+        */
         BTComponent,
 
-        diffusion::debug_tag /* should be ignored in runtime*/>(output);
+        diffusion::debug_tag /* should be ignored in runtime*/, ColliderDefinition>(output);
     output.Close();
     std::string json_output = output.AsString();
 
@@ -710,12 +689,11 @@ void Game::run()
     m_paused = false;
     m_stopped = false;
 
-    m_registry.visit([](const entt::type_info & type) {
-        std::cerr << type.name() << std::endl;
-    });
-    std::cerr << std::endl << std::endl << std::endl << std::endl;
-
     save_scene("scene.tmp");
+
+    m_registry.view<ColliderDefinition>().each([this](const ColliderDefinition & collider) {
+        add_collider(entt::to_entity(m_registry, collider), m_registry, collider);
+    });
 
     if (m_BehaviourTreeSystem) {
         delete m_BehaviourTreeSystem;

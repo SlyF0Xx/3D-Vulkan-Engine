@@ -6,7 +6,7 @@
 #include "../Engine.h"
 //#include <edyn/time/time.hpp>
 //#include "edyn/comp/tree_resident.hpp"
-
+#include "../PhysicsUtils.h"
 
 #include "../Entities/ImportableEntity.h"
 #include "../BaseComponents/ScaleComponent.h"
@@ -39,13 +39,15 @@ void PhysicsSystem::update_transform(::entt::registry& registry, ::entt::entity 
     glm::vec3 skew;
     glm::vec4 perspective;
     glm::decompose(diffusion::calculate_global_world_matrix(registry, transform), scale, rotation, translation, skew, perspective);
+    glm::vec3 rotation_euler = glm::eulerAngles(rotation);
 
-    auto * physics_position = registry.try_get<edyn::position>(parent_entity);
+    auto * physics_position = registry.try_get<ColliderDefinition>(parent_entity);
     if (!physics_position) {
         return;
     }
-
-    *physics_position = { translation.x, translation.y, translation.z };
+    physics_position->transform[0] = translation;
+    physics_position->transform[1] = rotation_euler;
+    physics_position->transform[2] = scale;
 }
 
 void PhysicsSystem::update_phys_component(::entt::registry& registry, ::entt::entity parent_entity)

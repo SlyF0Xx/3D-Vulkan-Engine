@@ -91,6 +91,9 @@ Editor::LayoutRenderStatus Editor::MainLayout::Render(Game& vulkan, ImGUIBasedPr
 			if (ImGui::MenuItem("Load project", "CTRL + O")) {
 				Editor::GameProject::Instance()->Load();
 			}
+			if (ImGui::MenuItem("Load old project")) {
+				Editor::GameProject::Instance()->Load();
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rename Scene", "CTRL + R")) {
 				Editor::GameProject::Instance()->RenameScene();

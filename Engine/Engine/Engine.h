@@ -279,6 +279,7 @@ public:
     PresentationEngine create_default_presentation_engine(HINSTANCE hinstance, HWND hwnd);
     float get_depth(size_t x, size_t y);
 
+    void load_scene_old(const std::filesystem::path& path = "sample_scene.json");
     void load_scene(const std::filesystem::path & path = "sample_scene.json");
     void save_scene(const std::filesystem::path & path = "sample_scene.json");
 

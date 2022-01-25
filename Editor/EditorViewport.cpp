@@ -61,7 +61,7 @@ void Editor::EditorViewport::ClickHandler() {
 		if (diffusion::is_in_bounding_box(diffusion::calculate_bounding_box_in_world_space(
 			m_Context->get_registry(), mesh, transform), m_GlobalPosition)) {
 			auto parrent = entt::to_entity(m_Context->get_registry(), mesh);
-
+			/*
 			glm::vec3 delta = mesh.m_bounding_box.max - mesh.m_bounding_box.min;
 			glm::vec3 delta_2 = glm::vec3(delta.x / 2, delta.y / 2, delta.z / 2);
 
@@ -72,7 +72,7 @@ void Editor::EditorViewport::ClickHandler() {
 				delta
 			);
 			m_Context->get_registry().emplace<diffusion::Relation>(entity, parrent);
-
+			*/
 			m_SceneDispatcher->dispatch(SceneInteractEvent(SceneInteractType::SELECTED_ONE, static_cast<uint32_t>(parrent)));
 		}
 	});

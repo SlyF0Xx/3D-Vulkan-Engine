@@ -71,7 +71,10 @@ namespace diffusion {
     auto extend = glm::vec3{ 0.5f, 0.5f, 0.6f } * scale;
     collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z};
 
-    add_collider(cube_entity, registry, collider);
+    registry.emplace<ColliderDefinition>(cube_entity, collider);
+
+    // Removed until Edyn will work correctly
+    // add_collider(cube_entity, registry, collider);
     
     return cube_entity;
 }
@@ -86,9 +89,11 @@ namespace diffusion {
     auto extend = glm::vec3{ 0.5f, 0.5f, 0.6f } * scale;
     collider.shape = edyn::box_shape{ extend.x, extend.y, extend.z};
 
-    add_collider(cube_entity, registry, collider);
+    registry.emplace<ColliderDefinition>(cube_entity, collider);
 
-    edyn::update(registry);
+    // Removed until Edyn will work correctly
+    //add_collider(cube_entity, registry, collider);
+
     return cube_entity;
 }
 

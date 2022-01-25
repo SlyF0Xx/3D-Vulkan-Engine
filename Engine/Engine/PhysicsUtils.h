@@ -6,6 +6,8 @@
 
 #include "BaseComponents/ScaleComponent.h"
 
+#include "edyn_printer.h"
+
 enum ECollisionType
 {
 	Trigger,
@@ -21,6 +23,8 @@ struct ColliderDefinition {
 	uint64_t collisionGroup = ~0ULL;
 	uint64_t collisionMask = ~0ULL;
     int64_t mass = 0;
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ColliderDefinition, CollisionType, transform, shape, collisionGroup, collisionMask, mass)
 };
 
 static void add_collider(entt::entity entity, entt::registry& registry, ColliderDefinition Definition) {
