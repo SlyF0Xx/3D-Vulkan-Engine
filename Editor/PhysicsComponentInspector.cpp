@@ -11,6 +11,7 @@ Editor::PhysicsComponentInspector::PhysicsComponentInspector(EDITOR_GAME_TYPE ct
 		if (HasMass()) {
 			auto& mass = m_Context->get_registry().get<ColliderDefinition>(m_Selection);
 			m_MassInKg = mass.mass;
+			m_ColliderType = mass.CollisionType;
 		}
 	});
 
@@ -23,9 +24,36 @@ void Editor::PhysicsComponentInspector::RenderContent() {
 	if (HasMass()) {
 		ImGui::BeginGroupPanel("Mass", ImVec2(-1.0f, -1.0f));
 		if (ImGui::DragFloat("kg", &m_MassInKg, 0.1f, 0.01f, 100.f)) {
-			m_Context->get_registry().patch<ColliderDefinition>(m_Selection, [&](ColliderDefinition mass) {
+			m_Context->get_registry().patch<ColliderDefinition>(m_Selection, [&](ColliderDefinition& mass) {
 				mass.mass = m_MassInKg;
 			});
+		}
+		ImGui::EndGroupPanel();
+
+		ImGui::BeginGroupPanel("Collider Type", ImVec2(-1.0f, -1.f));
+
+		static std::map<ECollisionType, std::string> policies;
+		policies[ECollisionType::Trigger] = "Trigger";
+		policies[ECollisionType::Blocker] = "Blocker";
+		policies[ECollisionType::Static] = "Static";
+		policies[ECollisionType::Ignore] = "Ignore";
+
+		ImGui::PushItemWidth(-1);
+		if (ImGui::BeginCombo("##ColliderType", policies[m_ColliderType].c_str(), 0)) {
+			for (auto it = policies.begin(); it != policies.end(); it++) {
+				const bool is_selected = (m_ColliderType == it->first);
+				if (ImGui::Selectable(it->second.c_str(), is_selected)) {
+					m_ColliderType = it->first;
+					m_Context->get_registry().patch<ColliderDefinition>(m_Selection, [&](ColliderDefinition& mass) {
+						mass.CollisionType = m_ColliderType;
+					});
+				}
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
 		}
 		ImGui::EndGroupPanel();
 	}

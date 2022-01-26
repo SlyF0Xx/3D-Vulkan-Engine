@@ -100,6 +100,9 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 		case EditorCreatableComponent::EditorCreatableComponentType::TAG:
 			isLocked = m_Context->get_registry().view<TagComponent>().contains(m_Selection);
 			break;
+		case EditorCreatableComponent::EditorCreatableComponentType::PHYSICS:
+			isLocked = m_Context->get_registry().view<ColliderDefinition>().contains(m_Selection);
+			break;
 	}
 
 	if (isLocked) {
@@ -123,6 +126,9 @@ void Editor::Inspector::DrawCreatableComponentNode(const EditorCreatableComponen
 				break;
 			case EditorCreatableComponent::EditorCreatableComponentType::TAG:
 				m_Context->get_registry().emplace_or_replace<diffusion::TagComponent>(m_Selection, "Sample Title");
+				break;
+			case EditorCreatableComponent::EditorCreatableComponentType::PHYSICS:
+				m_Context->get_registry().emplace_or_replace<ColliderDefinition>(m_Selection);
 				break;
 		}
 		m_SingleDispatcher->dispatch({SceneInteractType::SELECTED_ONE, (ENTT_ID_TYPE) m_Selection});

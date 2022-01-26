@@ -25,6 +25,7 @@ namespace Editor {
 		static inline constexpr const bool	MULTI_ENTITIES_SUPPORT = false;
 
 		float m_MassInKg = 0.01f;
+		ECollisionType m_ColliderType = ECollisionType::Ignore;
 
 		SceneEventDispatcher m_SceneDispatcher;
 	};

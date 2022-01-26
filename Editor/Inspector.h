@@ -28,8 +28,7 @@ namespace Editor {
 			TRANSFORM,
 			SCRIPT,
 
-			// PHYSICS
-			PHYSICS_MASS,
+			PHYSICS,
 		};
 
 		const char* Title;
@@ -71,10 +70,7 @@ namespace Editor {
 			EditorCreatableComponent("Tag Component", EditorCreatableComponent::EditorCreatableComponentType::TAG),
 			EditorCreatableComponent("Transform Component", EditorCreatableComponent::EditorCreatableComponentType::TRANSFORM),
 			EditorCreatableComponent("Script Component", EditorCreatableComponent::EditorCreatableComponentType::SCRIPT),
-			EditorCreatableComponent("Physics Component", new EditorCreatableComponent[1] {
-				EditorCreatableComponent("Mass", EditorCreatableComponent::EditorCreatableComponentType::PHYSICS_MASS),
-				},
-			1),
+			EditorCreatableComponent("Physics Component", EditorCreatableComponent::EditorCreatableComponentType::PHYSICS),
 		};
 	};
 
