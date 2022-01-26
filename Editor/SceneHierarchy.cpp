@@ -14,13 +14,45 @@ void Editor::SceneHierarchy::Render(bool* p_open, ImGuiWindowFlags flags) {
 	ImGui::Text("Entities count: %d", m_Context->get_registry().alive());
 #endif
 
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+	if (ImGui::CollapsingHeader("Filter", NULL, 0)) {
+		ImGui::PushItemWidth(-1);
+		ImGui::Checkbox("Hide untagged entities", &m_IsUntaggedHidden);
+		ImGui::InputTextEx(
+			"##Search", 
+			"Search by Tag (Case Sensitive)", 
+			m_SearchBuf, 
+			Constants::ACTOR_NAME_LENGTH,
+			ImVec2(0, 0),
+			NULL,
+			NULL
+		);
+	}
+	ImGui::PopStyleVar();
+
+	ImGui::BeginGroupPanel("Hierarchy", ImVec2(-1.0f, -1.0f));
 	m_Context->get_registry().each([&](auto entity) {
 		const auto& relation = m_Context->get_registry().try_get<Relation>(entity);
-		if (!relation) {
+		bool isDrawable = !relation;
+		if (m_IsUntaggedHidden) {
+			const auto& tagged = m_Context->get_registry().try_get<TagComponent>(entity);
+			isDrawable &= !!tagged;
+		}
+
+		if (strlen(m_SearchBuf) > 0) {
+			TagComponent* tag = m_Context->get_registry().try_get<TagComponent>(entity);
+			if (!!tag) {
+				std::size_t found = tag->m_Tag.find(std::string(m_SearchBuf));
+				isDrawable &= found != std::string::npos;
+			}
+		}
+
+		if (isDrawable) {
 			// Only parents or independent objects.
 			DrawEntityNode((ENTT_ID_TYPE) entity);
 		}
 	});
+	ImGui::EndGroupPanel();
 
 	if (m_Context->get_registry().valid(m_UngroupEntity)) {
 		unbind_entity(m_Context->get_registry(), m_UngroupEntity);

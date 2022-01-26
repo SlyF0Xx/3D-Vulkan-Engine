@@ -96,6 +96,7 @@ namespace Editor {
 		std::filesystem::path m_SourceProjectFilePath;
 
 #pragma region Render State Variables.
+		bool m_IsPrepareWindowRequired = false;
 		bool m_IsSavingAs = false;
 		bool m_IsRenamingScene = false;
 		bool m_IsDeletingScene = false;

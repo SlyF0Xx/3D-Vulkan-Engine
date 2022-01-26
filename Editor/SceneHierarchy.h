@@ -21,6 +21,7 @@
 #include "SceneInteraction.h"
 #include "Constants.h"
 #include "GameProject.h"
+#include "GroupPanel.h"
 
 namespace Editor {
 
@@ -117,7 +118,9 @@ namespace Editor {
 
 		bool m_IsRenameInputFocused = false;
 		bool m_IsRenaming = false;
+		bool m_IsUntaggedHidden = true;
 		char m_RenameBuf[Constants::ACTOR_NAME_LENGTH] = "";
+		char m_SearchBuf[Constants::ACTOR_NAME_LENGTH] = "";
 	};
 
 }

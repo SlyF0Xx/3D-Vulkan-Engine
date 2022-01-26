@@ -34,6 +34,7 @@ void Editor::GameProject::NewScene() {
 }
 
 void Editor::GameProject::RenameScene() {
+	m_IsPrepareWindowRequired = true;
 	m_IsRenamingScene = true;
 }
 
@@ -41,9 +42,14 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Constants::EDITOR_WINDOW_PADDING);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 
-	// Always center this window when appearing.
-	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (m_IsPrepareWindowRequired) {
+		// Always center this window when appearing.
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowSize({400.f, 600.f});
+
+		m_IsPrepareWindowRequired = false;
+	}
 
 	if (m_IsRenamingScene) {
 		ImGui::OpenPopup("Scene Title");
@@ -106,7 +112,6 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	}
 
 	if (m_IsSourceFolderChoosing) {
-		ImGui::SetNextWindowSize({400.f, 600.f});
 		ImGuiFileDialog::Instance()->OpenModal("ChooseDir", "Choose source folder", nullptr, ".");
 
 		if (ImGuiFileDialog::Instance()->Display("ChooseDir")) {
@@ -129,7 +134,6 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 	}
 
 	if (m_IsProjectFileChoosing) {
-		ImGui::SetNextWindowSize({400.f, 600.f});
 		ImGuiFileDialog::Instance()->OpenModal("ChooseFile", "Choose project file", ".diffusion", ".");
 
 		if (ImGuiFileDialog::Instance()->Display("ChooseFile")) {
@@ -198,6 +202,7 @@ Editor::GameProjectRenderStatus Editor::GameProject::Render() {
 }
 
 void Editor::GameProject::Load() {
+	m_IsPrepareWindowRequired = true;
 	m_IsProjectFileChoosing = true;
 }
 
@@ -205,6 +210,7 @@ void Editor::GameProject::Save() {
 	m_SceneDispatcher->dispatch(SceneInteractType::SAVE_ALL_SCTIPTS);
 
 	if (m_SourceDirectoryPath.empty()) {
+		m_IsPrepareWindowRequired = true;
 		m_IsSourceFolderChoosing = true;
 		return;
 	}
@@ -237,6 +243,7 @@ void Editor::GameProject::Save() {
 }
 
 void Editor::GameProject::SaveAs() {
+	m_IsPrepareWindowRequired = true;
 	m_IsSavingAs = true;
 }
 
